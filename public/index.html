@@ -6,9 +6,6 @@
   <meta name="theme-color" content="#1a2744">
   <title>SipScore</title>
   <link rel="stylesheet" href="/css/style.css">
-  <style>
-    body { padding-bottom: 0; }
-  </style>
 </head>
 <body class="no-nav">
 
@@ -21,12 +18,6 @@
 
     <div class="login-card">
       <p class="login-card-title">Welcome</p>
-
-      <!-- Tab switcher -->
-      <div class="login-tabs">
-        <button class="login-tab active" id="tabLogin" onclick="switchTab('login')">Sign In</button>
-        <button class="login-tab" id="tabRegister" onclick="switchTab('register')">New Profile</button>
-      </div>
 
       <form id="authForm" onsubmit="handleSubmit(event)">
         <div class="form-group">
@@ -51,15 +42,28 @@
             <input class="pin-digit" type="tel" maxlength="1" pattern="[0-9]" inputmode="numeric" id="p3">
             <input class="pin-digit" type="tel" maxlength="1" pattern="[0-9]" inputmode="numeric" id="p4">
           </div>
-          <p class="form-hint" id="pinHint">Choose a PIN you'll remember</p>
+          <p class="form-hint">Your PIN keeps your ratings private</p>
         </div>
 
         <p class="form-error" id="errorMsg"></p>
 
         <button type="submit" class="btn btn-gold btn-full" id="submitBtn">
-          Sign In
+          Continue
         </button>
       </form>
+    </div>
+  </div>
+
+  <!-- New-profile confirmation sheet -->
+  <div class="modal-overlay" id="newProfileModal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--navy);margin-bottom:10px;">New profile?</h3>
+      <p style="font-size:0.9rem;color:var(--slate);margin-bottom:22px;font-weight:300;" id="newProfileMsg"></p>
+      <div class="modal-actions">
+        <button class="btn btn-gold btn-full" id="confirmYesBtn">Yes, create my profile</button>
+        <button class="btn btn-outline btn-full" onclick="closeNewProfileModal()">No, try a different name</button>
+      </div>
     </div>
   </div>
 
@@ -67,24 +71,10 @@
 
   <script src="/js/app.js"></script>
   <script>
-    let currentTab = 'login';
-
     // If already logged in, go straight to drinks
     (function () {
-      const user = App.getUser();
-      if (user) window.location.replace('/drinks.html');
+      if (App.getUser()) window.location.replace('/drinks.html');
     })();
-
-    function switchTab(tab) {
-      currentTab = tab;
-      document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
-      document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
-      document.getElementById('submitBtn').textContent = tab === 'login' ? 'Sign In' : 'Create Profile';
-      document.getElementById('pinHint').textContent =
-        tab === 'login' ? 'Enter your PIN' : 'Choose a PIN you\'ll remember';
-      clearError();
-      clearPin();
-    }
 
     function clearError() {
       document.getElementById('errorMsg').textContent = '';
@@ -98,19 +88,21 @@
       return ['p1','p2','p3','p4'].map(id => document.getElementById(id).value).join('');
     }
 
-    // PIN digit navigation
+    function resetBtn() {
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = false;
+      btn.textContent = 'Continue';
+    }
+
+    // PIN digit auto-advance and backspace
     ['p1','p2','p3','p4'].forEach((id, i) => {
       const el = document.getElementById(id);
       el.addEventListener('input', () => {
         el.value = el.value.replace(/\D/g, '').slice(-1);
-        if (el.value && i < 3) {
-          document.getElementById(['p1','p2','p3','p4'][i + 1]).focus();
-        }
+        if (el.value && i < 3) document.getElementById(['p1','p2','p3','p4'][i + 1]).focus();
       });
       el.addEventListener('keydown', (e) => {
-        if (e.key === 'Backspace' && !el.value && i > 0) {
-          document.getElementById(['p1','p2','p3','p4'][i - 1]).focus();
-        }
+        if (e.key === 'Backspace' && !el.value && i > 0) document.getElementById(['p1','p2','p3','p4'][i - 1]).focus();
       });
     });
 
@@ -119,39 +111,84 @@
       clearError();
 
       const name = document.getElementById('nameInput').value.trim();
-      const pin = getPin();
+      const pin  = getPin();
 
-      if (!name) {
-        document.getElementById('errorMsg').textContent = 'Please enter your name';
-        return;
-      }
-
-      if (pin.length !== 4) {
-        document.getElementById('errorMsg').textContent = 'Please enter all 4 PIN digits';
-        document.getElementById('p1').focus();
-        return;
-      }
+      if (!name) { document.getElementById('errorMsg').textContent = 'Please enter your name'; return; }
+      if (pin.length !== 4) { document.getElementById('errorMsg').textContent = 'Please enter all 4 PIN digits'; document.getElementById('p1').focus(); return; }
 
       const btn = document.getElementById('submitBtn');
       btn.disabled = true;
-      btn.textContent = currentTab === 'login' ? 'Signing in…' : 'Creating profile…';
+      btn.textContent = 'Checking\u2026';
+
+      try {
+        // Always try login first
+        const data = await App.apiFetch('/api/auth', {
+          method: 'POST',
+          body: JSON.stringify({ action: 'login', name, pin }),
+        });
+        App.setUser(data.user);
+        window.location.replace('/drinks.html');
+      } catch (err) {
+        if (err.message && err.message.toLowerCase().includes('no profile found')) {
+          // Name doesn't exist — offer to create one
+          resetBtn();
+          openNewProfileModal(name, pin);
+        } else {
+          // Wrong PIN or other error
+          document.getElementById('errorMsg').textContent = err.message;
+          resetBtn();
+          clearPin();
+          document.getElementById('p1').focus();
+        }
+      }
+    }
+
+    // ---- New profile modal ----
+    let pendingName = '';
+    let pendingPin  = '';
+
+    function openNewProfileModal(name, pin) {
+      pendingName = name;
+      pendingPin  = pin;
+      document.getElementById('newProfileMsg').textContent =
+        '\u201c' + name + '\u201d isn\u2019t registered yet. Would you like to create a new profile?';
+      const overlay = document.getElementById('newProfileModal');
+      overlay.classList.add('visible');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeNewProfileModal() {
+      document.getElementById('newProfileModal').classList.remove('visible');
+      document.body.style.overflow = '';
+      pendingName = '';
+      pendingPin  = '';
+      document.getElementById('nameInput').focus();
+    }
+
+    document.getElementById('newProfileModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('newProfileModal')) closeNewProfileModal();
+    });
+
+    document.getElementById('confirmYesBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('confirmYesBtn');
+      btn.disabled = true;
+      btn.textContent = 'Creating\u2026';
 
       try {
         const data = await App.apiFetch('/api/auth', {
           method: 'POST',
-          body: JSON.stringify({ action: currentTab, name, pin }),
+          body: JSON.stringify({ action: 'register', name: pendingName, pin: pendingPin }),
         });
-
         App.setUser(data.user);
         window.location.replace('/drinks.html');
       } catch (err) {
+        document.getElementById('newProfileModal').classList.remove('visible');
+        document.body.style.overflow = '';
         document.getElementById('errorMsg').textContent = err.message;
         btn.disabled = false;
-        btn.textContent = currentTab === 'login' ? 'Sign In' : 'Create Profile';
-        clearPin();
-        document.getElementById('p1').focus();
+        btn.textContent = 'Yes, create my profile';
       }
-    }
+    });
   </script>
 </body>
 </html>
