@@ -32,18 +32,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 function setupStars() {
   const container = document.getElementById('starInput');
   const stars = container.querySelectorAll('.star-btn');
+  let isTouching = false;
 
   stars.forEach(btn => {
+    btn.addEventListener('touchstart', () => { isTouching = true; }, { passive: true });
+
     btn.addEventListener('click', () => {
       selectedStars = parseInt(btn.dataset.val);
       updateStarUI(selectedStars);
       document.getElementById('saveBtn').disabled = false;
     });
 
-    btn.addEventListener('mouseenter', () => updateStarUI(parseInt(btn.dataset.val)));
+    btn.addEventListener('mouseenter', () => {
+      if (!isTouching) updateStarUI(parseInt(btn.dataset.val));
+    });
   });
 
-  container.addEventListener('mouseleave', () => updateStarUI(selectedStars));
+  container.addEventListener('mouseleave', () => {
+    if (!isTouching) updateStarUI(selectedStars);
+    isTouching = false;
+  });
 }
 
 function updateStarUI(val) {

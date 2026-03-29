@@ -657,6 +657,7 @@ button {
   transition: color 0.12s, transform 0.1s;
   line-height: 1;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .star-btn.lit {
