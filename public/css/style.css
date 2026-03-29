@@ -1,0 +1,1460 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap');
+
+/* =============================================
+   DESIGN TOKENS
+   ============================================= */
+:root {
+  --navy: #1a2744;
+  --navy-mid: #243460;
+  --navy-light: rgba(26, 39, 68, 0.06);
+  --gold: #c9a96e;
+  --gold-dark: #b8924d;
+  --gold-light: #e8d5b0;
+  --gold-pale: #f8f2e6;
+  --ivory: #faf8f3;
+  --white: #ffffff;
+  --slate: #64748b;
+  --text: #1e2d47;
+  --text-light: #64748b;
+  --border: #e5dece;
+  --shadow-sm: 0 1px 4px rgba(26, 39, 68, 0.07);
+  --shadow: 0 2px 16px rgba(26, 39, 68, 0.10);
+  --shadow-lg: 0 8px 32px rgba(26, 39, 68, 0.15);
+  --radius: 14px;
+  --radius-sm: 9px;
+  --nav-height: 68px;
+  --header-height: 58px;
+}
+
+/* =============================================
+   RESET & BASE
+   ============================================= */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Jost', sans-serif;
+  font-weight: 400;
+  color: var(--text);
+  background: var(--ivory);
+  min-height: 100vh;
+  padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom));
+}
+
+body.no-nav {
+  padding-bottom: 0;
+}
+
+h1, h2, h3, h4, .serif {
+  font-family: 'Cormorant Garamond', serif;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* =============================================
+   APP HEADER
+   ============================================= */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--navy);
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  box-shadow: 0 2px 12px rgba(26, 39, 68, 0.25);
+}
+
+.app-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.55rem;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+  text-decoration: none;
+}
+
+.app-logo span {
+  color: rgba(255,255,255,0.7);
+  font-weight: 400;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* =============================================
+   USER AVATAR
+   ============================================= */
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--white);
+  cursor: pointer;
+  border: 2px solid rgba(201, 169, 110, 0.35);
+  transition: border-color 0.2s, transform 0.15s;
+  flex-shrink: 0;
+  letter-spacing: 0;
+}
+
+.user-avatar:hover,
+.user-avatar:active {
+  border-color: var(--gold);
+  transform: scale(1.05);
+}
+
+/* =============================================
+   BOTTOM NAVIGATION
+   ============================================= */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--nav-height) + env(safe-area-inset-bottom));
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-around;
+  padding-top: 8px;
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 100;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-decoration: none;
+  color: var(--slate);
+  padding: 4px 16px;
+  border-radius: var(--radius-sm);
+  transition: color 0.2s;
+  min-width: 60px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-item.active {
+  color: var(--gold-dark);
+}
+
+.nav-item svg {
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.2s;
+}
+
+.nav-label {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+/* =============================================
+   SEARCH BAR
+   ============================================= */
+.search-bar-wrap {
+  padding: 10px 16px;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: var(--header-height);
+  z-index: 90;
+}
+
+.search-input-wrap {
+  position: relative;
+}
+
+.search-input-wrap svg {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 17px;
+  height: 17px;
+  stroke: var(--slate);
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 36px 10px 40px;
+  border: 1.5px solid var(--border);
+  border-radius: 50px;
+  background: var(--ivory);
+  font-family: 'Jost', sans-serif;
+  font-size: 0.9rem;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.search-input:focus {
+  border-color: var(--gold);
+  background: var(--white);
+}
+
+.search-input::placeholder {
+  color: var(--slate);
+  font-weight: 300;
+}
+
+.search-clear {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--slate);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px;
+  display: none;
+  line-height: 1;
+}
+
+.search-clear.visible {
+  display: block;
+}
+
+/* =============================================
+   FILTER CHIPS
+   ============================================= */
+.filter-chips-wrap {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: calc(var(--header-height) + 51px);
+  z-index: 89;
+}
+
+.filter-chips {
+  display: flex;
+  gap: 7px;
+  padding: 10px 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.filter-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex-shrink: 0;
+  padding: 5px 14px;
+  border-radius: 50px;
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  font-family: 'Jost', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--slate);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+.chip.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: var(--white);
+}
+
+.chip:hover:not(.active) {
+  border-color: var(--gold);
+  color: var(--gold-dark);
+}
+
+/* =============================================
+   DRINK CARDS
+   ============================================= */
+.drinks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 14px 24px;
+}
+
+.drink-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.15s;
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+  text-decoration: none;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.drink-card:active {
+  transform: scale(0.985);
+  box-shadow: var(--shadow-sm);
+}
+
+.drink-card:hover {
+  box-shadow: var(--shadow);
+}
+
+.drink-card-accent {
+  width: 4px;
+  flex-shrink: 0;
+}
+
+.accent-white    { background: #d4c89a; }
+.accent-rosé     { background: #e8a5b0; }
+.accent-rose     { background: #e8a5b0; }
+.accent-red      { background: #b03040; }
+.accent-sparkling{ background: #7daad4; }
+.accent-dessert  { background: #d4a050; }
+.accent-cocktail { background: #6db890; }
+
+.drink-card-body {
+  flex: 1;
+  padding: 13px 10px 13px 13px;
+  min-width: 0;
+}
+
+.drink-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.drink-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.3;
+  flex: 1;
+  min-width: 0;
+}
+
+.drink-badge {
+  flex-shrink: 0;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 50px;
+  white-space: nowrap;
+}
+
+.badge-white    { background: #f0e9d4; color: #7a6230; }
+.badge-rosé,
+.badge-rose     { background: #fce8ee; color: #a03560; }
+.badge-red      { background: #fde8e8; color: #8b2030; }
+.badge-sparkling{ background: #e4eeff; color: #2c5090; }
+.badge-dessert-and-fortified,
+.badge-dessert  { background: #fff0dc; color: #8a5200; }
+.badge-cocktail { background: #e4f5ec; color: #1a6b4a; }
+
+.drink-meta {
+  font-size: 0.78rem;
+  color: var(--slate);
+  margin-bottom: 9px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drink-ratings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.community-stars {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stars-display {
+  display: inline-flex;
+  gap: 1px;
+  line-height: 1;
+}
+
+.star-icon {
+  font-size: 0.85rem;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.star-icon.empty {
+  color: #d9d0bf;
+}
+
+.rating-avg {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.rating-count {
+  font-size: 0.72rem;
+  color: var(--slate);
+}
+
+.my-rating-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--gold-dark);
+  background: var(--gold-pale);
+  padding: 3px 9px;
+  border-radius: 50px;
+  white-space: nowrap;
+}
+
+.my-rating-badge .star-icon {
+  font-size: 0.7rem;
+}
+
+.drink-card-arrow {
+  display: flex;
+  align-items: center;
+  padding: 0 14px 0 4px;
+  color: #c8c0b0;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+/* =============================================
+   BUTTONS
+   ============================================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 24px;
+  border-radius: 50px;
+  border: none;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  min-height: 48px;
+}
+
+.btn-primary {
+  background: var(--navy);
+  color: var(--white);
+}
+
+.btn-primary:hover { background: var(--navy-mid); }
+.btn-primary:active { transform: scale(0.97); }
+
+.btn-gold {
+  background: var(--gold);
+  color: var(--navy);
+  font-weight: 600;
+}
+
+.btn-gold:hover { background: var(--gold-dark); }
+.btn-gold:active { transform: scale(0.97); }
+
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text);
+}
+
+.btn-outline:hover {
+  border-color: var(--gold);
+  color: var(--gold-dark);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: none;
+  color: var(--slate);
+  padding: 8px 16px;
+}
+
+.btn-ghost:hover { color: var(--text); }
+
+.btn-danger {
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+}
+
+.btn-danger:hover { background: #fecaca; }
+
+.btn-full { width: 100%; }
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* =============================================
+   RATING PAGE
+   ============================================= */
+.drink-hero {
+  background: var(--navy);
+  color: var(--white);
+  padding: 20px 16px 28px;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  font-size: 0.82rem;
+  margin-bottom: 18px;
+  transition: color 0.2s;
+  letter-spacing: 0.03em;
+}
+
+.back-btn:hover { color: var(--gold); }
+
+.back-btn svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.drink-hero-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.drink-hero-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.9rem;
+  font-weight: 500;
+  line-height: 1.15;
+  margin-bottom: 6px;
+}
+
+.drink-hero-meta {
+  color: rgba(255,255,255,0.55);
+  font-size: 0.85rem;
+  font-weight: 300;
+}
+
+/* =============================================
+   STAR RATING INPUT
+   ============================================= */
+.rating-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  margin: 14px;
+  padding: 22px 18px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+
+.rating-card h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem;
+  color: var(--text);
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.star-rating-input {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 4px;
+  font-size: 2.5rem;
+  color: #d9d0bf;
+  transition: color 0.12s, transform 0.1s;
+  line-height: 1;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.star-btn.lit {
+  color: var(--gold);
+}
+
+.star-btn:active {
+  transform: scale(0.88);
+}
+
+.star-label-text {
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--slate);
+  margin-bottom: 18px;
+  min-height: 20px;
+  font-weight: 300;
+  font-style: italic;
+}
+
+.notes-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--slate);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.notes-textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: 'Jost', sans-serif;
+  font-size: 0.9rem;
+  color: var(--text);
+  resize: none;
+  outline: none;
+  min-height: 76px;
+  transition: border-color 0.2s, background 0.2s;
+  background: var(--ivory);
+  margin-bottom: 16px;
+}
+
+.notes-textarea:focus {
+  border-color: var(--gold);
+  background: var(--white);
+}
+
+.notes-textarea::placeholder {
+  color: #aaa;
+  font-weight: 300;
+}
+
+/* =============================================
+   COMMUNITY RATINGS SECTION
+   ============================================= */
+.community-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  margin: 0 14px 20px;
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+
+.community-card h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  color: var(--text);
+  margin-bottom: 14px;
+}
+
+.community-avg-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 14px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.avg-big-number {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.4rem;
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1;
+}
+
+.avg-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.avg-stars-row {
+  display: flex;
+  gap: 1px;
+}
+
+.avg-count {
+  font-size: 0.78rem;
+  color: var(--slate);
+}
+
+.rating-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.rating-entry:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.rating-entry-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--white);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.rating-entry-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.rating-entry-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.rating-entry-name {
+  font-weight: 500;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.rating-entry-stars {
+  display: flex;
+  gap: 1px;
+}
+
+.rating-entry-stars .star-icon {
+  font-size: 0.78rem;
+}
+
+.rating-entry-notes {
+  font-size: 0.78rem;
+  color: var(--slate);
+  font-weight: 300;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* =============================================
+   LEADERBOARD
+   ============================================= */
+.tab-switcher {
+  display: flex;
+  background: var(--white);
+  border-bottom: 2px solid var(--border);
+  position: sticky;
+  top: var(--header-height);
+  z-index: 90;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 13px 8px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--slate);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-btn.active {
+  color: var(--gold-dark);
+  border-bottom-color: var(--gold);
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 14px 24px;
+}
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 13px 14px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.leaderboard-item:hover {
+  box-shadow: var(--shadow);
+}
+
+.rank-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.82rem;
+  flex-shrink: 0;
+}
+
+.rank-1 { background: var(--gold); color: var(--navy); }
+.rank-2 { background: #b0b8c4; color: var(--white); }
+.rank-3 { background: #c9855a; color: var(--white); }
+.rank-other { background: var(--ivory); color: var(--slate); border: 1px solid var(--border); }
+
+.leaderboard-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.lb-drink-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.lb-drink-meta {
+  font-size: 0.72rem;
+  color: var(--slate);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.leaderboard-rating {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.lb-score {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1;
+}
+
+.lb-stars-sm {
+  display: flex;
+  gap: 1px;
+}
+
+.lb-stars-sm .star-icon {
+  font-size: 0.7rem;
+}
+
+.lb-raters {
+  font-size: 0.68rem;
+  color: var(--slate);
+}
+
+/* =============================================
+   FORMS
+   ============================================= */
+.form-section {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+
+.form-section h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--slate);
+  margin-bottom: 6px;
+}
+
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--ivory);
+  font-family: 'Jost', sans-serif;
+  font-size: 0.95rem;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  min-height: 48px;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.form-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 13px center;
+  padding-right: 38px;
+  cursor: pointer;
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: var(--gold);
+  background: var(--white);
+}
+
+.form-input::placeholder {
+  color: #aaa;
+  font-weight: 300;
+}
+
+.category-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.category-btn {
+  flex: 1;
+  padding: 12px 10px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  font-family: 'Jost', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--slate);
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.category-btn.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: var(--white);
+}
+
+/* =============================================
+   LOGIN PAGE
+   ============================================= */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--navy);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-page::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -80px;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,169,110,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.login-page::after {
+  content: '';
+  position: absolute;
+  bottom: 200px;
+  left: -60px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,169,110,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.login-hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px 32px;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.login-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 3.8rem;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
+  line-height: 1;
+}
+
+.login-tagline {
+  color: rgba(255,255,255,0.45);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.login-ikos {
+  display: inline-block;
+  color: rgba(255,255,255,0.25);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 4px 12px;
+  border-radius: 50px;
+}
+
+.login-card {
+  background: var(--white);
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 28px 22px 36px;
+  position: relative;
+  z-index: 1;
+}
+
+.login-card-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  color: var(--navy);
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.login-tabs {
+  display: flex;
+  border: 1.5px solid var(--border);
+  border-radius: 50px;
+  padding: 3px;
+  margin-bottom: 22px;
+  background: var(--ivory);
+}
+
+.login-tab {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 50px;
+  background: transparent;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--slate);
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.03em;
+}
+
+.login-tab.active {
+  background: var(--navy);
+  color: var(--white);
+}
+
+.pin-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.pin-digit {
+  width: 54px;
+  height: 54px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 600;
+  font-family: 'Jost', sans-serif;
+  color: var(--navy);
+  background: var(--ivory);
+  outline: none;
+  transition: border-color 0.2s;
+  caret-color: var(--gold);
+}
+
+.pin-digit:focus {
+  border-color: var(--gold);
+  background: var(--white);
+}
+
+.form-hint {
+  font-size: 0.75rem;
+  color: var(--slate);
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: 300;
+}
+
+.form-error {
+  font-size: 0.8rem;
+  color: #dc2626;
+  text-align: center;
+  margin-bottom: 14px;
+  min-height: 20px;
+}
+
+/* =============================================
+   PROFILE MODAL (BOTTOM SHEET)
+   ============================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 16, 34, 0.6);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+
+.modal-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal-sheet {
+  width: 100%;
+  background: var(--white);
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 12px 22px 32px;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-overlay.visible .modal-sheet {
+  transform: translateY(0);
+}
+
+.modal-handle {
+  width: 38px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+
+.profile-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.profile-avatar-lg {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--white);
+  flex-shrink: 0;
+}
+
+.profile-text-info {
+  flex: 1;
+}
+
+.profile-display-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1.2;
+}
+
+.profile-stats-text {
+  font-size: 0.8rem;
+  color: var(--slate);
+  margin-top: 2px;
+}
+
+.modal-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0 14px;
+}
+
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* =============================================
+   PAGE HEADER
+   ============================================= */
+.page-header {
+  padding: 18px 16px 4px;
+}
+
+.page-header h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.55rem;
+  color: var(--navy);
+  line-height: 1.2;
+}
+
+.page-header p {
+  font-size: 0.82rem;
+  color: var(--slate);
+  margin-top: 3px;
+  font-weight: 300;
+}
+
+/* =============================================
+   TOASTS
+   ============================================= */
+#toast {
+  position: fixed;
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  padding: 11px 20px;
+  border-radius: 50px;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: 88vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: var(--shadow);
+}
+
+#toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+#toast.toast-success {
+  background: var(--navy);
+  color: var(--gold);
+}
+
+#toast.toast-error {
+  background: #dc2626;
+  color: var(--white);
+}
+
+/* =============================================
+   LOADING & EMPTY STATES
+   ============================================= */
+.loading-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 48px;
+}
+
+.spinner {
+  width: 30px;
+  height: 30px;
+  border: 2.5px solid var(--border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 52px 24px;
+  color: var(--slate);
+}
+
+.empty-state-icon {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+  opacity: 0.35;
+}
+
+.empty-state h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.35rem;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.empty-state p {
+  font-size: 0.85rem;
+  opacity: 0.75;
+  font-weight: 300;
+}
+
+/* =============================================
+   UTILITY
+   ============================================= */
+.hidden { display: none !important; }
+
+.mt-8  { margin-top: 8px; }
+.mt-14 { margin-top: 14px; }
+.mt-20 { margin-top: 20px; }
+.mb-8  { margin-bottom: 8px; }
+.mb-14 { margin-bottom: 14px; }
+.px-14 { padding: 0 14px; }
+
+.text-center { text-align: center; }
+.text-gold   { color: var(--gold-dark); }
+.text-navy   { color: var(--navy); }
+.text-slate  { color: var(--slate); }
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+@media (min-width: 600px) {
+  .drinks-list,
+  .leaderboard-list,
+  .page-header,
+  .px-14 {
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .rating-card,
+  .community-card {
+    max-width: 580px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}

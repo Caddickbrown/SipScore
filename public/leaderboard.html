@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1a2744">
+  <title>SipScore — Rankings</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="app-header">
+    <a href="/drinks.html" class="app-logo">Sip<span>Score</span></a>
+    <div class="header-right">
+      <div class="user-avatar" id="headerAvatar" title="Profile"></div>
+    </div>
+  </header>
+
+  <!-- Tab switcher -->
+  <div class="tab-switcher">
+    <button class="tab-btn active" id="tabPersonal" onclick="switchTab('personal')">My Top Picks</button>
+    <button class="tab-btn" id="tabSocial" onclick="switchTab('social')">Group Favourites</button>
+  </div>
+
+  <!-- Filter chips -->
+  <div class="filter-chips-wrap">
+    <div class="filter-chips" id="lbCategoryChips">
+      <button class="chip active" data-cat="">All</button>
+      <button class="chip" data-cat="wine">Wines</button>
+      <button class="chip" data-cat="cocktail">Cocktails</button>
+    </div>
+  </div>
+
+  <!-- Leaderboard list -->
+  <div id="leaderboardList" class="leaderboard-list">
+    <div class="loading-wrap"><div class="spinner"></div></div>
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav" id="bottomNav">
+    <a href="/drinks.html" class="nav-item" data-page="drinks">
+      <svg viewBox="0 0 24 24"><path d="M8 22h8M12 11v11M7 3h10l-2 8H9L7 3z"/></svg>
+      <span class="nav-label">Drinks</span>
+    </a>
+    <a href="/leaderboard.html" class="nav-item" data-page="leaderboard">
+      <svg viewBox="0 0 24 24"><path d="M6 9H3l2-5h14l2 5h-3M6 9a6 6 0 0 0 12 0M8 21H5l3-3h8l3 3h-3M12 18v-3"/></svg>
+      <span class="nav-label">Rankings</span>
+    </a>
+    <a href="/add-drink.html" class="nav-item" data-page="add">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+      <span class="nav-label">Add</span>
+    </a>
+    <a href="/index.html" class="nav-item" data-page="profile">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg>
+      <span class="nav-label">Profile</span>
+    </a>
+  </nav>
+
+  <!-- Profile modal -->
+  <div class="modal-overlay" id="profileModal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="profile-row">
+        <div class="profile-avatar-lg"></div>
+        <div class="profile-text-info">
+          <div class="profile-display-name"></div>
+          <div class="profile-stats-text">Loading…</div>
+        </div>
+      </div>
+      <div class="modal-divider"></div>
+      <div class="modal-actions">
+        <button class="btn btn-outline btn-full" onclick="App.closeProfileModal()">Close</button>
+        <button class="btn btn-danger btn-full" id="logoutBtn">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/leaderboard.js"></script>
+</body>
+</html>

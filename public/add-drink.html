@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1a2744">
+  <title>SipScore — Add Drink</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="app-header">
+    <a href="/drinks.html" class="app-logo">Sip<span>Score</span></a>
+    <div class="header-right">
+      <div class="user-avatar" id="headerAvatar" title="Profile"></div>
+    </div>
+  </header>
+
+  <div class="page-header mt-14 px-14">
+    <h2>Add a Drink</h2>
+    <p>Found something new to try? Add it here.</p>
+  </div>
+
+  <div class="px-14 mt-14">
+
+    <!-- Category toggle -->
+    <div class="form-section">
+      <h3>What type?</h3>
+      <div class="category-toggle">
+        <button type="button" class="category-btn active" id="catWine" onclick="setCategory('wine')">
+          <svg style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M8 22h8M12 11v11M7 3h10l-2 8H9L7 3z"/></svg>
+          Wine
+        </button>
+        <button type="button" class="category-btn" id="catCocktail" onclick="setCategory('cocktail')">
+          <svg style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M8 3h8l-4 9M4 3h16M12 12v9M8 21h8"/></svg>
+          Cocktail
+        </button>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div class="form-section">
+      <form id="addDrinkForm" onsubmit="handleAdd(event)">
+
+        <div class="form-group">
+          <label class="form-label" for="drinkName">Drink Name</label>
+          <input
+            class="form-input"
+            type="text"
+            id="drinkName"
+            placeholder="e.g. Pontiglio or Mojito"
+            autocapitalize="words"
+            maxlength="150"
+            required
+          >
+        </div>
+
+        <!-- Wine fields -->
+        <div id="wineFields">
+          <div class="form-group">
+            <label class="form-label" for="wineType">Type</label>
+            <select class="form-select" id="wineType">
+              <option value="">Select type…</option>
+              <option value="White">White</option>
+              <option value="Rosé">Rosé</option>
+              <option value="Red">Red</option>
+              <option value="Sparkling">Sparkling</option>
+              <option value="Dessert and Fortified">Dessert &amp; Fortified</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="wineStyle">Style</label>
+            <select class="form-select" id="wineStyle">
+              <option value="">Select style…</option>
+              <option value="Light and Crisp">Light and Crisp</option>
+              <option value="Juicy and Aromatic">Juicy and Aromatic</option>
+              <option value="Full and Opulent">Full and Opulent</option>
+              <option value="Fruity and Lively">Fruity and Lively</option>
+              <option value="Ripe and Smooth">Ripe and Smooth</option>
+              <option value="Rich and Dense">Rich and Dense</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="wineSource">Region / Origin</label>
+            <input
+              class="form-input"
+              type="text"
+              id="wineSource"
+              placeholder="e.g. Corfu, Greece"
+              autocapitalize="words"
+              maxlength="100"
+            >
+          </div>
+        </div>
+
+        <!-- Cocktail fields -->
+        <div id="cocktailFields" style="display:none;">
+          <div class="form-group">
+            <label class="form-label" for="cocktailType">Base Spirit</label>
+            <select class="form-select" id="cocktailType">
+              <option value="">Select base…</option>
+              <option value="Rum-based">Rum-based</option>
+              <option value="Vodka-based">Vodka-based</option>
+              <option value="Gin-based">Gin-based</option>
+              <option value="Tequila-based">Tequila-based</option>
+              <option value="Whiskey-based">Whiskey-based</option>
+              <option value="Wine-based">Wine-based</option>
+              <option value="Mixed">Mixed</option>
+              <option value="Non-alcoholic">Non-alcoholic</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="cocktailStyle">Style</label>
+            <select class="form-select" id="cocktailStyle">
+              <option value="">Select style…</option>
+              <option value="Refreshing">Refreshing</option>
+              <option value="Sweet">Sweet</option>
+              <option value="Sour">Sour</option>
+              <option value="Sweet &amp; Tart">Sweet &amp; Tart</option>
+              <option value="Bitter">Bitter</option>
+              <option value="Tropical">Tropical</option>
+              <option value="Bubbly">Bubbly</option>
+              <option value="Rich">Rich</option>
+              <option value="Fruity">Fruity</option>
+              <option value="Classic">Classic</option>
+              <option value="Strong">Strong</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="cocktailSource">Origin (optional)</label>
+            <input
+              class="form-input"
+              type="text"
+              id="cocktailSource"
+              placeholder="e.g. Cuba or Italy"
+              autocapitalize="words"
+              maxlength="100"
+            >
+          </div>
+        </div>
+
+        <div class="form-error" id="addError"></div>
+
+        <button type="submit" class="btn btn-gold btn-full" id="addBtn">
+          Add Drink
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav" id="bottomNav">
+    <a href="/drinks.html" class="nav-item" data-page="drinks">
+      <svg viewBox="0 0 24 24"><path d="M8 22h8M12 11v11M7 3h10l-2 8H9L7 3z"/></svg>
+      <span class="nav-label">Drinks</span>
+    </a>
+    <a href="/leaderboard.html" class="nav-item" data-page="leaderboard">
+      <svg viewBox="0 0 24 24"><path d="M6 9H3l2-5h14l2 5h-3M6 9a6 6 0 0 0 12 0M8 21H5l3-3h8l3 3h-3M12 18v-3"/></svg>
+      <span class="nav-label">Rankings</span>
+    </a>
+    <a href="/add-drink.html" class="nav-item" data-page="add">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+      <span class="nav-label">Add</span>
+    </a>
+    <a href="/index.html" class="nav-item" data-page="profile">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg>
+      <span class="nav-label">Profile</span>
+    </a>
+  </nav>
+
+  <!-- Profile modal -->
+  <div class="modal-overlay" id="profileModal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="profile-row">
+        <div class="profile-avatar-lg"></div>
+        <div class="profile-text-info">
+          <div class="profile-display-name"></div>
+          <div class="profile-stats-text">Loading…</div>
+        </div>
+      </div>
+      <div class="modal-divider"></div>
+      <div class="modal-actions">
+        <button class="btn btn-outline btn-full" onclick="App.closeProfileModal()">Close</button>
+        <button class="btn btn-danger btn-full" id="logoutBtn">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script src="/js/app.js"></script>
+  <script src="/js/add-drink.js"></script>
+</body>
+</html>
