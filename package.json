@@ -4,5 +4,8 @@
   "private": true,
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4"
+  },
+  "devDependencies": {
+    "dotenv": "^17.3.1"
   }
 }

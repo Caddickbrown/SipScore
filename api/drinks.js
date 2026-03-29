@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
             AND (${category} = '' OR d.category = ${category})
             AND (${type} = '' OR d.type = ${type})
           GROUP BY d.id
-          ORDER BY d.category, d.name
+          ORDER BY d.name
         `;
       } else {
         drinks = await sql`
@@ -50,7 +50,7 @@ module.exports = async (req, res) => {
             AND (${category} = '' OR d.category = ${category})
             AND (${type} = '' OR d.type = ${type})
           GROUP BY d.id
-          ORDER BY d.category, d.name
+          ORDER BY d.name
         `;
       }
 
