@@ -77,7 +77,11 @@ function updateStarUI(val) {
 
 async function loadDrink() {
   try {
-    const data = await App.apiFetch('/api/drink/' + drinkId + '?user_id=' + user.id);
+    const params = new URLSearchParams({
+      id: String(drinkId),
+      user_id: String(user.id),
+    });
+    const data = await App.apiFetch('/api/drink?' + params.toString());
     const { drink, ratings, myRating } = data;
 
     renderHero(drink);

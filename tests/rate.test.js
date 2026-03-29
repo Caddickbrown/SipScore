@@ -103,6 +103,30 @@ test('app.js and rate.js can be loaded together without redeclaring globals', ()
   });
 });
 
+test('loadDrink requests the drink endpoint with query parameters', async () => {
+  const { context } = loadRateScript();
+  let requestedPath = null;
+
+  context.App.apiFetch = async (path) => {
+    requestedPath = path;
+    return {
+      drink: { name: 'Negroni', category: 'cocktail', type: 'Mixed', avg_stars: 0, rating_count: 0 },
+      ratings: [],
+      myRating: null,
+    };
+  };
+  vm.runInNewContext(`
+    user = { id: 42 };
+    drinkId = 7;
+    renderHero = () => {};
+    renderCommunity = () => {};
+  `, context);
+
+  await context.loadDrink();
+
+  assert.equal(requestedPath, '/api/drink?id=7&user_id=42');
+});
+
 test('touch interaction selects a star rating on mobile', () => {
   const { context, stars, saveBtn, starLabel } = loadRateScript();
 
