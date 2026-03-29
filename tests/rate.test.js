@@ -61,7 +61,9 @@ function loadRateScript() {
   const context = {
     document,
     window: {},
-    App: {},
+    App: {
+      STAR_LABELS: ['', 'Poor', 'Fair', 'Good', 'Great', 'Outstanding'],
+    },
     DOMPurify: {},
     URLSearchParams,
     parseInt,
@@ -75,6 +77,31 @@ function loadRateScript() {
 
   return { context, stars, saveBtn, starLabel };
 }
+
+test('app.js and rate.js can be loaded together without redeclaring globals', () => {
+  const context = {
+    window: {},
+    document: { addEventListener() {} },
+    localStorage: {
+      getItem() { return null; },
+      setItem() {},
+      removeItem() {},
+    },
+    fetch: async () => ({ ok: true, json: async () => ({}) }),
+    setTimeout,
+    clearTimeout,
+    URLSearchParams,
+    console,
+  };
+
+  const appSource = fs.readFileSync(path.join(__dirname, '..', 'public/js/app.js'), 'utf8');
+  const rateSource = fs.readFileSync(path.join(__dirname, '..', 'public/js/rate.js'), 'utf8');
+
+  assert.doesNotThrow(() => {
+    vm.runInNewContext(appSource, context, { filename: 'app.js' });
+    vm.runInNewContext(rateSource, context, { filename: 'rate.js' });
+  });
+});
 
 test('touch interaction selects a star rating on mobile', () => {
   const { context, stars, saveBtn, starLabel } = loadRateScript();

@@ -7,8 +7,6 @@ let drinkId;
 let selectedStars = 0;
 let existingRating = null;
 
-const STAR_LABELS = ['', 'Poor', 'Fair', 'Good', 'Great', 'Outstanding'];
-
 function safeHTML(el, html) {
   el.innerHTML = DOMPurify.sanitize(html);
 }
@@ -70,10 +68,11 @@ function setupStars() {
 }
 
 function updateStarUI(val) {
+  const labels = App.STAR_LABELS || ['', 'Poor', 'Fair', 'Good', 'Great', 'Outstanding'];
   document.querySelectorAll('.star-btn').forEach(btn => {
     btn.classList.toggle('lit', parseInt(btn.dataset.val) <= val);
   });
-  document.getElementById('starLabel').textContent = val > 0 ? STAR_LABELS[val] : 'Tap a star to rate';
+  document.getElementById('starLabel').textContent = val > 0 ? labels[val] : 'Tap a star to rate';
 }
 
 async function loadDrink() {
