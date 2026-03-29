@@ -68,10 +68,10 @@
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
       <span class="nav-label">Add</span>
     </a>
-    <a href="/index.html" class="nav-item" data-page="profile" id="profileNavBtn">
+    <button type="button" class="nav-item" data-page="profile" onclick="App.openProfileModal(App.getUser())">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg>
       <span class="nav-label">Profile</span>
-    </a>
+    </button>
   </nav>
 
   <!-- Profile modal -->

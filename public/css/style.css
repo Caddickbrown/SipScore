@@ -161,6 +161,10 @@ button {
   transition: color 0.2s;
   min-width: 60px;
   -webkit-tap-highlight-color: transparent;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .nav-item.active {
@@ -1451,6 +1455,13 @@ button {
 .text-gold   { color: var(--gold-dark); }
 .text-navy   { color: var(--navy); }
 .text-slate  { color: var(--slate); }
+
+/* =============================================
+   IOS ZOOM FIX — inputs must be ≥16px
+   ============================================= */
+input, select, textarea {
+  font-size: 16px !important;
+}
 
 /* =============================================
    RESPONSIVE
