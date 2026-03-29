@@ -34,17 +34,32 @@ function setupStars() {
   const stars = container.querySelectorAll('.star-btn');
   let isTouching = false;
 
+  function selectStar(value) {
+    selectedStars = value;
+    updateStarUI(selectedStars);
+    document.getElementById('saveBtn').disabled = false;
+  }
+
   stars.forEach(btn => {
     btn.addEventListener('touchstart', () => { isTouching = true; }, { passive: true });
 
+    btn.addEventListener('touchend', (event) => {
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+      selectStar(parseInt(btn.dataset.val));
+      isTouching = false;
+    });
+
     btn.addEventListener('click', () => {
-      selectedStars = parseInt(btn.dataset.val);
-      updateStarUI(selectedStars);
-      document.getElementById('saveBtn').disabled = false;
+      selectStar(parseInt(btn.dataset.val));
     });
 
     btn.addEventListener('mouseenter', () => {
       if (!isTouching) updateStarUI(parseInt(btn.dataset.val));
+    });
+
+    btn.addEventListener('touchcancel', () => {
+      isTouching = false;
+      updateStarUI(selectedStars);
     });
   });
 
