@@ -7,8 +7,14 @@ let currentCategory = '';
 let currentType = '';
 let searchTimer;
 
-const WINE_TYPES = ['White', 'Rosé', 'Red', 'Sparkling', 'Dessert and Fortified'];
-const COCKTAIL_TYPES = ['Rum-based', 'Vodka-based', 'Gin-based', 'Tequila-based', 'Whiskey-based', 'Wine-based', 'Mixed'];
+const CATEGORY_TYPES = {
+  wine:     ['White', 'Rosé', 'Red', 'Sparkling', 'Dessert and Fortified'],
+  cocktail: ['Rum-based', 'Vodka-based', 'Gin-based', 'Tequila-based', 'Whiskey-based', 'Wine-based', 'Mixed'],
+  beer:     ['Lager', 'Ale', 'Stout', 'IPA', 'Wheat Beer', 'Pilsner', 'Porter'],
+  cider:    ['Dry', 'Medium Dry', 'Medium', 'Sweet', 'Rosé', 'Sparkling'],
+  spirit:   ['Vodka', 'Gin', 'Rum', 'Tequila', 'Whiskey', 'Brandy', 'Ouzo', 'Grappa'],
+  mocktail: ['Fruit-based', 'Herbal', 'Sparkling', 'Tropical', 'Creamy'],
+};
 
 function safeHTML(el, html) {
   el.innerHTML = DOMPurify.sanitize(html);
@@ -64,8 +70,9 @@ function renderTypeChips() {
     return;
   }
 
-  const types = currentCategory === 'wine' ? WINE_TYPES : COCKTAIL_TYPES;
-  const allLabel = currentCategory === 'wine' ? 'All Wines' : 'All Cocktails';
+  const types = CATEGORY_TYPES[currentCategory] || [];
+  const labels = { wine: 'All Wines', cocktail: 'All Cocktails', beer: 'All Beers', cider: 'All Ciders', spirit: 'All Spirits', mocktail: 'All Mocktails' };
+  const allLabel = labels[currentCategory] || 'All';
 
   const chips = [
     buildChip('', allLabel, currentType === ''),

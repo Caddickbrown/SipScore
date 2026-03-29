@@ -358,6 +358,10 @@ button {
 .accent-sparkling{ background: #7daad4; }
 .accent-dessert  { background: #d4a050; }
 .accent-cocktail { background: #6db890; }
+.accent-beer     { background: #d97706; }
+.accent-cider    { background: #059669; }
+.accent-spirit   { background: #7c3aed; }
+.accent-mocktail { background: #0ea5e9; }
 
 .drink-card-body {
   flex: 1;
@@ -402,6 +406,10 @@ button {
 .badge-dessert-and-fortified,
 .badge-dessert  { background: #fff0dc; color: #8a5200; }
 .badge-cocktail { background: #e4f5ec; color: #1a6b4a; }
+.badge-beer     { background: #fef3c7; color: #92400e; }
+.badge-cider    { background: #d1fae5; color: #065f46; }
+.badge-spirit   { background: #ede9fe; color: #5b21b6; }
+.badge-mocktail { background: #e0f2fe; color: #0369a1; }
 
 .drink-meta {
   font-size: 0.78rem;
@@ -1024,6 +1032,12 @@ button {
 
 .category-toggle {
   display: flex;
+  gap: 8px;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
 }
 

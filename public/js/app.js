@@ -70,22 +70,39 @@ function renderMyStars(stars) {
 
 // ---- Category / badge helpers ----
 
+const CATEGORY_META = {
+  wine:     { badge: null,              accent: null,            label: 'Wine' },
+  cocktail: { badge: 'badge-cocktail',  accent: 'accent-cocktail', label: 'Cocktail' },
+  beer:     { badge: 'badge-beer',      accent: 'accent-beer',   label: 'Beer' },
+  cider:    { badge: 'badge-cider',     accent: 'accent-cider',  label: 'Cider' },
+  spirit:   { badge: 'badge-spirit',    accent: 'accent-spirit', label: 'Spirit' },
+  mocktail: { badge: 'badge-mocktail',  accent: 'accent-mocktail', label: 'Mocktail' },
+};
+
 function badgeClass(category, type) {
-  if (category === 'cocktail') return 'badge-cocktail';
+  const meta = CATEGORY_META[category];
+  if (!meta) return 'badge-white';
+  if (meta.badge) return meta.badge;
+  // Wine: derive from type
   if (!type) return 'badge-white';
   const key = type.toLowerCase().replace(/\s+/g, '-').replace(/&.*/, '').trim();
   return `badge-${key}`;
 }
 
 function accentClass(category, type) {
-  if (category === 'cocktail') return 'accent-cocktail';
+  const meta = CATEGORY_META[category];
+  if (!meta) return 'accent-white';
+  if (meta.accent) return meta.accent;
+  // Wine: derive from type
   if (!type) return 'accent-white';
   const key = type.toLowerCase().split(' ')[0];
   return `accent-${key}`;
 }
 
 function badgeLabel(category, type) {
-  if (category === 'cocktail') return 'Cocktail';
+  const meta = CATEGORY_META[category];
+  if (!meta) return type || category;
+  if (meta.label !== 'Wine') return meta.label;
   return type || 'Wine';
 }
 

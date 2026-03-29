@@ -3,6 +3,17 @@
 let user;
 let currentCategory = 'wine';
 
+const ALL_CATEGORIES = ['wine', 'cocktail', 'beer', 'cider', 'spirit', 'mocktail'];
+
+const FIELD_MAP = {
+  wine:     { fields: 'wineFields',     type: 'wineType',     style: 'wineStyle',     source: 'wineSource' },
+  cocktail: { fields: 'cocktailFields', type: 'cocktailType', style: 'cocktailStyle', source: 'cocktailSource' },
+  beer:     { fields: 'beerFields',     type: 'beerType',     style: null,            source: 'beerSource' },
+  cider:    { fields: 'ciderFields',    type: 'ciderType',    style: null,            source: 'ciderSource' },
+  spirit:   { fields: 'spiritFields',   type: 'spiritType',   style: 'spiritStyle',   source: 'spiritSource' },
+  mocktail: { fields: 'mocktailFields', type: 'mocktailType', style: 'mocktailStyle', source: null },
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   user = App.requireAuth();
   if (!user) return;
@@ -14,11 +25,17 @@ document.addEventListener('DOMContentLoaded', () => {
 function setCategory(cat) {
   currentCategory = cat;
 
-  document.getElementById('catWine').classList.toggle('active', cat === 'wine');
-  document.getElementById('catCocktail').classList.toggle('active', cat === 'cocktail');
+  // Update button states
+  ALL_CATEGORIES.forEach(c => {
+    const btn = document.getElementById('cat' + c.charAt(0).toUpperCase() + c.slice(1));
+    if (btn) btn.classList.toggle('active', c === cat);
+  });
 
-  document.getElementById('wineFields').style.display = cat === 'wine' ? 'block' : 'none';
-  document.getElementById('cocktailFields').style.display = cat === 'cocktail' ? 'block' : 'none';
+  // Show/hide field sections
+  ALL_CATEGORIES.forEach(c => {
+    const el = document.getElementById(FIELD_MAP[c].fields);
+    if (el) el.style.display = c === cat ? 'block' : 'none';
+  });
 
   document.getElementById('addError').textContent = '';
 }
@@ -32,21 +49,14 @@ async function handleAdd(e) {
     return;
   }
 
-  let type, style, source;
-
-  if (currentCategory === 'wine') {
-    type = document.getElementById('wineType').value || null;
-    style = document.getElementById('wineStyle').value || null;
-    source = document.getElementById('wineSource').value.trim() || null;
-  } else {
-    type = document.getElementById('cocktailType').value || null;
-    style = document.getElementById('cocktailStyle').value || null;
-    source = document.getElementById('cocktailSource').value.trim() || null;
-  }
+  const map = FIELD_MAP[currentCategory];
+  const type   = map.type   ? (document.getElementById(map.type)?.value   || null) : null;
+  const style  = map.style  ? (document.getElementById(map.style)?.value  || null) : null;
+  const source = map.source ? (document.getElementById(map.source)?.value.trim() || null) : null;
 
   const btn = document.getElementById('addBtn');
   btn.disabled = true;
-  btn.textContent = 'Adding…';
+  btn.textContent = 'Adding\u2026';
   document.getElementById('addError').textContent = '';
 
   try {
@@ -62,11 +72,9 @@ async function handleAdd(e) {
       }),
     });
 
-    App.showToast(`${name} added!`, 'success');
-
-    // Go rate the new drink
+    App.showToast(name + ' added!', 'success');
     setTimeout(() => {
-      window.location.href = `/rate.html?id=${data.drink.id}`;
+      window.location.href = '/rate.html?id=' + data.drink.id;
     }, 700);
   } catch (err) {
     document.getElementById('addError').textContent = err.message;

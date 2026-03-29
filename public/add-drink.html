@@ -26,15 +26,31 @@
 
     <!-- Category toggle -->
     <div class="form-section">
-      <h3>What type?</h3>
-      <div class="category-toggle">
+      <h3>What are you adding?</h3>
+      <div class="category-grid">
         <button type="button" class="category-btn active" id="catWine" onclick="setCategory('wine')">
-          <svg style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M8 22h8M12 11v11M7 3h10l-2 8H9L7 3z"/></svg>
+          <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M8 22h8M12 11v11M7 3h10l-2 8H9L7 3z"/></svg>
           Wine
         </button>
         <button type="button" class="category-btn" id="catCocktail" onclick="setCategory('cocktail')">
-          <svg style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M8 3h8l-4 9M4 3h16M12 12v9M8 21h8"/></svg>
+          <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M8 3h8l-4 9M4 3h16M12 12v9M8 21h8"/></svg>
           Cocktail
+        </button>
+        <button type="button" class="category-btn" id="catBeer" onclick="setCategory('beer')">
+          <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M5 8h2l1 12h8l1-12h2M5 8V6h14v2M9 4h6"/></svg>
+          Beer
+        </button>
+        <button type="button" class="category-btn" id="catCider" onclick="setCategory('cider')">
+          <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 1 5 5c0 4-5 8-5 8S7 11 7 7a5 5 0 0 1 5-5z"/><path d="M8 20h8M10 20v-4h4v4"/></svg>
+          Cider
+        </button>
+        <button type="button" class="category-btn" id="catSpirit" onclick="setCategory('spirit')">
+          <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M9 3h6l1 5H8L9 3zM8 8l-2 13h12L16 8"/></svg>
+          Spirit
+        </button>
+        <button type="button" class="category-btn" id="catMocktail" onclick="setCategory('mocktail')">
+          <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg>
+          Mocktail
         </button>
       </div>
     </div>
@@ -93,6 +109,108 @@
               autocapitalize="words"
               maxlength="100"
             >
+          </div>
+        </div>
+
+        <!-- Beer fields -->
+        <div id="beerFields" style="display:none;">
+          <div class="form-group">
+            <label class="form-label" for="beerType">Style</label>
+            <select class="form-select" id="beerType">
+              <option value="">Select style…</option>
+              <option value="Lager">Lager</option>
+              <option value="Ale">Ale</option>
+              <option value="IPA">IPA</option>
+              <option value="Stout">Stout</option>
+              <option value="Wheat Beer">Wheat Beer</option>
+              <option value="Pilsner">Pilsner</option>
+              <option value="Porter">Porter</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="beerSource">Brewery / Origin</label>
+            <input class="form-input" type="text" id="beerSource" placeholder="e.g. Mythos, Greece" autocapitalize="words" maxlength="100">
+          </div>
+        </div>
+
+        <!-- Cider fields -->
+        <div id="ciderFields" style="display:none;">
+          <div class="form-group">
+            <label class="form-label" for="ciderType">Sweetness</label>
+            <select class="form-select" id="ciderType">
+              <option value="">Select sweetness…</option>
+              <option value="Dry">Dry</option>
+              <option value="Medium Dry">Medium Dry</option>
+              <option value="Medium">Medium</option>
+              <option value="Sweet">Sweet</option>
+              <option value="Rosé">Rosé</option>
+              <option value="Sparkling">Sparkling</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ciderSource">Producer / Origin</label>
+            <input class="form-input" type="text" id="ciderSource" placeholder="e.g. Rekorderlig, Sweden" autocapitalize="words" maxlength="100">
+          </div>
+        </div>
+
+        <!-- Spirit fields -->
+        <div id="spiritFields" style="display:none;">
+          <div class="form-group">
+            <label class="form-label" for="spiritType">Spirit Type</label>
+            <select class="form-select" id="spiritType">
+              <option value="">Select type…</option>
+              <option value="Vodka">Vodka</option>
+              <option value="Gin">Gin</option>
+              <option value="Rum">Rum</option>
+              <option value="Tequila">Tequila</option>
+              <option value="Whiskey">Whiskey</option>
+              <option value="Brandy">Brandy</option>
+              <option value="Ouzo">Ouzo</option>
+              <option value="Grappa">Grappa</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="spiritStyle">Serve Style</label>
+            <select class="form-select" id="spiritStyle">
+              <option value="">Select serve…</option>
+              <option value="Neat">Neat</option>
+              <option value="On the Rocks">On the Rocks</option>
+              <option value="Mixed">Mixed</option>
+              <option value="Shot">Shot</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="spiritSource">Distillery / Origin</label>
+            <input class="form-input" type="text" id="spiritSource" placeholder="e.g. Metaxa, Greece" autocapitalize="words" maxlength="100">
+          </div>
+        </div>
+
+        <!-- Mocktail fields -->
+        <div id="mocktailFields" style="display:none;">
+          <div class="form-group">
+            <label class="form-label" for="mocktailType">Type</label>
+            <select class="form-select" id="mocktailType">
+              <option value="">Select type…</option>
+              <option value="Fruit-based">Fruit-based</option>
+              <option value="Herbal">Herbal</option>
+              <option value="Sparkling">Sparkling</option>
+              <option value="Tropical">Tropical</option>
+              <option value="Creamy">Creamy</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="mocktailStyle">Style</label>
+            <select class="form-select" id="mocktailStyle">
+              <option value="">Select style…</option>
+              <option value="Refreshing">Refreshing</option>
+              <option value="Sweet">Sweet</option>
+              <option value="Sour">Sour</option>
+              <option value="Fruity">Fruity</option>
+              <option value="Creamy">Creamy</option>
+            </select>
           </div>
         </div>
 
