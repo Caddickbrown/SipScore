@@ -107,6 +107,13 @@ function renderHero(drink) {
   document.getElementById('heroTitle').textContent = drink.name;
   document.getElementById('heroMeta').textContent = App.drinkMeta(drink) || '';
   document.title = 'SipScore \u2014 ' + drink.name;
+
+  const editWrap = document.getElementById('editDrinkWrap');
+  const editLink = document.getElementById('editDrinkLink');
+  if (editWrap && editLink) {
+    editLink.href = '/edit-drink.html?id=' + drink.id;
+    editWrap.style.display = 'block';
+  }
 }
 
 function renderCommunity(drink, ratings) {
