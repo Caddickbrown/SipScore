@@ -1326,6 +1326,42 @@ button {
   margin: 4px 0 14px;
 }
 
+.modal-nav {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 4px;
+}
+
+.modal-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 4px;
+  text-decoration: none;
+  color: var(--navy);
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.15s;
+}
+
+.modal-nav-item:active {
+  color: var(--gold-dark);
+}
+
+.modal-nav-item svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+  color: var(--slate);
+}
+
 .modal-actions {
   display: flex;
   flex-direction: column;
