@@ -6,7 +6,7 @@ let currentCategory = 'wine';
 const ALL_CATEGORIES = ['wine', 'cocktail', 'beer', 'cider', 'spirit', 'mocktail'];
 
 const FIELD_MAP = {
-  wine:     { fields: 'wineFields',     type: 'wineType',     style: 'wineStyle',     source: 'wineSource' },
+  wine:     { fields: 'wineFields',     type: 'wineType',     varietal: 'wineVarietal', style: 'wineStyle',     source: 'wineSource' },
   cocktail: { fields: 'cocktailFields', type: 'cocktailType', style: 'cocktailStyle', source: 'cocktailSource' },
   beer:     { fields: 'beerFields',     type: 'beerType',     style: null,            source: 'beerSource' },
   cider:    { fields: 'ciderFields',    type: 'ciderType',    style: null,            source: 'ciderSource' },
@@ -50,9 +50,10 @@ async function handleAdd(e) {
   }
 
   const map = FIELD_MAP[currentCategory];
-  const type   = map.type   ? (document.getElementById(map.type)?.value   || null) : null;
-  const style  = map.style  ? (document.getElementById(map.style)?.value  || null) : null;
-  const source = map.source ? (document.getElementById(map.source)?.value.trim() || null) : null;
+  const type     = map.type     ? (document.getElementById(map.type)?.value        || null) : null;
+  const varietal = map.varietal ? (document.getElementById(map.varietal)?.value.trim() || null) : null;
+  const style    = map.style    ? (document.getElementById(map.style)?.value        || null) : null;
+  const source   = map.source   ? (document.getElementById(map.source)?.value.trim() || null) : null;
 
   const btn = document.getElementById('addBtn');
   btn.disabled = true;
@@ -66,6 +67,7 @@ async function handleAdd(e) {
         name,
         category: currentCategory,
         type,
+        varietal,
         style,
         source,
         user_id: user.id,

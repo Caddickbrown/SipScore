@@ -108,6 +108,7 @@ function badgeLabel(category, type) {
 
 function drinkMeta(drink) {
   const parts = [];
+  if (drink.varietal) parts.push(drink.varietal);
   if (drink.style) parts.push(drink.style);
   if (drink.source) parts.push(drink.source);
   return parts.join(' \u2022 ');
