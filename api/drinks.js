@@ -31,7 +31,13 @@ module.exports = async (req, res) => {
           FROM drinks d
           LEFT JOIN ratings r ON r.drink_id = d.id
           WHERE
-            (${search} = '' OR LOWER(d.name) LIKE LOWER(${'%' + search + '%'}))
+            (${search} = '' OR
+              LOWER(d.name) LIKE LOWER(${'%' + search + '%'}) OR
+              LOWER(COALESCE(d.type, '')) LIKE LOWER(${'%' + search + '%'}) OR
+              LOWER(COALESCE(d.varietal, '')) LIKE LOWER(${'%' + search + '%'}) OR
+              LOWER(COALESCE(d.style, '')) LIKE LOWER(${'%' + search + '%'}) OR
+              LOWER(COALESCE(d.source, '')) LIKE LOWER(${'%' + search + '%'})
+            )
             AND (${category} = '' OR d.category = ${category})
             AND (${type} = '' OR d.type = ${type})
           GROUP BY d.id
@@ -46,7 +52,13 @@ module.exports = async (req, res) => {
           FROM drinks d
           LEFT JOIN ratings r ON r.drink_id = d.id
           WHERE
-            (${search} = '' OR LOWER(d.name) LIKE LOWER(${'%' + search + '%'}))
+            (${search} = '' OR
+              LOWER(d.name) LIKE LOWER(${'%' + search + '%'}) OR
+              LOWER(COALESCE(d.type, '')) LIKE LOWER(${'%' + search + '%'}) OR
+              LOWER(COALESCE(d.varietal, '')) LIKE LOWER(${'%' + search + '%'}) OR
+              LOWER(COALESCE(d.style, '')) LIKE LOWER(${'%' + search + '%'}) OR
+              LOWER(COALESCE(d.source, '')) LIKE LOWER(${'%' + search + '%'})
+            )
             AND (${category} = '' OR d.category = ${category})
             AND (${type} = '' OR d.type = ${type})
           GROUP BY d.id
