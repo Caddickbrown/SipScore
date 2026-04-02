@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
       if (user_id) {
         drinks = await sql`
           SELECT
-            d.id, d.name, d.category, d.type, d.style, d.source, d.created_at,
+            d.id, d.name, d.category, d.type, d.varietal, d.style, d.source, d.created_at,
             ROUND(AVG(r.stars)::numeric, 1) AS avg_stars,
             COUNT(r.id) AS rating_count,
             MAX(CASE WHEN r.user_id = ${parseInt(user_id)} THEN r.stars END) AS my_stars
@@ -40,7 +40,7 @@ module.exports = async (req, res) => {
       } else {
         drinks = await sql`
           SELECT
-            d.id, d.name, d.category, d.type, d.style, d.source, d.created_at,
+            d.id, d.name, d.category, d.type, d.varietal, d.style, d.source, d.created_at,
             ROUND(AVG(r.stars)::numeric, 1) AS avg_stars,
             COUNT(r.id) AS rating_count
           FROM drinks d
@@ -63,7 +63,7 @@ module.exports = async (req, res) => {
 
   // POST — add a new drink
   if (req.method === 'POST') {
-    const { name, category, type, style, source, user_id } = req.body || {};
+    const { name, category, type, varietal, style, source, user_id } = req.body || {};
 
     if (!name || !category || !user_id) {
       return res.status(400).json({ error: 'Name, category, and user_id are required' });
@@ -81,9 +81,9 @@ module.exports = async (req, res) => {
 
     try {
       const [drink] = await sql`
-        INSERT INTO drinks (name, category, type, style, source, added_by_user_id)
-        VALUES (${trimmedName}, ${category}, ${type || null}, ${style || null}, ${source || null}, ${parseInt(user_id)})
-        RETURNING id, name, category, type, style, source
+        INSERT INTO drinks (name, category, type, varietal, style, source, added_by_user_id)
+        VALUES (${trimmedName}, ${category}, ${type || null}, ${varietal || null}, ${style || null}, ${source || null}, ${parseInt(user_id)})
+        RETURNING id, name, category, type, varietal, style, source
       `;
       return res.status(201).json({ drink });
     } catch (err) {

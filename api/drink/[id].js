@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
     // Get drink details + community stats
     const [drink] = await sql`
       SELECT
-        d.id, d.name, d.category, d.type, d.style, d.source, d.created_at,
+        d.id, d.name, d.category, d.type, d.varietal, d.style, d.source, d.created_at,
         ROUND(AVG(r.stars)::numeric, 2) AS avg_stars,
         COUNT(r.id) AS rating_count
       FROM drinks d

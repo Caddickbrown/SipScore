@@ -97,12 +97,18 @@ module.exports = async (req, res) => {
         name VARCHAR(200) NOT NULL,
         category VARCHAR(20) NOT NULL,
         type VARCHAR(100),
+        varietal VARCHAR(100),
         style VARCHAR(100),
         source VARCHAR(200),
         added_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
         is_seeded BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMPTZ DEFAULT NOW()
       )
+    `;
+
+    // Migration: add varietal column if it doesn't exist (for existing databases)
+    await sql`
+      ALTER TABLE drinks ADD COLUMN IF NOT EXISTS varietal VARCHAR(100)
     `;
 
     await sql`
