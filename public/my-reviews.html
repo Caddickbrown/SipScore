@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#1a2744">
-  <title>SipScore — Drinks</title>
+  <title>SipScore — My Reviews</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -17,24 +17,8 @@
     </div>
   </header>
 
-  <!-- Search -->
-  <div class="search-bar-wrap">
-    <div class="search-input-wrap">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input
-        class="search-input"
-        type="search"
-        id="searchInput"
-        placeholder="Search drinks…"
-        autocomplete="off"
-        autocorrect="off"
-      >
-      <button class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Clear search">&times;</button>
-    </div>
-  </div>
-
-  <!-- Category + type filters -->
-  <div class="filter-chips-wrap">
+  <!-- Sort + filter bar -->
+  <div class="filter-chips-wrap" style="top: var(--header-height);">
     <div class="filter-chips" id="categoryChips">
       <button class="chip active" data-cat="">All</button>
       <button class="chip" data-cat="wine">Wine</button>
@@ -44,13 +28,21 @@
       <button class="chip" data-cat="spirit">Spirit</button>
       <button class="chip" data-cat="mocktail">Mocktail</button>
     </div>
-    <div class="filter-chips" id="typeChips" style="padding-top:0; display:none;">
-      <!-- Populated dynamically for wine types -->
-    </div>
   </div>
 
-  <!-- Drinks list -->
-  <div id="drinksList" class="drinks-list">
+  <!-- Sort control -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px 4px;">
+    <span id="reviewCount" style="font-size:0.8rem;color:var(--text-light);"></span>
+    <select id="sortSelect" class="sort-select">
+      <option value="date">Most Recent</option>
+      <option value="stars_desc">Highest Rated</option>
+      <option value="stars_asc">Lowest Rated</option>
+      <option value="name">A–Z</option>
+    </select>
+  </div>
+
+  <!-- Reviews list -->
+  <div id="reviewsList" class="reviews-list">
     <div class="loading-wrap"><div class="spinner"></div></div>
   </div>
 
@@ -101,6 +93,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
   <script src="/js/app.js"></script>
-  <script src="/js/drinks.js"></script>
+  <script src="/js/my-reviews.js"></script>
 </body>
 </html>

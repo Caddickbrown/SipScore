@@ -2,7 +2,7 @@ const { neon } = require('@neondatabase/serverless');
 
 function setCors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, PATCH, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
 
@@ -11,7 +11,7 @@ module.exports = async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'GET' && req.method !== 'PATCH') return res.status(405).json({ error: 'Method not allowed' });
 
   const { id, user_id } = req.query;
   const drinkId = parseInt(id);
@@ -21,6 +21,44 @@ module.exports = async (req, res) => {
   }
 
   const sql = neon(process.env.DATABASE_URL);
+
+  // PATCH — update drink info
+  if (req.method === 'PATCH') {
+    const { name, category, type, varietal, style, source } = req.body || {};
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: 'Name is required' });
+    }
+
+    const validCategories = ['wine', 'cocktail', 'beer', 'cider', 'spirit', 'mocktail'];
+    if (category && !validCategories.includes(category)) {
+      return res.status(400).json({ error: 'Invalid category' });
+    }
+
+    try {
+      const [updated] = await sql`
+        UPDATE drinks
+        SET
+          name     = ${name.trim()},
+          category = COALESCE(${category || null}, category),
+          type     = ${type || null},
+          varietal = ${varietal || null},
+          style    = ${style || null},
+          source   = ${source || null}
+        WHERE id = ${drinkId}
+        RETURNING id, name, category, type, varietal, style, source
+      `;
+
+      if (!updated) {
+        return res.status(404).json({ error: 'Drink not found' });
+      }
+
+      return res.json({ drink: updated });
+    } catch (err) {
+      console.error('PATCH drink error:', err);
+      return res.status(500).json({ error: err.message });
+    }
+  }
 
   try {
     // Get drink details + community stats
