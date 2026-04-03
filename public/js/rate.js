@@ -23,6 +23,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
+  const from = params.get('from');
+  if (from === 'leaderboard') {
+    const backBtn = document.getElementById('backBtn');
+    if (backBtn) backBtn.href = '/leaderboard.html';
+    const backLabel = document.getElementById('backLabel');
+    if (backLabel) backLabel.textContent = 'Rankings';
+  }
+
   setupStars();
   await loadDrink();
 });

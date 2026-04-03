@@ -93,7 +93,7 @@ function renderLeaderboard(items) {
 function leaderboardItem(item, rank) {
   const a = document.createElement('a');
   a.className = 'leaderboard-item';
-  a.href = '/rate.html?id=' + item.id;
+  a.href = '/rate.html?id=' + item.id + '&from=leaderboard';
 
   // Rank badge
   const rankBadge = document.createElement('div');
@@ -113,7 +113,9 @@ function leaderboardItem(item, rank) {
   const badge = App.badgeLabel(item.category, item.type);
   const metaEl = document.createElement('div');
   metaEl.className = 'lb-drink-meta';
-  metaEl.textContent = badge + (meta ? ' \u2022 ' + meta : '');
+  const typePart = item.category !== 'wine' && item.type ? item.type : '';
+  const fullMeta = [typePart, meta].filter(Boolean).join(' \u2022 ');
+  metaEl.textContent = badge + (fullMeta ? ' \u2022 ' + fullMeta : '');
 
   info.appendChild(nameEl);
   info.appendChild(metaEl);
