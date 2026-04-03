@@ -76,7 +76,10 @@ const CATEGORY_META = {
   beer:     { badge: 'badge-beer',      accent: 'accent-beer',   label: 'Beer' },
   cider:    { badge: 'badge-cider',     accent: 'accent-cider',  label: 'Cider' },
   spirit:   { badge: 'badge-spirit',    accent: 'accent-spirit', label: 'Spirit' },
-  mocktail: { badge: 'badge-mocktail',  accent: 'accent-mocktail', label: 'Mocktail' },
+  mocktail:  { badge: 'badge-mocktail',  accent: 'accent-mocktail',  label: 'Mocktail' },
+  hotdrink:  { badge: 'badge-hotdrink',  accent: 'accent-hotdrink',  label: 'Hot Drink' },
+  softdrink: { badge: 'badge-softdrink', accent: 'accent-softdrink', label: 'Soft Drink' },
+  milkshake: { badge: 'badge-milkshake', accent: 'accent-milkshake', label: 'Milkshake' },
 };
 
 function badgeClass(category, type) {

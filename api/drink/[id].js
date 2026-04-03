@@ -30,7 +30,7 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Name is required' });
     }
 
-    const validCategories = ['wine', 'cocktail', 'beer', 'cider', 'spirit', 'mocktail'];
+    const validCategories = ['wine', 'cocktail', 'beer', 'cider', 'spirit', 'mocktail', 'hotdrink', 'softdrink', 'milkshake'];
     if (category && !validCategories.includes(category)) {
       return res.status(400).json({ error: 'Invalid category' });
     }

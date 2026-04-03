@@ -3,15 +3,18 @@
 let user;
 let currentCategory = 'wine';
 
-const ALL_CATEGORIES = ['wine', 'cocktail', 'beer', 'cider', 'spirit', 'mocktail'];
+const ALL_CATEGORIES = ['wine', 'cocktail', 'beer', 'cider', 'spirit', 'mocktail', 'hotdrink', 'softdrink', 'milkshake'];
 
 const FIELD_MAP = {
-  wine:     { fields: 'wineFields',     type: 'wineType',     varietal: 'wineVarietal', style: 'wineStyle',     source: 'wineSource' },
-  cocktail: { fields: 'cocktailFields', type: 'cocktailType', style: 'cocktailStyle', source: 'cocktailSource' },
-  beer:     { fields: 'beerFields',     type: 'beerType',     style: null,            source: 'beerSource' },
-  cider:    { fields: 'ciderFields',    type: 'ciderType',    style: null,            source: 'ciderSource' },
-  spirit:   { fields: 'spiritFields',   type: 'spiritType',   style: 'spiritStyle',   source: 'spiritSource' },
-  mocktail: { fields: 'mocktailFields', type: 'mocktailType', style: 'mocktailStyle', source: null },
+  wine:      { fields: 'wineFields',      type: 'wineType',      varietal: 'wineVarietal', style: 'wineStyle',      source: 'wineSource' },
+  cocktail:  { fields: 'cocktailFields',  type: 'cocktailType',  style: 'cocktailStyle',   source: 'cocktailSource' },
+  beer:      { fields: 'beerFields',      type: 'beerType',      style: null,              source: 'beerSource' },
+  cider:     { fields: 'ciderFields',     type: 'ciderType',     style: null,              source: 'ciderSource' },
+  spirit:    { fields: 'spiritFields',    type: 'spiritType',    style: 'spiritStyle',     source: 'spiritSource' },
+  mocktail:  { fields: 'mocktailFields',  type: 'mocktailType',  style: 'mocktailStyle',   source: null },
+  hotdrink:  { fields: 'hotdrinkFields',  type: 'hotdrinkType',  style: 'hotdrinkStyle',   source: 'hotdrinkSource' },
+  softdrink: { fields: 'softdrinkFields', type: 'softdrinkType', style: null,              source: 'softdrinkSource' },
+  milkshake: { fields: 'milkshakeFields', type: 'milkshakeType', style: 'milkshakeStyle',  source: null },
 };
 
 document.addEventListener('DOMContentLoaded', () => {
