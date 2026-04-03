@@ -33,6 +33,7 @@ module.exports = async (req, res) => {
           WHERE
             (${search} = '' OR
               LOWER(d.name) LIKE LOWER(${'%' + search + '%'}) OR
+              LOWER(d.category) LIKE LOWER(${'%' + search + '%'}) OR
               LOWER(COALESCE(d.type, '')) LIKE LOWER(${'%' + search + '%'}) OR
               LOWER(COALESCE(d.varietal, '')) LIKE LOWER(${'%' + search + '%'}) OR
               LOWER(COALESCE(d.style, '')) LIKE LOWER(${'%' + search + '%'}) OR
@@ -54,6 +55,7 @@ module.exports = async (req, res) => {
           WHERE
             (${search} = '' OR
               LOWER(d.name) LIKE LOWER(${'%' + search + '%'}) OR
+              LOWER(d.category) LIKE LOWER(${'%' + search + '%'}) OR
               LOWER(COALESCE(d.type, '')) LIKE LOWER(${'%' + search + '%'}) OR
               LOWER(COALESCE(d.varietal, '')) LIKE LOWER(${'%' + search + '%'}) OR
               LOWER(COALESCE(d.style, '')) LIKE LOWER(${'%' + search + '%'}) OR

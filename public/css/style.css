@@ -76,11 +76,11 @@ button {
   top: 0;
   z-index: 100;
   background: var(--navy);
-  height: var(--header-height);
+  height: calc(var(--header-height) + env(safe-area-inset-top));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: env(safe-area-inset-top) 16px 0;
   box-shadow: 0 2px 12px rgba(26, 39, 68, 0.25);
 }
 
@@ -198,7 +198,7 @@ button {
   background: var(--white);
   border-bottom: 1px solid var(--border);
   position: sticky;
-  top: var(--header-height);
+  top: calc(var(--header-height) + env(safe-area-inset-top));
   z-index: 90;
 }
 
@@ -270,7 +270,7 @@ button {
   background: var(--white);
   border-bottom: 1px solid var(--border);
   position: sticky;
-  top: calc(var(--header-height) + 51px);
+  top: calc(var(--header-height) + env(safe-area-inset-top) + 51px);
   z-index: 89;
 }
 
