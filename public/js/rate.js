@@ -24,12 +24,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   const from = params.get('from');
-  if (from === 'leaderboard-personal' || from === 'leaderboard-social') {
+  if (from === 'leaderboard-personal' || from === 'leaderboard-social' || from === 'leaderboard-consensus') {
     const backBtn = document.getElementById('backBtn');
     const backLabel = document.getElementById('backLabel');
     const returnUrl = from === 'leaderboard-social'
       ? '/leaderboard.html?tab=social'
-      : '/leaderboard.html';
+      : from === 'leaderboard-consensus'
+        ? '/leaderboard.html?tab=consensus'
+        : '/leaderboard.html';
     if (backBtn) backBtn.href = returnUrl;
     if (backLabel) backLabel.textContent = 'Rankings';
   }
