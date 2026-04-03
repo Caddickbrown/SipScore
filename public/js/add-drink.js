@@ -3,7 +3,7 @@
 let user;
 let currentCategory = 'wine';
 
-const ALL_CATEGORIES = ['wine', 'cocktail', 'beer', 'cider', 'spirit', 'mocktail', 'coffee', 'softdrink', 'milkshake'];
+const ALL_CATEGORIES = ['wine', 'cocktail', 'beer', 'cider', 'spirit', 'mocktail', 'hotdrink', 'softdrink', 'milkshake'];
 
 const FIELD_MAP = {
   wine:      { fields: 'wineFields',      type: 'wineType',      varietal: 'wineVarietal', style: 'wineStyle',      source: 'wineSource' },
@@ -12,7 +12,7 @@ const FIELD_MAP = {
   cider:     { fields: 'ciderFields',     type: 'ciderType',     style: null,              source: 'ciderSource' },
   spirit:    { fields: 'spiritFields',    type: 'spiritType',    style: 'spiritStyle',     source: 'spiritSource' },
   mocktail:  { fields: 'mocktailFields',  type: 'mocktailType',  style: 'mocktailStyle',   source: null },
-  coffee:    { fields: 'coffeeFields',    type: 'coffeeType',    style: 'coffeeStyle',     source: 'coffeeSource' },
+  hotdrink:  { fields: 'hotdrinkFields',  type: 'hotdrinkType',  style: 'hotdrinkStyle',   source: 'hotdrinkSource' },
   softdrink: { fields: 'softdrinkFields', type: 'softdrinkType', style: null,              source: 'softdrinkSource' },
   milkshake: { fields: 'milkshakeFields', type: 'milkshakeType', style: 'milkshakeStyle',  source: null },
 };
