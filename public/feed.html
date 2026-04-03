@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SipScore">
-  <title>SipScore — Drinks</title>
+  <title>SipScore — Feed</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -23,43 +23,28 @@
     </div>
   </header>
 
-  <!-- Search -->
-  <div class="search-bar-wrap">
-    <div class="search-input-wrap">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input
-        class="search-input"
-        type="search"
-        id="searchInput"
-        placeholder="Search drinks…"
-        autocomplete="off"
-        autocorrect="off"
-      >
-      <button class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Clear search">&times;</button>
+  <!-- Compose box -->
+  <div class="feed-compose">
+    <div class="feed-compose-inner">
+      <div class="feed-compose-avatar" id="composeAvatar"></div>
+      <div class="feed-compose-field">
+        <textarea
+          id="postContent"
+          class="feed-textarea"
+          placeholder="Share a thought about tonight's drinks…"
+          maxlength="500"
+          rows="2"
+        ></textarea>
+        <div class="feed-compose-footer">
+          <span class="feed-char-count" id="charCount">500</span>
+          <button class="btn btn-primary feed-post-btn" id="postBtn">Post</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Category + type filters -->
-  <div class="filter-chips-wrap">
-    <div class="filter-chips" id="categoryChips">
-      <button class="chip active" data-cat="">All</button>
-      <button class="chip" data-cat="wine">Wine</button>
-      <button class="chip" data-cat="cocktail">Cocktail</button>
-      <button class="chip" data-cat="beer">Beer</button>
-      <button class="chip" data-cat="cider">Cider</button>
-      <button class="chip" data-cat="spirit">Spirit</button>
-      <button class="chip" data-cat="mocktail">Mocktail</button>
-      <button class="chip" data-cat="hotdrink">Hot Drink</button>
-      <button class="chip" data-cat="softdrink">Soft Drink</button>
-      <button class="chip" data-cat="milkshake">Milkshake</button>
-    </div>
-    <div class="filter-chips" id="typeChips" style="padding-top:0; display:none;">
-      <!-- Populated dynamically for wine types -->
-    </div>
-  </div>
-
-  <!-- Drinks list -->
-  <div id="drinksList" class="drinks-list">
+  <!-- Feed list -->
+  <div id="feedList" class="feed-list">
     <div class="loading-wrap"><div class="spinner"></div></div>
   </div>
 
@@ -117,6 +102,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
   <script src="/js/app.js"></script>
-  <script src="/js/drinks.js"></script>
+  <script src="/js/feed.js"></script>
 </body>
 </html>
