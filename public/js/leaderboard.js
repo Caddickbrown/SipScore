@@ -141,7 +141,11 @@ function leaderboardItem(item, rank) {
 
   const scoreEl = document.createElement('div');
   scoreEl.className = 'lb-score';
-  scoreEl.textContent = isConsensus ? '\u2b50 ' + displayScore : displayScore;
+  if (isConsensus) {
+    safeHTML(scoreEl, '<span class="star-icon">&#9733;</span> ' + displayScore);
+  } else {
+    scoreEl.textContent = displayScore;
+  }
 
   const starsEl = document.createElement('div');
   starsEl.className = 'lb-stars-sm';
