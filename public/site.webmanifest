@@ -1,0 +1,17 @@
+{
+  "name": "SipScore",
+  "short_name": "SipScore",
+  "description": "Your holiday drinks companion",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a2744",
+  "theme_color": "#1a2744",
+  "icons": [
+    {
+      "src": "/icons/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
