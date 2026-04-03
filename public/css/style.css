@@ -270,7 +270,7 @@ button {
   background: var(--white);
   border-bottom: 1px solid var(--border);
   position: sticky;
-  top: calc(var(--header-height) + env(safe-area-inset-top) + 51px);
+  top: calc(var(--header-height) + env(safe-area-inset-top) + 61px);
   z-index: 89;
 }
 
@@ -840,13 +840,20 @@ button {
 /* =============================================
    LEADERBOARD
    ============================================= */
+.lb-sticky-bar {
+  position: sticky;
+  top: calc(var(--header-height) + env(safe-area-inset-top));
+  z-index: 90;
+}
+
+.lb-sticky-bar .filter-chips-wrap {
+  position: static;
+}
+
 .tab-switcher {
   display: flex;
   background: var(--white);
   border-bottom: 2px solid var(--border);
-  position: sticky;
-  top: var(--header-height);
-  z-index: 90;
 }
 
 .tab-btn {
