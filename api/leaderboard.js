@@ -53,7 +53,7 @@ module.exports = async (req, res) => {
         )
         SELECT d.id, d.name, d.category, d.type, d.varietal, d.style, d.source,
           ds.n AS rating_count,
-          ROUND(((g.c * g.m) + ds.total_stars) / (g.c + ds.n), 2) AS consensus_score
+          ROUND((((g.c * g.m) + ds.total_stars) / (g.c + ds.n))::numeric, 2) AS consensus_score
         FROM drinks d
         JOIN drink_stats ds ON d.id = ds.drink_id
         CROSS JOIN global g
