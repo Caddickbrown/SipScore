@@ -39,6 +39,31 @@ module.exports = async (req, res) => {
 
       return res.json({ leaderboard: rows });
 
+    } else if (type === 'consensus') {
+      const categoryFilter = category || null;
+      const rows = await sql`
+        WITH global AS (
+          SELECT AVG(stars)::float AS m, 3 AS c FROM ratings
+        ),
+        drink_stats AS (
+          SELECT drink_id,
+            COUNT(*) AS n,
+            SUM(stars)::float AS total_stars
+          FROM ratings GROUP BY drink_id
+        )
+        SELECT d.id, d.name, d.category, d.type, d.varietal, d.style, d.source,
+          ds.n AS rating_count,
+          ROUND(((g.c * g.m) + ds.total_stars) / (g.c + ds.n), 2) AS consensus_score
+        FROM drinks d
+        JOIN drink_stats ds ON d.id = ds.drink_id
+        CROSS JOIN global g
+        WHERE (${categoryFilter}::text IS NULL OR d.category = ${categoryFilter})
+        ORDER BY consensus_score DESC, ds.n DESC
+        LIMIT 50
+      `;
+
+      return res.json({ leaderboard: rows });
+
     } else {
       // Social leaderboard — only drinks that have at least one rating
       const rows = await sql`

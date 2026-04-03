@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const tabParam = new URLSearchParams(window.location.search).get('tab');
   if (tabParam === 'social') switchTab('social');
+  else if (tabParam === 'consensus') switchTab('consensus');
   else loadLeaderboard();
 });
 
@@ -27,6 +28,7 @@ function switchTab(tab) {
   currentTab = tab;
   document.getElementById('tabPersonal').classList.toggle('active', tab === 'personal');
   document.getElementById('tabSocial').classList.toggle('active', tab === 'social');
+  document.getElementById('tabConsensus').classList.toggle('active', tab === 'consensus');
   loadLeaderboard();
 }
 
@@ -73,6 +75,7 @@ function renderLeaderboard(items) {
 
   if (items.length === 0) {
     const isPersonal = currentTab === 'personal';
+    const isConsensus = currentTab === 'consensus';
     const div = document.createElement('div');
     div.className = 'empty-state';
 
@@ -82,7 +85,9 @@ function renderLeaderboard(items) {
     const p = document.createElement('p');
     p.textContent = isPersonal
       ? 'Start rating drinks to build your personal top list!'
-      : 'Once the group starts rating, the best drinks will appear here.';
+      : isConsensus
+        ? 'Once the group starts rating, the consensus rankings will appear here.'
+        : 'Once the group starts rating, the best drinks will appear here.';
 
     div.appendChild(h3);
     div.appendChild(p);
@@ -128,18 +133,19 @@ function leaderboardItem(item, rank) {
   ratingWrap.className = 'leaderboard-rating';
 
   const isPersonal = currentTab === 'personal';
-  const rawScore = isPersonal ? parseInt(item.my_stars) : parseFloat(item.avg_stars);
-  const score = isPersonal ? rawScore : parseFloat(rawScore.toFixed(1));
-  const displayScore = isPersonal ? rawScore.toString() : score.toFixed(1);
+  const isConsensus = currentTab === 'consensus';
+  const rawScore = isPersonal ? parseInt(item.my_stars) : isConsensus ? parseFloat(item.consensus_score) : parseFloat(item.avg_stars);
+  const score = isPersonal ? rawScore : parseFloat(rawScore.toFixed(isConsensus ? 2 : 1));
+  const displayScore = isPersonal ? rawScore.toString() : score.toFixed(isConsensus ? 2 : 1);
   const count = parseInt(item.rating_count);
 
   const scoreEl = document.createElement('div');
   scoreEl.className = 'lb-score';
-  scoreEl.textContent = displayScore;
+  scoreEl.textContent = isConsensus ? '\u2b50 ' + displayScore : displayScore;
 
   const starsEl = document.createElement('div');
   starsEl.className = 'lb-stars-sm';
-  safeHTML(starsEl, App.renderMyStars(Math.round(score)));
+  if (!isConsensus) safeHTML(starsEl, App.renderMyStars(Math.round(score)));
 
   const ratersEl = document.createElement('div');
   ratersEl.className = 'lb-raters';
