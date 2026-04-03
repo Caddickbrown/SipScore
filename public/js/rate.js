@@ -24,10 +24,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   const from = params.get('from');
-  if (from === 'leaderboard') {
+  if (from === 'leaderboard-personal' || from === 'leaderboard-social') {
     const backBtn = document.getElementById('backBtn');
-    if (backBtn) backBtn.href = '/leaderboard.html';
     const backLabel = document.getElementById('backLabel');
+    const returnUrl = from === 'leaderboard-social'
+      ? '/leaderboard.html?tab=social'
+      : '/leaderboard.html';
+    if (backBtn) backBtn.href = returnUrl;
     if (backLabel) backLabel.textContent = 'Rankings';
   }
 
