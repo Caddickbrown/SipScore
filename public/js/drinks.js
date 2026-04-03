@@ -13,7 +13,10 @@ const CATEGORY_TYPES = {
   beer:     ['Lager', 'Ale', 'Stout', 'IPA', 'Wheat Beer', 'Pilsner', 'Porter'],
   cider:    ['Dry', 'Medium Dry', 'Medium', 'Sweet', 'Rosé', 'Sparkling'],
   spirit:   ['Vodka', 'Gin', 'Rum', 'Tequila', 'Whiskey', 'Brandy', 'Ouzo', 'Grappa'],
-  mocktail: ['Fruit-based', 'Herbal', 'Sparkling', 'Tropical', 'Creamy'],
+  mocktail:  ['Fruit-based', 'Herbal', 'Sparkling', 'Tropical', 'Creamy'],
+  coffee:    ['Espresso', 'Latte', 'Cappuccino', 'Flat White', 'Americano', 'Cold Brew', 'Iced Coffee'],
+  softdrink: ['Cola', 'Lemonade', 'Juice', 'Energy Drink', 'Sparkling Water', 'Iced Tea'],
+  milkshake: ['Classic', 'Smoothie', 'Thick Shake', 'Frappe'],
 };
 
 function safeHTML(el, html) {
@@ -71,7 +74,7 @@ function renderTypeChips() {
   }
 
   const types = CATEGORY_TYPES[currentCategory] || [];
-  const labels = { wine: 'All Wines', cocktail: 'All Cocktails', beer: 'All Beers', cider: 'All Ciders', spirit: 'All Spirits', mocktail: 'All Mocktails' };
+  const labels = { wine: 'All Wines', cocktail: 'All Cocktails', beer: 'All Beers', cider: 'All Ciders', spirit: 'All Spirits', mocktail: 'All Mocktails', coffee: 'All Coffees', softdrink: 'All Soft Drinks', milkshake: 'All Milkshakes' };
   const allLabel = labels[currentCategory] || 'All';
 
   const chips = [

@@ -365,7 +365,10 @@ button {
 .accent-beer     { background: #d97706; }
 .accent-cider    { background: #059669; }
 .accent-spirit   { background: #7c3aed; }
-.accent-mocktail { background: #0ea5e9; }
+.accent-mocktail  { background: #0ea5e9; }
+.accent-coffee    { background: #78350f; }
+.accent-softdrink { background: #dc2626; }
+.accent-milkshake { background: #db2777; }
 
 .drink-card-body {
   flex: 1;
@@ -413,7 +416,10 @@ button {
 .badge-beer     { background: #fef3c7; color: #92400e; }
 .badge-cider    { background: #d1fae5; color: #065f46; }
 .badge-spirit   { background: #ede9fe; color: #5b21b6; }
-.badge-mocktail { background: #e0f2fe; color: #0369a1; }
+.badge-mocktail  { background: #e0f2fe; color: #0369a1; }
+.badge-coffee    { background: #fef3e2; color: #78350f; }
+.badge-softdrink { background: #fee2e2; color: #991b1b; }
+.badge-milkshake { background: #fce7f3; color: #9d174d; }
 
 .drink-meta {
   font-size: 0.78rem;

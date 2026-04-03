@@ -81,7 +81,7 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Name, category, and user_id are required' });
     }
 
-    const validCategories = ['wine', 'cocktail', 'beer', 'cider', 'spirit', 'mocktail'];
+    const validCategories = ['wine', 'cocktail', 'beer', 'cider', 'spirit', 'mocktail', 'coffee', 'softdrink', 'milkshake'];
     if (!validCategories.includes(category)) {
       return res.status(400).json({ error: 'Invalid category' });
     }

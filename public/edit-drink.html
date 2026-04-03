@@ -49,6 +49,18 @@
           <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg>
           Mocktail
         </button>
+        <button type="button" class="category-btn" id="catCoffee" onclick="setCategory('coffee')">
+          <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+          Coffee
+        </button>
+        <button type="button" class="category-btn" id="catSoftdrink" onclick="setCategory('softdrink')">
+          <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M8 2h8l1 6H7L8 2z"/><path d="M7 8l-1 13h12L17 8"/><path d="M10 12h4"/></svg>
+          Soft Drink
+        </button>
+        <button type="button" class="category-btn" id="catMilkshake" onclick="setCategory('milkshake')">
+          <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M8 3h8l1 4H7L8 3z"/><path d="M7 7l1 14h8l1-14"/><path d="M10 11c0 2 4 2 4 4s-4 2-4 4"/></svg>
+          Milkshake
+        </button>
       </div>
     </div>
 
@@ -242,6 +254,85 @@
           <div class="form-group">
             <label class="form-label" for="cocktailSource">Origin (optional)</label>
             <input class="form-input" type="text" id="cocktailSource" placeholder="e.g. Cuba or Italy" autocapitalize="words" maxlength="100">
+          </div>
+        </div>
+
+        <!-- Coffee fields -->
+        <div id="coffeeFields" style="display:none;">
+          <div class="form-group">
+            <label class="form-label" for="coffeeType">Type</label>
+            <select class="form-select" id="coffeeType">
+              <option value="">Select type…</option>
+              <option value="Espresso">Espresso</option>
+              <option value="Latte">Latte</option>
+              <option value="Cappuccino">Cappuccino</option>
+              <option value="Flat White">Flat White</option>
+              <option value="Americano">Americano</option>
+              <option value="Cold Brew">Cold Brew</option>
+              <option value="Iced Coffee">Iced Coffee</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="coffeeStyle">Style</label>
+            <select class="form-select" id="coffeeStyle">
+              <option value="">Select style…</option>
+              <option value="Black">Black</option>
+              <option value="Milky">Milky</option>
+              <option value="Sweet">Sweet</option>
+              <option value="Iced">Iced</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="coffeeSource">Café / Origin</label>
+            <input class="form-input" type="text" id="coffeeSource" placeholder="e.g. Nespresso, Colombia" autocapitalize="words" maxlength="100">
+          </div>
+        </div>
+
+        <!-- Soft Drink fields -->
+        <div id="softdrinkFields" style="display:none;">
+          <div class="form-group">
+            <label class="form-label" for="softdrinkType">Type</label>
+            <select class="form-select" id="softdrinkType">
+              <option value="">Select type…</option>
+              <option value="Cola">Cola</option>
+              <option value="Lemonade">Lemonade</option>
+              <option value="Juice">Juice</option>
+              <option value="Energy Drink">Energy Drink</option>
+              <option value="Sparkling Water">Sparkling Water</option>
+              <option value="Iced Tea">Iced Tea</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="softdrinkSource">Brand / Origin</label>
+            <input class="form-input" type="text" id="softdrinkSource" placeholder="e.g. Coca-Cola, San Pellegrino" autocapitalize="words" maxlength="100">
+          </div>
+        </div>
+
+        <!-- Milkshake fields -->
+        <div id="milkshakeFields" style="display:none;">
+          <div class="form-group">
+            <label class="form-label" for="milkshakeType">Type</label>
+            <select class="form-select" id="milkshakeType">
+              <option value="">Select type…</option>
+              <option value="Classic">Classic</option>
+              <option value="Smoothie">Smoothie</option>
+              <option value="Thick Shake">Thick Shake</option>
+              <option value="Frappe">Frappe</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="milkshakeStyle">Flavour</label>
+            <select class="form-select" id="milkshakeStyle">
+              <option value="">Select flavour…</option>
+              <option value="Fruity">Fruity</option>
+              <option value="Chocolatey">Chocolatey</option>
+              <option value="Vanilla">Vanilla</option>
+              <option value="Nutty">Nutty</option>
+              <option value="Creamy">Creamy</option>
+            </select>
           </div>
         </div>
 
