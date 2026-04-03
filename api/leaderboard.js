@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
 
       const rows = await sql`
         SELECT
-          d.id, d.name, d.category, d.type, d.style, d.source,
+          d.id, d.name, d.category, d.type, d.varietal, d.style, d.source,
           r.stars AS my_stars, r.notes, r.updated_at,
           ROUND(AVG(r2.stars)::numeric, 1) AS avg_stars,
           COUNT(r2.id) AS rating_count
@@ -43,7 +43,7 @@ module.exports = async (req, res) => {
       // Social leaderboard — only drinks that have at least one rating
       const rows = await sql`
         SELECT
-          d.id, d.name, d.category, d.type, d.style, d.source,
+          d.id, d.name, d.category, d.type, d.varietal, d.style, d.source,
           ROUND(AVG(r.stars)::numeric, 2) AS avg_stars,
           COUNT(r.id) AS rating_count
         FROM drinks d

@@ -17,7 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
   App.initNav('leaderboard');
   App.initProfileModal();
   setupCategoryChips();
-  loadLeaderboard();
+
+  const tabParam = new URLSearchParams(window.location.search).get('tab');
+  if (tabParam === 'social') switchTab('social');
+  else loadLeaderboard();
 });
 
 function switchTab(tab) {
@@ -93,7 +96,7 @@ function renderLeaderboard(items) {
 function leaderboardItem(item, rank) {
   const a = document.createElement('a');
   a.className = 'leaderboard-item';
-  a.href = '/rate.html?id=' + item.id + '&from=leaderboard';
+  a.href = '/rate.html?id=' + item.id + '&from=leaderboard-' + currentTab;
 
   // Rank badge
   const rankBadge = document.createElement('div');
