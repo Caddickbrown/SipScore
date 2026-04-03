@@ -576,7 +576,7 @@ button {
 .drink-hero {
   background: var(--navy);
   color: var(--white);
-  padding: 20px 16px 28px;
+  padding: calc(20px + env(safe-area-inset-top)) 16px 28px;
 }
 
 .back-btn {
