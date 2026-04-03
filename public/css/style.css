@@ -1608,10 +1608,229 @@ input, select, textarea {
   border-color: var(--gold);
 }
 
+/* =============================================
+   FEED
+   ============================================= */
+.feed-compose {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  position: sticky;
+  top: calc(var(--header-height) + env(safe-area-inset-top));
+  z-index: 90;
+}
+
+.feed-compose-inner {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.feed-compose-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--white);
+  margin-top: 2px;
+}
+
+.feed-compose-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.feed-textarea {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--ivory);
+  font-family: 'Jost', sans-serif;
+  font-size: 0.92rem;
+  color: var(--text);
+  padding: 8px 12px;
+  resize: none;
+  outline: none;
+  line-height: 1.45;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.feed-textarea:focus {
+  border-color: var(--gold);
+  background: var(--white);
+}
+
+.feed-textarea::placeholder {
+  color: var(--slate);
+  font-weight: 300;
+}
+
+.feed-compose-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.feed-char-count {
+  font-size: 0.72rem;
+  color: var(--slate);
+  min-width: 28px;
+  text-align: right;
+}
+
+.feed-char-warn {
+  color: #e05c5c;
+}
+
+.feed-post-btn {
+  padding: 7px 18px;
+  font-size: 0.82rem;
+}
+
+.feed-list {
+  padding: 10px 0 8px;
+}
+
+.feed-post {
+  display: flex;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--white);
+  margin-bottom: 6px;
+}
+
+.feed-post-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--white);
+}
+
+.feed-post-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.feed-post-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+
+.feed-post-name {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+.feed-post-time {
+  font-size: 0.75rem;
+  color: var(--slate);
+  flex: 1;
+}
+
+.feed-delete-btn {
+  background: none;
+  border: none;
+  color: var(--slate);
+  padding: 2px 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  opacity: 0.55;
+  transition: opacity 0.2s;
+}
+
+.feed-delete-btn:hover {
+  opacity: 1;
+  color: #e05c5c;
+}
+
+.feed-delete-btn svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.feed-post-content {
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-bottom: 8px;
+}
+
+.feed-post-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.feed-like-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  color: var(--slate);
+  font-size: 0.8rem;
+  font-family: 'Jost', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color 0.2s;
+}
+
+.feed-like-btn svg {
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: fill 0.15s, stroke 0.15s;
+}
+
+.feed-like-btn.liked {
+  color: #e05c5c;
+}
+
+.feed-like-btn.liked svg {
+  fill: #e05c5c;
+  stroke: #e05c5c;
+}
+
+.feed-like-count {
+  min-width: 12px;
+}
+
 @media (min-width: 600px) {
   .drinks-list,
   .leaderboard-list,
   .reviews-list,
+  .feed-list,
+  .feed-compose,
   .page-header,
   .px-14 {
     max-width: 640px;
