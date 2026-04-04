@@ -436,7 +436,7 @@ window.App = {
   avatarInitials,
   applyAvatarToEl,
   renderAvatarEl,
-  resizeImageToBase64,
+  showCropModal,
   initNav,
   initProfileModal,
   openProfileModal,
