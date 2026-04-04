@@ -127,10 +127,10 @@ function avatarInitials(name) {
 
 function applyAvatarToEl(el, user) {
   if (user.avatar_image) {
+    el.style.background = '';
     el.style.backgroundImage = `url(${user.avatar_image})`;
     el.style.backgroundSize = 'cover';
     el.style.backgroundPosition = 'center';
-    el.style.background = '';
     el.textContent = '';
   } else {
     el.style.backgroundImage = '';
@@ -148,23 +148,141 @@ function renderAvatarEl(user, size = 36, cls = 'user-avatar') {
   return el;
 }
 
-function resizeImageToBase64(file, size = 100) {
+function showCropModal(file) {
   return new Promise((resolve, reject) => {
-    const img = new Image();
     const url = URL.createObjectURL(file);
+    const img = new Image();
+
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext('2d');
-      // Square-crop from centre
-      const shortest = Math.min(img.width, img.height);
-      const sx = (img.width - shortest) / 2;
-      const sy = (img.height - shortest) / 2;
-      ctx.drawImage(img, sx, sy, shortest, shortest, 0, 0, size, size);
-      URL.revokeObjectURL(url);
-      resolve(canvas.toDataURL('image/jpeg', 0.82));
+      const cropSize = Math.min(window.innerWidth - 48, 300);
+
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;touch-action:none;';
+
+      const viewport = document.createElement('div');
+      viewport.style.cssText = `width:${cropSize}px;height:${cropSize}px;border-radius:50%;border:2px solid rgba(255,255,255,0.8);overflow:hidden;position:relative;cursor:grab;touch-action:none;flex-shrink:0;`;
+
+      const imgEl = document.createElement('img');
+      imgEl.src = url;
+      imgEl.draggable = false;
+      imgEl.style.cssText = 'position:absolute;user-select:none;-webkit-user-drag:none;touch-action:none;';
+
+      let scale = Math.max(cropSize / img.naturalWidth, cropSize / img.naturalHeight);
+      let w = img.naturalWidth * scale;
+      let h = img.naturalHeight * scale;
+      let x = (cropSize - w) / 2;
+      let y = (cropSize - h) / 2;
+
+      const applyTransform = () => {
+        imgEl.style.width = w + 'px';
+        imgEl.style.height = h + 'px';
+        imgEl.style.left = x + 'px';
+        imgEl.style.top = y + 'px';
+      };
+      applyTransform();
+
+      const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+      const clampPos = (nx, ny, nw, nh) => ({
+        x: clamp(nx, cropSize - nw, 0),
+        y: clamp(ny, cropSize - nh, 0),
+      });
+
+      let dragging = false;
+      let startPos = null;
+      let startImgPos = null;
+      let lastPinchDist = null;
+
+      viewport.addEventListener('mousedown', (e) => {
+        dragging = true;
+        startPos = { x: e.clientX, y: e.clientY };
+        startImgPos = { x, y };
+        viewport.style.cursor = 'grabbing';
+        e.preventDefault();
+      });
+      document.addEventListener('mousemove', (e) => {
+        if (!dragging) return;
+        const p = clampPos(startImgPos.x + e.clientX - startPos.x, startImgPos.y + e.clientY - startPos.y, w, h);
+        x = p.x; y = p.y;
+        applyTransform();
+      });
+      document.addEventListener('mouseup', () => { dragging = false; viewport.style.cursor = 'grab'; });
+
+      viewport.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (e.touches.length === 1) {
+          dragging = true;
+          startPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          startImgPos = { x, y };
+          lastPinchDist = null;
+        } else if (e.touches.length === 2) {
+          dragging = false;
+          lastPinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+        }
+      }, { passive: false });
+
+      viewport.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (e.touches.length === 1 && dragging) {
+          const p = clampPos(startImgPos.x + e.touches[0].clientX - startPos.x, startImgPos.y + e.touches[0].clientY - startPos.y, w, h);
+          x = p.x; y = p.y;
+          applyTransform();
+        } else if (e.touches.length === 2 && lastPinchDist !== null) {
+          const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+          const ratio = dist / lastPinchDist;
+          lastPinchDist = dist;
+          const minScale = Math.max(cropSize / img.naturalWidth, cropSize / img.naturalHeight);
+          const newScale = clamp(scale * ratio, minScale, minScale * 4);
+          const sr = newScale / scale;
+          scale = newScale;
+          w = img.naturalWidth * scale;
+          h = img.naturalHeight * scale;
+          const p = clampPos((cropSize / 2) + (x - cropSize / 2) * sr, (cropSize / 2) + (y - cropSize / 2) * sr, w, h);
+          x = p.x; y = p.y;
+          applyTransform();
+        }
+      }, { passive: false });
+
+      viewport.addEventListener('touchend', (e) => {
+        if (e.touches.length < 2) lastPinchDist = null;
+        if (e.touches.length === 0) dragging = false;
+      });
+
+      viewport.appendChild(imgEl);
+
+      const hint = document.createElement('p');
+      hint.textContent = 'Drag to reposition · Pinch to zoom';
+      hint.style.cssText = 'color:rgba(255,255,255,0.55);font-size:13px;margin:10px 0 0;font-family:inherit;';
+
+      const btnRow = document.createElement('div');
+      btnRow.style.cssText = 'display:flex;gap:12px;margin-top:16px;';
+
+      const cancelBtn = document.createElement('button');
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.style.cssText = 'padding:10px 28px;border-radius:8px;border:none;background:rgba(255,255,255,0.15);color:white;font-size:15px;cursor:pointer;font-family:inherit;';
+      cancelBtn.onclick = () => { document.body.removeChild(overlay); URL.revokeObjectURL(url); reject(new Error('cancelled')); };
+
+      const confirmBtn = document.createElement('button');
+      confirmBtn.textContent = 'Use Photo';
+      confirmBtn.style.cssText = 'padding:10px 28px;border-radius:8px;border:none;background:#c9a96e;color:white;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;';
+      confirmBtn.onclick = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 100;
+        canvas.height = 100;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, -x / scale, -y / scale, cropSize / scale, cropSize / scale, 0, 0, 100, 100);
+        URL.revokeObjectURL(url);
+        document.body.removeChild(overlay);
+        resolve(canvas.toDataURL('image/jpeg', 0.82));
+      };
+
+      btnRow.appendChild(cancelBtn);
+      btnRow.appendChild(confirmBtn);
+      overlay.appendChild(viewport);
+      overlay.appendChild(hint);
+      overlay.appendChild(btnRow);
+      document.body.appendChild(overlay);
     };
+
     img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Could not load image')); };
     img.src = url;
   });
@@ -219,10 +337,18 @@ function initProfileModal() {
       avatarInput.value = '';
 
       const editBtn = document.querySelector('.profile-avatar-edit');
+
+      let base64;
+      try {
+        base64 = await showCropModal(file);
+      } catch (err) {
+        // User cancelled crop — do nothing
+        return;
+      }
+
       if (editBtn) editBtn.classList.add('loading');
 
       try {
-        const base64 = await resizeImageToBase64(file, 100);
         const { user: updated } = await apiFetch('/api/profile', {
           method: 'PATCH',
           body: JSON.stringify({ user_id: user.id, avatar_image: base64 }),
