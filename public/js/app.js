@@ -125,15 +125,49 @@ function avatarInitials(name) {
   return name.slice(0, 2).toUpperCase();
 }
 
+function applyAvatarToEl(el, user) {
+  if (user.avatar_image) {
+    el.style.backgroundImage = `url(${user.avatar_image})`;
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundPosition = 'center';
+    el.style.background = '';
+    el.textContent = '';
+  } else {
+    el.style.backgroundImage = '';
+    el.style.background = user.avatar_colour || '#c9a96e';
+    el.textContent = avatarInitials(user.name);
+  }
+}
+
 function renderAvatarEl(user, size = 36, cls = 'user-avatar') {
-  const initials = avatarInitials(user.name);
   const el = document.createElement('div');
   el.className = cls;
   el.style.width = size + 'px';
   el.style.height = size + 'px';
-  el.style.background = user.avatar_colour || '#c9a96e';
-  el.textContent = initials;
+  applyAvatarToEl(el, user);
   return el;
+}
+
+function resizeImageToBase64(file, size = 100) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      // Square-crop from centre
+      const shortest = Math.min(img.width, img.height);
+      const sx = (img.width - shortest) / 2;
+      const sy = (img.height - shortest) / 2;
+      ctx.drawImage(img, sx, sy, shortest, shortest, 0, 0, size, size);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL('image/jpeg', 0.82));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Could not load image')); };
+    img.src = url;
+  });
 }
 
 // ---- Navigation ----
@@ -160,8 +194,7 @@ function initProfileModal() {
 
   const avatarTrigger = document.getElementById('headerAvatar');
   if (avatarTrigger) {
-    avatarTrigger.style.background = user.avatar_colour || '#c9a96e';
-    avatarTrigger.textContent = avatarInitials(user.name);
+    applyAvatarToEl(avatarTrigger, user);
     avatarTrigger.addEventListener('click', () => openProfileModal(user));
   }
 
@@ -176,6 +209,44 @@ function initProfileModal() {
       window.location.replace('/index.html');
     });
   }
+
+  // Avatar upload
+  const avatarInput = document.getElementById('avatarInput');
+  if (avatarInput) {
+    avatarInput.addEventListener('change', async () => {
+      const file = avatarInput.files[0];
+      if (!file) return;
+      avatarInput.value = '';
+
+      const editBtn = document.querySelector('.profile-avatar-edit');
+      if (editBtn) editBtn.classList.add('loading');
+
+      try {
+        const base64 = await resizeImageToBase64(file, 100);
+        const { user: updated } = await apiFetch('/api/profile', {
+          method: 'PATCH',
+          body: JSON.stringify({ user_id: user.id, avatar_image: base64 }),
+        });
+
+        const fresh = { ...getUser(), avatar_image: updated.avatar_image };
+        setUser(fresh);
+
+        // Update header avatar
+        const trigger = document.getElementById('headerAvatar');
+        if (trigger) applyAvatarToEl(trigger, fresh);
+
+        // Update big avatar in modal
+        const bigAvatar = document.querySelector('.profile-avatar-lg');
+        if (bigAvatar) applyAvatarToEl(bigAvatar, fresh);
+
+        showToast('Avatar updated!');
+      } catch (err) {
+        showToast(err.message || 'Failed to save avatar', 'error');
+      } finally {
+        if (editBtn) editBtn.classList.remove('loading');
+      }
+    });
+  }
 }
 
 function openProfileModal(user) {
@@ -187,10 +258,7 @@ function openProfileModal(user) {
   const bigAvatar = overlay.querySelector('.profile-avatar-lg');
 
   if (nameEl) nameEl.textContent = user.name;
-  if (bigAvatar) {
-    bigAvatar.textContent = avatarInitials(user.name);
-    bigAvatar.style.background = user.avatar_colour || '#c9a96e';
-  }
+  if (bigAvatar) applyAvatarToEl(bigAvatar, user);
   if (statsEl) {
     apiFetch(`/api/leaderboard?type=personal&user_id=${user.id}`)
       .then(data => {
@@ -240,7 +308,9 @@ window.App = {
   badgeLabel,
   drinkMeta,
   avatarInitials,
+  applyAvatarToEl,
   renderAvatarEl,
+  resizeImageToBase64,
   initNav,
   initProfileModal,
   openProfileModal,

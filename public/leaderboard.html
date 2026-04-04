@@ -78,7 +78,13 @@
     <div class="modal-sheet">
       <div class="modal-handle"></div>
       <div class="profile-row">
-        <div class="profile-avatar-lg"></div>
+        <div class="profile-avatar-wrapper">
+          <div class="profile-avatar-lg"></div>
+          <label class="profile-avatar-edit" for="avatarInput" title="Change photo">
+            <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </label>
+          <input type="file" id="avatarInput" accept="image/*" style="display:none">
+        </div>
         <div class="profile-text-info">
           <div class="profile-display-name"></div>
           <div class="profile-stats-text">Loading…</div>

@@ -1303,6 +1303,12 @@ button {
   margin-bottom: 22px;
 }
 
+.profile-avatar-wrapper {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+}
+
 .profile-avatar-lg {
   width: 54px;
   height: 54px;
@@ -1314,6 +1320,42 @@ button {
   font-weight: 700;
   color: var(--white);
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.profile-avatar-edit {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 22px;
+  height: 22px;
+  background: var(--navy);
+  border: 2px solid var(--white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.profile-avatar-edit:hover {
+  background: var(--gold);
+}
+
+.profile-avatar-edit svg {
+  width: 11px;
+  height: 11px;
+  stroke: var(--white);
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.profile-avatar-edit.loading {
+  pointer-events: none;
+  opacity: 0.6;
 }
 
 .profile-text-info {

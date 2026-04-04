@@ -61,14 +61,14 @@ module.exports = async (req, res) => {
       const [user] = await sql`
         INSERT INTO users (name, pin_hash, pin_salt, avatar_colour)
         VALUES (${trimmedName}, ${pinHash}, ${salt}, ${avatarColour})
-        RETURNING id, name, avatar_colour
+        RETURNING id, name, avatar_colour, avatar_image
       `;
 
       return res.json({ user });
 
     } else if (action === 'login') {
       const [user] = await sql`
-        SELECT id, name, pin_hash, pin_salt, avatar_colour
+        SELECT id, name, pin_hash, pin_salt, avatar_colour, avatar_image
         FROM users
         WHERE LOWER(name) = LOWER(${trimmedName})
       `;
@@ -87,6 +87,7 @@ module.exports = async (req, res) => {
           id: user.id,
           name: user.name,
           avatar_colour: user.avatar_colour,
+          avatar_image: user.avatar_image || null,
         },
       });
 
