@@ -2054,6 +2054,132 @@ input, select, textarea {
   align-self: flex-end;
 }
 
+/* Reply action row (like + reply buttons on a reply) */
+.feed-reply-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.feed-reply-like-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--slate);
+  font-size: 0.75rem;
+  font-family: 'Jost', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 2px 0;
+  transition: color 0.2s;
+}
+
+.feed-reply-like-btn svg {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: fill 0.15s, stroke 0.15s;
+}
+
+.feed-reply-like-btn.liked {
+  color: #e05c5c;
+}
+
+.feed-reply-like-btn.liked svg {
+  fill: #e05c5c;
+  stroke: #e05c5c;
+}
+
+.feed-reply-like-count {
+  min-width: 10px;
+}
+
+.feed-reply-reply-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--slate);
+  font-size: 0.75rem;
+  font-family: 'Jost', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 2px 0;
+  transition: color 0.2s;
+}
+
+.feed-reply-reply-btn:hover {
+  color: var(--gold);
+}
+
+/* Sub-reply nesting */
+.feed-sub-replies {
+  margin-top: 8px;
+  padding-left: 20px;
+  border-left: 2px solid var(--border);
+}
+
+.feed-sub-reply-compose {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  margin-top: 6px;
+}
+
+.feed-sub-reply-compose-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.65rem;
+  color: var(--white);
+  margin-top: 2px;
+}
+
+.feed-sub-reply-textarea {
+  flex: 1;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--ivory);
+  font-family: 'Jost', sans-serif;
+  font-size: 0.82rem;
+  color: var(--text);
+  padding: 5px 8px;
+  resize: none;
+  outline: none;
+  line-height: 1.4;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.feed-sub-reply-textarea:focus {
+  border-color: var(--gold);
+  background: var(--white);
+}
+
+.feed-sub-reply-textarea::placeholder {
+  color: var(--slate);
+  font-weight: 300;
+}
+
+.feed-sub-reply-submit-btn {
+  padding: 5px 10px;
+  font-size: 0.72rem;
+  white-space: nowrap;
+  align-self: flex-end;
+}
+
 @media (min-width: 600px) {
   .drinks-list,
   .leaderboard-list,
