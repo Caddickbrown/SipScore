@@ -56,6 +56,7 @@ module.exports = async (req, res) => {
           u.id            AS user_id,
           u.name          AS user_name,
           u.avatar_colour,
+          u.avatar_image,
           COUNT(DISTINCT fl.id)::int AS like_count,
           BOOL_OR(fl.user_id = ${viewer_id}) AS liked_by_viewer,
           COUNT(DISTINCT fr.id)::int AS reply_count
@@ -63,7 +64,7 @@ module.exports = async (req, res) => {
         JOIN users u ON u.id = fp.user_id
         LEFT JOIN feed_likes fl ON fl.post_id = fp.id
         LEFT JOIN feed_replies fr ON fr.post_id = fp.id
-        GROUP BY fp.id, fp.content, fp.created_at, u.id, u.name, u.avatar_colour
+        GROUP BY fp.id, fp.content, fp.created_at, u.id, u.name, u.avatar_colour, u.avatar_image
         ORDER BY fp.created_at DESC
         LIMIT 100
       `;
