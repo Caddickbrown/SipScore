@@ -12,8 +12,7 @@ App.initProfileModal();
 
 const composeAvatar = document.getElementById('composeAvatar');
 if (composeAvatar) {
-  composeAvatar.style.background = user.avatar_colour || '#c9a96e';
-  composeAvatar.textContent = App.avatarInitials(user.name);
+  App.applyAvatarToEl(composeAvatar, user);
 }
 
 const textarea = document.getElementById('postContent');
@@ -91,7 +90,6 @@ function renderFeed(posts) {
 
   list.innerHTML = posts.map(post => {
     const isOwn = post.user_id === user.id;
-    const initials = App.avatarInitials(post.user_name);
     const content = DOMPurify.sanitize(post.content);
     const liked = post.liked_by_viewer;
     const likeCount = post.like_count || 0;
@@ -99,7 +97,7 @@ function renderFeed(posts) {
 
     return `
       <article class="feed-post" data-id="${post.id}">
-        <div class="feed-post-avatar" style="background:${post.avatar_colour || '#c9a96e'}">${initials}</div>
+        <div class="feed-post-avatar"></div>
         <div class="feed-post-body">
           <div class="feed-post-header">
             <span class="feed-post-name">${DOMPurify.sanitize(post.user_name)}</span>
@@ -122,7 +120,7 @@ function renderFeed(posts) {
           <div class="feed-replies" data-post-id="${post.id}">
             <div class="feed-replies-list"></div>
             <div class="feed-reply-compose">
-              <div class="feed-reply-compose-avatar" style="background:${user.avatar_colour || '#c9a96e'}">${App.avatarInitials(user.name)}</div>
+              <div class="feed-reply-compose-avatar"></div>
               <textarea class="feed-reply-textarea" placeholder="Write a reply…" maxlength="280" rows="1"></textarea>
               <button class="btn btn-primary feed-reply-submit-btn">Reply</button>
             </div>
@@ -131,6 +129,14 @@ function renderFeed(posts) {
       </article>
     `;
   }).join('');
+
+  // Apply profile pictures to post and reply-compose avatars
+  posts.forEach(post => {
+    const article = list.querySelector(`.feed-post[data-id="${post.id}"]`);
+    if (!article) return;
+    App.applyAvatarToEl(article.querySelector('.feed-post-avatar'), { avatar_image: post.avatar_image, avatar_colour: post.avatar_colour, name: post.user_name });
+    App.applyAvatarToEl(article.querySelector('.feed-reply-compose-avatar'), user);
+  });
 
   // Like buttons
   list.querySelectorAll('.feed-like-btn').forEach(btn => {
@@ -240,7 +246,6 @@ async function loadReplies(postId, repliesSection) {
 
 function replyItemHTML(reply, postId, isSubReply = false) {
   const isOwn = reply.user_id === user.id;
-  const initials = App.avatarInitials(reply.user_name);
   const content = DOMPurify.sanitize(reply.content);
   const liked = reply.liked_by_viewer;
   const likeCount = reply.like_count || 0;
@@ -249,7 +254,7 @@ function replyItemHTML(reply, postId, isSubReply = false) {
 
   return `
     <div class="feed-reply-item" data-reply-id="${reply.id}">
-      <div class="${avatarClass}" style="width:${avatarSize}px;height:${avatarSize}px;background:${reply.avatar_colour || '#c9a96e'}">${initials}</div>
+      <div class="${avatarClass}" style="width:${avatarSize}px;height:${avatarSize}px"></div>
       <div class="feed-reply-body">
         <div class="feed-reply-header">
           <span class="feed-reply-name">${DOMPurify.sanitize(reply.user_name)}</span>
@@ -296,6 +301,14 @@ function renderReplies(replies, repliesSection, postId) {
       }
     });
   }
+
+  // Apply profile pictures to reply avatars
+  replies.forEach(reply => {
+    const replyEl = listEl.querySelector(`.feed-reply-item[data-reply-id="${reply.id}"]`);
+    if (!replyEl) return;
+    const avatarEl = replyEl.querySelector('.feed-reply-avatar, .feed-sub-reply-compose-avatar');
+    if (avatarEl) App.applyAvatarToEl(avatarEl, { avatar_image: reply.avatar_image, avatar_colour: reply.avatar_colour, name: reply.user_name });
+  });
 
   // Wire up all events
   listEl.querySelectorAll('.feed-reply-delete-btn').forEach(btn => {
@@ -354,10 +367,11 @@ function toggleSubReplyCompose(btn, postId, repliesSection) {
   const compose = document.createElement('div');
   compose.className = 'feed-sub-reply-compose';
   compose.innerHTML = `
-    <div class="feed-sub-reply-compose-avatar" style="background:${user.avatar_colour || '#c9a96e'}">${App.avatarInitials(user.name)}</div>
+    <div class="feed-sub-reply-compose-avatar"></div>
     <textarea class="feed-sub-reply-textarea" placeholder="Reply…" maxlength="280" rows="1"></textarea>
     <button class="btn btn-primary feed-sub-reply-submit-btn">Reply</button>
   `;
+  App.applyAvatarToEl(compose.querySelector('.feed-sub-reply-compose-avatar'), user);
   subContainer.appendChild(compose);
 
   const ta = compose.querySelector('.feed-sub-reply-textarea');
