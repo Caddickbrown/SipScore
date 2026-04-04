@@ -1833,6 +1833,185 @@ input, select, textarea {
   min-width: 12px;
 }
 
+.feed-reply-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  color: var(--slate);
+  font-size: 0.8rem;
+  font-family: 'Jost', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color 0.2s;
+}
+
+.feed-reply-btn:hover {
+  color: var(--gold);
+}
+
+.feed-reply-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.feed-reply-count {
+  min-width: 12px;
+}
+
+/* Replies section */
+.feed-replies {
+  display: none;
+  margin-top: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.feed-replies.open {
+  display: block;
+}
+
+.feed-reply-item {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.feed-reply-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.72rem;
+  color: var(--white);
+  margin-top: 1px;
+}
+
+.feed-reply-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.feed-reply-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.feed-reply-name {
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--text);
+}
+
+.feed-reply-time {
+  font-size: 0.72rem;
+  color: var(--slate);
+  flex: 1;
+}
+
+.feed-reply-delete-btn {
+  background: none;
+  border: none;
+  color: var(--slate);
+  padding: 1px 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.feed-reply-delete-btn:hover {
+  opacity: 1;
+  color: #e05c5c;
+}
+
+.feed-reply-delete-btn svg {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.feed-reply-content {
+  font-size: 0.87rem;
+  line-height: 1.45;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Reply compose */
+.feed-reply-compose {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-top: 8px;
+}
+
+.feed-reply-compose-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.72rem;
+  color: var(--white);
+  margin-top: 2px;
+}
+
+.feed-reply-textarea {
+  flex: 1;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--ivory);
+  font-family: 'Jost', sans-serif;
+  font-size: 0.87rem;
+  color: var(--text);
+  padding: 6px 10px;
+  resize: none;
+  outline: none;
+  line-height: 1.4;
+  transition: border-color 0.2s, background 0.2s;
+  min-height: 34px;
+}
+
+.feed-reply-textarea:focus {
+  border-color: var(--gold);
+  background: var(--white);
+}
+
+.feed-reply-textarea::placeholder {
+  color: var(--slate);
+  font-weight: 300;
+}
+
+.feed-reply-submit-btn {
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  align-self: flex-end;
+}
+
 @media (min-width: 600px) {
   .drinks-list,
   .leaderboard-list,

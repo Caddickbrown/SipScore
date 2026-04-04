@@ -95,6 +95,7 @@ function renderFeed(posts) {
     const content = DOMPurify.sanitize(post.content);
     const liked = post.liked_by_viewer;
     const likeCount = post.like_count || 0;
+    const replyCount = post.reply_count || 0;
 
     return `
       <article class="feed-post" data-id="${post.id}">
@@ -113,6 +114,18 @@ function renderFeed(posts) {
               <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
               <span class="feed-like-count">${likeCount > 0 ? likeCount : ''}</span>
             </button>
+            <button class="feed-reply-btn" data-id="${post.id}">
+              <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span class="feed-reply-count">${replyCount > 0 ? replyCount : ''}</span>
+            </button>
+          </div>
+          <div class="feed-replies" data-post-id="${post.id}">
+            <div class="feed-replies-list"></div>
+            <div class="feed-reply-compose">
+              <div class="feed-reply-compose-avatar" style="background:${user.avatar_colour || '#c9a96e'}">${App.avatarInitials(user.name)}</div>
+              <textarea class="feed-reply-textarea" placeholder="Write a reply…" maxlength="280" rows="1"></textarea>
+              <button class="btn btn-primary feed-reply-submit-btn">Reply</button>
+            </div>
           </div>
         </div>
       </article>
@@ -127,6 +140,29 @@ function renderFeed(posts) {
   // Delete buttons
   list.querySelectorAll('.feed-delete-btn').forEach(btn => {
     btn.addEventListener('click', () => deletePost(parseInt(btn.dataset.id)));
+  });
+
+  // Reply toggle buttons
+  list.querySelectorAll('.feed-reply-btn').forEach(btn => {
+    btn.addEventListener('click', () => toggleReplies(btn));
+  });
+
+  // Reply submit buttons
+  list.querySelectorAll('.feed-reply-submit-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const repliesSection = btn.closest('.feed-replies');
+      submitReply(repliesSection);
+    });
+  });
+
+  // Reply textarea — submit on Ctrl+Enter
+  list.querySelectorAll('.feed-reply-textarea').forEach(ta => {
+    ta.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+        const repliesSection = ta.closest('.feed-replies');
+        submitReply(repliesSection);
+      }
+    });
   });
 }
 
@@ -170,6 +206,125 @@ async function deletePost(postId) {
     App.showToast('Post deleted');
   } catch (err) {
     App.showToast(err.message || 'Failed to delete', 'error');
+  }
+}
+
+// ---- Replies ----
+
+async function toggleReplies(btn) {
+  const postId = parseInt(btn.dataset.id);
+  const article = btn.closest('.feed-post');
+  const repliesSection = article.querySelector('.feed-replies');
+
+  const isOpen = repliesSection.classList.contains('open');
+  if (isOpen) {
+    repliesSection.classList.remove('open');
+    return;
+  }
+
+  repliesSection.classList.add('open');
+  await loadReplies(postId, repliesSection);
+}
+
+async function loadReplies(postId, repliesSection) {
+  const listEl = repliesSection.querySelector('.feed-replies-list');
+  listEl.innerHTML = '<div class="feed-reply-item"><div class="feed-reply-body" style="color:var(--slate);font-size:0.82rem">Loading…</div></div>';
+
+  try {
+    const { replies } = await App.apiFetch(`/api/feed-replies?post_id=${postId}`);
+    renderReplies(replies, repliesSection, postId);
+  } catch (err) {
+    listEl.innerHTML = '<div class="feed-reply-item"><div class="feed-reply-body" style="color:#e05c5c;font-size:0.82rem">Failed to load replies.</div></div>';
+  }
+}
+
+function renderReplies(replies, repliesSection, postId) {
+  const listEl = repliesSection.querySelector('.feed-replies-list');
+
+  if (!replies.length) {
+    listEl.innerHTML = '';
+    return;
+  }
+
+  listEl.innerHTML = replies.map(reply => {
+    const isOwn = reply.user_id === user.id;
+    const initials = App.avatarInitials(reply.user_name);
+    const content = DOMPurify.sanitize(reply.content);
+
+    return `
+      <div class="feed-reply-item">
+        <div class="feed-reply-avatar" style="background:${reply.avatar_colour || '#c9a96e'}">${initials}</div>
+        <div class="feed-reply-body">
+          <div class="feed-reply-header">
+            <span class="feed-reply-name">${DOMPurify.sanitize(reply.user_name)}</span>
+            <span class="feed-reply-time">${timeAgo(reply.created_at)}</span>
+            ${isOwn ? `<button class="feed-reply-delete-btn" data-id="${reply.id}" data-post-id="${postId}" aria-label="Delete reply">
+              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            </button>` : ''}
+          </div>
+          <p class="feed-reply-content">${content}</p>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  listEl.querySelectorAll('.feed-reply-delete-btn').forEach(btn => {
+    btn.addEventListener('click', () => deleteReply(parseInt(btn.dataset.id), parseInt(btn.dataset.postId), repliesSection));
+  });
+}
+
+async function submitReply(repliesSection) {
+  const postId = parseInt(repliesSection.dataset.postId);
+  const ta = repliesSection.querySelector('.feed-reply-textarea');
+  const submitBtn = repliesSection.querySelector('.feed-reply-submit-btn');
+  const content = ta.value.trim();
+  if (!content) return;
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Replying…';
+
+  try {
+    await App.apiFetch('/api/feed-replies', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: user.id, post_id: postId, content }),
+    });
+    ta.value = '';
+
+    // Update reply count on the toggle button
+    const article = repliesSection.closest('.feed-post');
+    const replyBtn = article.querySelector('.feed-reply-btn');
+    const countEl = replyBtn.querySelector('.feed-reply-count');
+    const current = parseInt(countEl.textContent) || 0;
+    countEl.textContent = current + 1;
+
+    await loadReplies(postId, repliesSection);
+  } catch (err) {
+    App.showToast(err.message || 'Failed to post reply', 'error');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Reply';
+  }
+}
+
+async function deleteReply(replyId, postId, repliesSection) {
+  if (!confirm('Delete this reply?')) return;
+
+  try {
+    await App.apiFetch('/api/feed-replies', {
+      method: 'DELETE',
+      body: JSON.stringify({ user_id: user.id, reply_id: replyId }),
+    });
+
+    // Update reply count on the toggle button
+    const article = repliesSection.closest('.feed-post');
+    const replyBtn = article.querySelector('.feed-reply-btn');
+    const countEl = replyBtn.querySelector('.feed-reply-count');
+    const current = parseInt(countEl.textContent) || 0;
+    countEl.textContent = Math.max(0, current - 1) || '';
+
+    await loadReplies(postId, repliesSection);
+  } catch (err) {
+    App.showToast(err.message || 'Failed to delete reply', 'error');
   }
 }
 
