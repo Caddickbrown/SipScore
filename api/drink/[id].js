@@ -81,7 +81,7 @@ module.exports = async (req, res) => {
     const allRatings = await sql`
       SELECT
         r.id, r.stars, r.notes, r.updated_at,
-        u.id AS user_id, u.name AS user_name, u.avatar_colour
+        u.id AS user_id, u.name AS user_name, u.avatar_colour, u.avatar_image
       FROM ratings r
       JOIN users u ON u.id = r.user_id
       WHERE r.drink_id = ${drinkId}
