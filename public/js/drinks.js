@@ -131,7 +131,8 @@ function renderDrinks(drinks) {
     renderEmpty(
       list,
       search ? 'No results' : 'Nothing here yet',
-      search ? `No drinks match "${search}"` : 'Add a drink to get started!'
+      search ? `No drinks match "${search}"` : 'Add a drink to get started!',
+      search ? '/add-drink.html?name=' + encodeURIComponent(search) : null
     );
     return;
   }
@@ -227,7 +228,7 @@ function drinkCard(d) {
   return a;
 }
 
-function renderEmpty(container, title, desc) {
+function renderEmpty(container, title, desc, addUrl) {
   const div = document.createElement('div');
   div.className = 'empty-state';
 
@@ -244,6 +245,15 @@ function renderEmpty(container, title, desc) {
   div.appendChild(icon);
   div.appendChild(h3);
   div.appendChild(p);
+
+  if (addUrl) {
+    const btn = document.createElement('a');
+    btn.className = 'btn btn-primary add-drink-suggestion';
+    btn.href = addUrl;
+    btn.textContent = 'Add Drink?';
+    div.appendChild(btn);
+  }
+
   container.appendChild(div);
 }
 
