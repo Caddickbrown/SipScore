@@ -1532,6 +1532,11 @@ button {
   font-weight: 300;
 }
 
+.add-drink-suggestion {
+  display: inline-block;
+  margin-top: 18px;
+}
+
 /* =============================================
    UTILITY
    ============================================= */

@@ -23,6 +23,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   App.initNav('add');
   App.initProfileModal();
+
+  const params = new URLSearchParams(window.location.search);
+  const prefillName = params.get('name');
+  if (prefillName) {
+    const nameInput = document.getElementById('drinkName');
+    if (nameInput) nameInput.value = prefillName;
+  }
 });
 
 function setCategory(cat) {
