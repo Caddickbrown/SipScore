@@ -106,10 +106,9 @@ module.exports = async (req, res) => {
       )
     `;
 
-    // Migration: add varietal column if it doesn't exist (for existing databases)
-    await sql`
-      ALTER TABLE drinks ADD COLUMN IF NOT EXISTS varietal VARCHAR(100)
-    `;
+    // Migrations for existing databases
+    await sql`ALTER TABLE drinks ADD COLUMN IF NOT EXISTS varietal VARCHAR(100)`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_image TEXT`;
 
     await sql`
       CREATE TABLE IF NOT EXISTS ratings (

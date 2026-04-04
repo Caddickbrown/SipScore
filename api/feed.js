@@ -24,6 +24,15 @@ async function ensureTables(sql) {
       UNIQUE(user_id, post_id)
     )
   `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS feed_replies (
+      id SERIAL PRIMARY KEY,
+      post_id INTEGER NOT NULL REFERENCES feed_posts(id) ON DELETE CASCADE,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      content TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `;
 }
 
 module.exports = async (req, res) => {
@@ -47,11 +56,13 @@ module.exports = async (req, res) => {
           u.id            AS user_id,
           u.name          AS user_name,
           u.avatar_colour,
-          COUNT(fl.id)::int AS like_count,
-          BOOL_OR(fl.user_id = ${viewer_id}) AS liked_by_viewer
+          COUNT(DISTINCT fl.id)::int AS like_count,
+          BOOL_OR(fl.user_id = ${viewer_id}) AS liked_by_viewer,
+          COUNT(DISTINCT fr.id)::int AS reply_count
         FROM feed_posts fp
         JOIN users u ON u.id = fp.user_id
         LEFT JOIN feed_likes fl ON fl.post_id = fp.id
+        LEFT JOIN feed_replies fr ON fr.post_id = fp.id
         GROUP BY fp.id, fp.content, fp.created_at, u.id, u.name, u.avatar_colour
         ORDER BY fp.created_at DESC
         LIMIT 100
