@@ -182,8 +182,9 @@ function ratingEntryEl(r) {
   entry.className = 'rating-entry';
 
   const avatar = document.createElement('div');
-  avatar.className = 'rating-entry-avatar';
+  avatar.className = 'rating-entry-avatar user-link';
   App.applyAvatarToEl(avatar, { avatar_image: r.avatar_image, avatar_colour: r.avatar_colour, name: r.user_name });
+  avatar.addEventListener('click', () => navigateToUser(r.user_id));
 
   const info = document.createElement('div');
   info.className = 'rating-entry-info';
@@ -192,8 +193,9 @@ function ratingEntryEl(r) {
   topRow.className = 'rating-entry-top';
 
   const nameSpan = document.createElement('span');
-  nameSpan.className = 'rating-entry-name';
+  nameSpan.className = 'rating-entry-name user-link';
   nameSpan.textContent = r.user_name + (isMe ? ' (you)' : '');
+  nameSpan.addEventListener('click', () => navigateToUser(r.user_id));
 
   const starsSpan = document.createElement('span');
   starsSpan.className = 'rating-entry-stars';
@@ -213,6 +215,14 @@ function ratingEntryEl(r) {
   entry.appendChild(avatar);
   entry.appendChild(info);
   return entry;
+}
+
+function navigateToUser(userId) {
+  if (userId === user.id) {
+    App.openProfileModal(user);
+  } else {
+    window.location.href = '/user-reviews.html?user_id=' + userId;
+  }
 }
 
 async function saveRating() {
