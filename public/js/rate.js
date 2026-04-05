@@ -183,8 +183,7 @@ function ratingEntryEl(r) {
 
   const avatar = document.createElement('div');
   avatar.className = 'rating-entry-avatar';
-  avatar.style.background = r.avatar_colour || '#c9a96e';
-  avatar.textContent = initials;
+  App.applyAvatarToEl(avatar, { avatar_image: r.avatar_image, avatar_colour: r.avatar_colour, name: r.user_name });
 
   const info = document.createElement('div');
   info.className = 'rating-entry-info';
