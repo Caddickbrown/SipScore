@@ -97,10 +97,10 @@ function renderFeed(posts) {
 
     return `
       <article class="feed-post" data-id="${post.id}">
-        <div class="feed-post-avatar"></div>
+        <div class="feed-post-avatar user-link" data-user-id="${post.user_id}"></div>
         <div class="feed-post-body">
           <div class="feed-post-header">
-            <span class="feed-post-name">${DOMPurify.sanitize(post.user_name)}</span>
+            <span class="feed-post-name user-link" data-user-id="${post.user_id}">${DOMPurify.sanitize(post.user_name)}</span>
             <span class="feed-post-time">${timeAgo(post.created_at)}</span>
             ${isOwn ? `<button class="feed-delete-btn" data-id="${post.id}" aria-label="Delete post">
               <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
@@ -254,10 +254,10 @@ function replyItemHTML(reply, postId, isSubReply = false) {
 
   return `
     <div class="feed-reply-item" data-reply-id="${reply.id}">
-      <div class="${avatarClass}" style="width:${avatarSize}px;height:${avatarSize}px"></div>
+      <div class="${avatarClass} user-link" data-user-id="${reply.user_id}" style="width:${avatarSize}px;height:${avatarSize}px"></div>
       <div class="feed-reply-body">
         <div class="feed-reply-header">
-          <span class="feed-reply-name">${DOMPurify.sanitize(reply.user_name)}</span>
+          <span class="feed-reply-name user-link" data-user-id="${reply.user_id}">${DOMPurify.sanitize(reply.user_name)}</span>
           <span class="feed-reply-time">${timeAgo(reply.created_at)}</span>
           ${isOwn ? `<button class="feed-reply-delete-btn" data-id="${reply.id}" data-post-id="${postId}" aria-label="Delete reply">
             <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
@@ -467,6 +467,19 @@ async function deleteReply(replyId, postId, repliesSection) {
     App.showToast(err.message || 'Failed to delete reply', 'error');
   }
 }
+
+// ---- User profile links ----
+document.getElementById('feedList').addEventListener('click', (e) => {
+  const el = e.target.closest('.user-link[data-user-id]');
+  if (!el) return;
+  const userId = parseInt(el.dataset.userId);
+  if (!userId) return;
+  if (userId === user.id) {
+    App.openProfileModal(user);
+  } else {
+    window.location.href = '/user-reviews.html?user_id=' + userId;
+  }
+});
 
 // ---- Init ----
 loadFeed();

@@ -2203,4 +2203,73 @@ input, select, textarea {
     margin-left: auto;
     margin-right: auto;
   }
+
+  .user-profile-header {
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* =============================================
+   USER PROFILE HEADER (user-reviews page)
+   ============================================= */
+
+.user-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 16px 10px;
+}
+
+.user-profile-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--white);
+  background: var(--gold);
+}
+
+.user-profile-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.user-profile-stats {
+  font-size: 0.82rem;
+  color: var(--slate);
+  margin-top: 2px;
+}
+
+/* =============================================
+   CLICKABLE USER LINKS
+   ============================================= */
+
+.user-link {
+  cursor: pointer;
+}
+
+.user-link:hover {
+  opacity: 0.8;
+}
+
+.feed-post-name.user-link,
+.feed-reply-name.user-link,
+.rating-entry-name.user-link {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.feed-post-name.user-link:hover,
+.feed-reply-name.user-link:hover,
+.rating-entry-name.user-link:hover {
+  text-decoration: underline;
 }
