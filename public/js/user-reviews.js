@@ -63,7 +63,7 @@ async function loadUserProfile() {
   const avatarEl = document.getElementById('userProfileAvatar');
 
   try {
-    const data = await App.apiFetch('/api/user?id=' + profileUserId);
+    const data = await App.apiFetch('/api/profile?id=' + profileUserId);
     const u = data.user;
 
     nameEl.textContent = u.name;

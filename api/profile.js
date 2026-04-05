@@ -2,7 +2,7 @@ const { neon } = require('@neondatabase/serverless');
 
 function setCors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, PATCH, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
 
@@ -15,10 +15,37 @@ module.exports = async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'PATCH') return res.status(405).json({ error: 'Method not allowed' });
 
   const sql = neon(process.env.DATABASE_URL);
   await ensureColumn(sql);
+
+  // GET — fetch user profile by id
+  if (req.method === 'GET') {
+    const { id } = req.query;
+    if (!id) return res.status(400).json({ error: 'id is required' });
+
+    try {
+      const rows = await sql`
+        SELECT u.id, u.name, u.avatar_colour, u.avatar_image,
+          COUNT(r.id)::int AS rating_count
+        FROM users u
+        LEFT JOIN ratings r ON r.user_id = u.id
+        WHERE u.id = ${parseInt(id)}
+        GROUP BY u.id
+      `;
+
+      if (!rows.length) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      return res.json({ user: rows[0] });
+    } catch (err) {
+      console.error('GET profile error:', err);
+      return res.status(500).json({ error: err.message });
+    }
+  }
+
+  if (req.method !== 'PATCH') return res.status(405).json({ error: 'Method not allowed' });
 
   const { user_id, avatar_image } = req.body || {};
 
