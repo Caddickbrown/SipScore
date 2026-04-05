@@ -43,7 +43,7 @@ module.exports = async (req, res) => {
       const categoryFilter = category || null;
       const rows = await sql`
         WITH global AS (
-          SELECT AVG(stars)::float AS m, 3 AS c FROM ratings
+          SELECT AVG(stars)::float AS m, 5 AS c FROM ratings
         ),
         drink_stats AS (
           SELECT drink_id,
