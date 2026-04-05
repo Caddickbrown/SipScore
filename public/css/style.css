@@ -833,9 +833,8 @@ button {
   color: var(--slate);
   font-weight: 300;
   font-style: italic;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* =============================================
