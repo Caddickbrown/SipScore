@@ -19,6 +19,10 @@
   <header class="app-header">
     <a href="/drinks.html" class="app-logo">Sip<span>Score</span></a>
     <div class="header-right">
+      <button type="button" class="trip-pill" id="tripPill" title="Switch trip">
+        <svg viewBox="0 0 24 24"><path d="M3 7h18v13H3zM8 7V4h8v3M3 12h18"/></svg>
+        <span class="trip-pill-name" id="tripPillName">Trip</span>
+      </button>
       <div class="user-avatar" id="headerAvatar" title="Profile"></div>
     </div>
   </header>
@@ -408,10 +412,10 @@
       <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       <span class="nav-label">Feed</span>
     </a>
-    <button type="button" class="nav-item" data-page="profile" onclick="App.openProfileModal(App.getUser())">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg>
-      <span class="nav-label">Profile</span>
-    </button>
+    <a href="/trips.html" class="nav-item" data-page="trips">
+      <svg viewBox="0 0 24 24"><path d="M3 7h18v13H3zM8 7V4h8v3M3 12h18"/></svg>
+      <span class="nav-label">Trips</span>
+    </a>
   </nav>
 
   <!-- Profile modal -->
@@ -440,6 +444,10 @@
         <a href="/add-drink.html" class="modal-nav-item">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
           Add Drink
+        </a>
+        <a href="/trips.html" class="modal-nav-item">
+          <svg viewBox="0 0 24 24"><path d="M3 7h18v13H3zM8 7V4h8v3M3 12h18"/></svg>
+          My Trips
         </a>
       </nav>
       <div class="modal-divider"></div>

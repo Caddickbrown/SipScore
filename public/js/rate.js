@@ -14,6 +14,7 @@ function safeHTML(el, html) {
 document.addEventListener('DOMContentLoaded', async () => {
   user = App.requireAuth();
   if (!user) return;
+  if (!App.requireTrip()) return;
 
   const params = new URLSearchParams(window.location.search);
   drinkId = parseInt(params.get('id'));
@@ -90,10 +91,7 @@ function updateStarUI(val) {
 
 async function loadDrink() {
   try {
-    const params = new URLSearchParams({
-      id: String(drinkId),
-      user_id: String(user.id),
-    });
+    const params = App.tripParams({ id: String(drinkId) });
     const data = await App.apiFetch('/api/drink?' + params.toString());
     const { drink, ratings, myRating } = data;
 
@@ -235,12 +233,11 @@ async function saveRating() {
   try {
     await App.apiFetch('/api/ratings', {
       method: 'POST',
-      body: JSON.stringify({
-        user_id: user.id,
+      body: JSON.stringify(App.tripBody({
         drink_id: drinkId,
         stars: selectedStars,
         notes: document.getElementById('notesInput').value.trim() || null,
-      }),
+      })),
     });
 
     App.showToast('Rating saved!', 'success');
@@ -258,7 +255,7 @@ async function deleteRating() {
   try {
     await App.apiFetch('/api/ratings', {
       method: 'DELETE',
-      body: JSON.stringify({ user_id: user.id, drink_id: drinkId }),
+      body: JSON.stringify(App.tripBody({ drink_id: drinkId })),
     });
 
     App.showToast('Rating removed', 'success');

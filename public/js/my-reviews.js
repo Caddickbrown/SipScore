@@ -15,7 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
   user = App.requireAuth();
   if (!user) return;
 
+  if (!App.requireTrip()) return;
+
   App.initNav('reviews');
+  App.initTripPill();
   App.initProfileModal();
   setupCategoryChips();
   setupSort();
@@ -46,7 +49,7 @@ async function loadReviews() {
   safeHTML(list, '<div class="loading-wrap"><div class="spinner"></div></div>');
 
   try {
-    const params = new URLSearchParams({ type: 'personal', user_id: user.id });
+    const params = App.tripParams({ type: 'personal' });
     const data = await App.apiFetch('/api/leaderboard?' + params.toString());
     allReviews = data.leaderboard || [];
     renderReviews();

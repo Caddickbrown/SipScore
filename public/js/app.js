@@ -34,6 +34,101 @@ function requireAuth() {
   return user;
 }
 
+// ---- Trips ----
+// The active trip decides which holiday you're rating on. It's kept in
+// localStorage alongside the user so every page picks up the same one.
+
+function getTrip() {
+  try {
+    const raw = localStorage.getItem('sipscore_trip');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function setTrip(trip) {
+  if (!trip) return clearTrip();
+  localStorage.setItem('sipscore_trip', JSON.stringify(trip));
+}
+
+function clearTrip() {
+  localStorage.removeItem('sipscore_trip');
+}
+
+function getTripId() {
+  const trip = getTrip();
+  return trip ? trip.id : null;
+}
+
+// Redirect to the trips screen if no holiday is selected.
+function requireTrip() {
+  const trip = getTrip();
+  if (!trip) {
+    window.location.replace('/trips.html');
+    return null;
+  }
+  return trip;
+}
+
+// Query string carrying the signed-in user and the active trip.
+function tripParams(extra = {}) {
+  const user = getUser();
+  const params = new URLSearchParams();
+  if (user) params.set('user_id', user.id);
+  const tripId = getTripId();
+  if (tripId) params.set('trip_id', tripId);
+  Object.entries(extra).forEach(([key, value]) => {
+    if (value !== null && value !== undefined && value !== '') params.set(key, value);
+  });
+  return params;
+}
+
+// Body fields for a trip-scoped write.
+function tripBody(extra = {}) {
+  const user = getUser();
+  return { user_id: user ? user.id : null, trip_id: getTripId(), ...extra };
+}
+
+function formatTripDates(trip) {
+  if (!trip || (!trip.start_date && !trip.end_date)) return '';
+  const fmt = (value) => {
+    const d = new Date(value);
+    if (isNaN(d)) return '';
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+  const start = trip.start_date ? fmt(trip.start_date) : '';
+  const end = trip.end_date ? fmt(trip.end_date) : '';
+  if (start && end) return `${start} – ${end}`;
+  return start || end;
+}
+
+// Header pill showing the current trip; tapping it opens the trip switcher.
+function initTripPill() {
+  const pill = document.getElementById('tripPill');
+  if (!pill) return;
+  const trip = getTrip();
+  const nameEl = document.getElementById('tripPillName');
+  if (nameEl) nameEl.textContent = trip ? trip.name : 'Choose a trip';
+  pill.addEventListener('click', () => { window.location.href = '/trips.html'; });
+}
+
+// Keep the stored copy in step with the server (name edits, member counts).
+async function refreshTrip() {
+  const trip = getTrip();
+  const user = getUser();
+  if (!trip || !user) return null;
+  try {
+    const { trip: fresh } = await apiFetch(`/api/trips?id=${trip.id}&user_id=${user.id}`);
+    setTrip({ ...trip, ...fresh });
+    return fresh;
+  } catch {
+    // Trip deleted or access lost — fall back to picking one again.
+    clearTrip();
+    return null;
+  }
+}
+
 // ---- API ----
 
 async function apiFetch(path, options = {}) {
@@ -324,6 +419,7 @@ function initProfileModal() {
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
       clearUser();
+      clearTrip();
       window.location.replace('/index.html');
     });
   }
@@ -386,10 +482,12 @@ function openProfileModal(user) {
   if (nameEl) nameEl.textContent = user.name;
   if (bigAvatar) applyAvatarToEl(bigAvatar, user);
   if (statsEl) {
-    apiFetch(`/api/leaderboard?type=personal&user_id=${user.id}`)
+    const trip = getTrip();
+    apiFetch('/api/leaderboard?' + tripParams({ type: 'personal' }).toString())
       .then(data => {
         const count = data.leaderboard ? data.leaderboard.length : 0;
-        statsEl.textContent = `${count} drink${count !== 1 ? 's' : ''} rated`;
+        const drinks = `${count} drink${count !== 1 ? 's' : ''} rated`;
+        statsEl.textContent = trip ? `${drinks} on ${trip.name}` : drinks;
       })
       .catch(() => {});
   }
@@ -426,6 +524,16 @@ window.App = {
   setUser,
   clearUser,
   requireAuth,
+  getTrip,
+  setTrip,
+  clearTrip,
+  getTripId,
+  requireTrip,
+  tripParams,
+  tripBody,
+  formatTripDates,
+  initTripPill,
+  refreshTrip,
   apiFetch,
   renderStars,
   renderMyStars,

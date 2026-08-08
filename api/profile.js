@@ -1,36 +1,32 @@
-const { neon } = require('@neondatabase/serverless');
-
-function setCors(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, PATCH, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-}
-
-async function ensureColumn(sql) {
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_image TEXT`;
-}
+const { getSql, setCors, ensureSchema, parseId } = require('../lib/db');
 
 module.exports = async (req, res) => {
-  setCors(res);
+  setCors(res, 'GET, PATCH, OPTIONS');
   res.setHeader('Content-Type', 'application/json');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const sql = neon(process.env.DATABASE_URL);
-  await ensureColumn(sql);
+  const sql = getSql();
+  await ensureSchema(sql);
 
-  // GET — fetch user profile by id
+  /* -------- GET — fetch user profile by id -------- */
   if (req.method === 'GET') {
-    const { id } = req.query;
+    const id = parseId(req.query.id);
+    // Scoped to a trip when given, so a profile shows what they rated *here*.
+    const tripId = parseId(req.query.trip_id);
     if (!id) return res.status(400).json({ error: 'id is required' });
 
     try {
       const rows = await sql`
         SELECT u.id, u.name, u.avatar_colour, u.avatar_image,
-          COUNT(r.id)::int AS rating_count
+          COUNT(r.id) FILTER (
+            WHERE ${tripId}::int IS NULL OR r.trip_id = ${tripId}
+          )::int AS rating_count,
+          COUNT(r.id)::int AS overall_rating_count,
+          (SELECT COUNT(*)::int FROM trip_members tm WHERE tm.user_id = u.id) AS trip_count
         FROM users u
         LEFT JOIN ratings r ON r.user_id = u.id
-        WHERE u.id = ${parseInt(id)}
+        WHERE u.id = ${id}
         GROUP BY u.id
       `;
 
@@ -47,9 +43,10 @@ module.exports = async (req, res) => {
 
   if (req.method !== 'PATCH') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { user_id, avatar_image } = req.body || {};
+  const { avatar_image } = req.body || {};
+  const userId = parseId((req.body || {}).user_id);
 
-  if (!user_id) {
+  if (!userId) {
     return res.status(400).json({ error: 'user_id is required' });
   }
 
@@ -72,7 +69,7 @@ module.exports = async (req, res) => {
     const [user] = await sql`
       UPDATE users
       SET avatar_image = ${avatar_image ?? null}
-      WHERE id = ${parseInt(user_id)}
+      WHERE id = ${userId}
       RETURNING id, name, avatar_colour, avatar_image
     `;
 

@@ -1,70 +1,45 @@
-const { neon } = require('@neondatabase/serverless');
-
-function setCors(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-}
-
-async function ensureTables(sql) {
-  await sql`
-    CREATE TABLE IF NOT EXISTS feed_posts (
-      id SERIAL PRIMARY KEY,
-      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      content TEXT NOT NULL,
-      created_at TIMESTAMPTZ DEFAULT NOW()
-    )
-  `;
-  await sql`
-    CREATE TABLE IF NOT EXISTS feed_likes (
-      id SERIAL PRIMARY KEY,
-      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      post_id INTEGER NOT NULL REFERENCES feed_posts(id) ON DELETE CASCADE,
-      created_at TIMESTAMPTZ DEFAULT NOW(),
-      UNIQUE(user_id, post_id)
-    )
-  `;
-  await sql`
-    CREATE TABLE IF NOT EXISTS feed_replies (
-      id SERIAL PRIMARY KEY,
-      post_id INTEGER NOT NULL REFERENCES feed_posts(id) ON DELETE CASCADE,
-      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      content TEXT NOT NULL,
-      created_at TIMESTAMPTZ DEFAULT NOW()
-    )
-  `;
-}
+const { getSql, setCors, ensureSchema, parseId, requireMembership } = require('../lib/db');
 
 module.exports = async (req, res) => {
-  setCors(res);
+  setCors(res, 'GET, POST, DELETE, OPTIONS');
   res.setHeader('Content-Type', 'application/json');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const sql = neon(process.env.DATABASE_URL);
-  await ensureTables(sql);
+  const sql = getSql();
+  await ensureSchema(sql);
 
-  // GET — list all posts, newest first, with like counts + viewer's like state
+  /* -------- GET — posts for a trip, newest first -------- */
   if (req.method === 'GET') {
-    const viewer_id = parseInt(req.query?.user_id) || null;
+    const viewerId = parseId(req.query.user_id);
+    const tripId = parseId(req.query.trip_id);
+
     try {
+      if (tripId && viewerId) {
+        const membership = await requireMembership(sql, res, tripId, viewerId);
+        if (!membership) return;
+      }
+
       const posts = await sql`
         SELECT
           fp.id,
           fp.content,
           fp.created_at,
+          fp.trip_id,
           u.id            AS user_id,
           u.name          AS user_name,
           u.avatar_colour,
           u.avatar_image,
           COUNT(DISTINCT fl.id)::int AS like_count,
-          BOOL_OR(fl.user_id = ${viewer_id}) AS liked_by_viewer,
+          BOOL_OR(fl.user_id = ${viewerId}) AS liked_by_viewer,
           COUNT(DISTINCT fr.id)::int AS reply_count
         FROM feed_posts fp
         JOIN users u ON u.id = fp.user_id
         LEFT JOIN feed_likes fl ON fl.post_id = fp.id
         LEFT JOIN feed_replies fr ON fr.post_id = fp.id
-        GROUP BY fp.id, fp.content, fp.created_at, u.id, u.name, u.avatar_colour, u.avatar_image
+        WHERE ${tripId}::int IS NULL OR fp.trip_id = ${tripId}
+        GROUP BY fp.id, fp.content, fp.created_at, fp.trip_id,
+                 u.id, u.name, u.avatar_colour, u.avatar_image
         ORDER BY fp.created_at DESC
         LIMIT 100
       `;
@@ -75,11 +50,13 @@ module.exports = async (req, res) => {
     }
   }
 
-  // POST — create a post
+  /* -------- POST — create a post -------- */
   if (req.method === 'POST') {
-    const { user_id, content } = req.body || {};
+    const { content } = req.body || {};
+    const userId = parseId((req.body || {}).user_id);
+    const tripId = parseId((req.body || {}).trip_id);
 
-    if (!user_id || !content || !content.trim()) {
+    if (!userId || !content || !content.trim()) {
       return res.status(400).json({ error: 'user_id and content are required' });
     }
 
@@ -87,12 +64,18 @@ module.exports = async (req, res) => {
     if (trimmed.length > 500) {
       return res.status(400).json({ error: 'Content must be 500 characters or fewer' });
     }
+    if (!tripId) {
+      return res.status(400).json({ error: 'Pick a trip before posting' });
+    }
 
     try {
+      const membership = await requireMembership(sql, res, tripId, userId);
+      if (!membership) return;
+
       const [post] = await sql`
-        INSERT INTO feed_posts (user_id, content)
-        VALUES (${parseInt(user_id)}, ${trimmed})
-        RETURNING id, content, created_at
+        INSERT INTO feed_posts (user_id, trip_id, content)
+        VALUES (${userId}, ${tripId}, ${trimmed})
+        RETURNING id, content, created_at, trip_id
       `;
       return res.status(201).json({ post });
     } catch (err) {
@@ -101,18 +84,19 @@ module.exports = async (req, res) => {
     }
   }
 
-  // DELETE — remove own post
+  /* -------- DELETE — remove own post -------- */
   if (req.method === 'DELETE') {
-    const { user_id, post_id } = req.body || {};
+    const userId = parseId((req.body || {}).user_id);
+    const postId = parseId((req.body || {}).post_id);
 
-    if (!user_id || !post_id) {
+    if (!userId || !postId) {
       return res.status(400).json({ error: 'user_id and post_id are required' });
     }
 
     try {
       const result = await sql`
         DELETE FROM feed_posts
-        WHERE id = ${parseInt(post_id)} AND user_id = ${parseInt(user_id)}
+        WHERE id = ${postId} AND user_id = ${userId}
         RETURNING id
       `;
       if (result.length === 0) {

@@ -5,6 +5,8 @@
 let user;
 let currentCategory = '';
 let currentType = '';
+let currentScope = 'trip';   // 'trip' — added on this holiday | 'all' — whole catalogue
+let autoWidened = false;     // only ever bounce an empty trip to the full list once
 let searchTimer;
 
 const CATEGORY_TYPES = {
@@ -27,12 +29,35 @@ document.addEventListener('DOMContentLoaded', () => {
   user = App.requireAuth();
   if (!user) return;
 
+  if (!App.requireTrip()) return;
+
   App.initNav('drinks');
+  App.initTripPill();
   App.initProfileModal();
   setupSearch();
+  setupScopeToggle();
   setupCategoryChips();
   loadDrinks();
 });
+
+function setupScopeToggle() {
+  document.querySelectorAll('#scopeToggle .scope-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.scope === currentScope) return;
+      currentScope = btn.dataset.scope;
+      autoWidened = true;   // an explicit choice sticks
+      renderScopeToggle();
+      loadDrinks();
+    });
+  });
+  renderScopeToggle();
+}
+
+function renderScopeToggle() {
+  document.querySelectorAll('#scopeToggle .scope-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.scope === currentScope);
+  });
+}
 
 function setupSearch() {
   const input = document.getElementById('searchInput');
@@ -109,14 +134,28 @@ async function loadDrinks() {
   const list = document.getElementById('drinksList');
   safeHTML(list, '<div class="loading-wrap"><div class="spinner"></div></div>');
 
-  const params = new URLSearchParams({ user_id: user.id });
-  if (search) params.set('search', search);
-  if (currentCategory) params.set('category', currentCategory);
-  if (currentType) params.set('type', currentType);
+  const params = App.tripParams({
+    scope: currentScope,
+    search,
+    category: currentCategory,
+    type: currentType,
+  });
 
   try {
     const data = await App.apiFetch('/api/drinks?' + params.toString());
-    renderDrinks(data.drinks || []);
+    const drinks = data.drinks || [];
+
+    // A trip starts with nothing of its own, so rather than showing an empty
+    // list, open up the shared catalogue the first time round.
+    if (drinks.length === 0 && currentScope === 'trip' && !autoWidened
+        && !search && !currentCategory && !currentType) {
+      autoWidened = true;
+      currentScope = 'all';
+      renderScopeToggle();
+      return loadDrinks();
+    }
+
+    renderDrinks(drinks);
   } catch (err) {
     renderError(list, err.message);
   }
@@ -128,10 +167,14 @@ function renderDrinks(drinks) {
 
   if (drinks.length === 0) {
     const search = document.getElementById('searchInput').value.trim();
+    const trip = App.getTrip();
+    const scopeHint = currentScope === 'trip' && trip
+      ? `Nothing added on ${trip.name} yet — try "All drinks" or add one.`
+      : 'Add a drink to get started!';
     renderEmpty(
       list,
       search ? 'No results' : 'Nothing here yet',
-      search ? `No drinks match "${search}"` : 'Add a drink to get started!',
+      search ? `No drinks match "${search}"` : scopeHint,
       search ? '/add-drink.html?name=' + encodeURIComponent(search) : null
     );
     return;

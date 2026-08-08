@@ -1,50 +1,42 @@
-const { neon } = require('@neondatabase/serverless');
-
-function setCors(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-}
+const { getSql, setCors, ensureSchema, parseId } = require('../lib/db');
 
 module.exports = async (req, res) => {
-  setCors(res);
+  setCors(res, 'POST, OPTIONS');
   res.setHeader('Content-Type', 'application/json');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { user_id, post_id } = req.body || {};
-  if (!user_id || !post_id) {
+  const userId = parseId((req.body || {}).user_id);
+  const postId = parseId((req.body || {}).post_id);
+  if (!userId || !postId) {
     return res.status(400).json({ error: 'user_id and post_id are required' });
   }
 
-  const sql = neon(process.env.DATABASE_URL);
+  const sql = getSql();
+  await ensureSchema(sql);
 
   try {
     // Toggle: if like exists remove it, otherwise insert it
     const existing = await sql`
-      SELECT id FROM feed_likes
-      WHERE user_id = ${parseInt(user_id)} AND post_id = ${parseInt(post_id)}
+      SELECT id FROM feed_likes WHERE user_id = ${userId} AND post_id = ${postId}
     `;
 
     let liked;
     if (existing.length > 0) {
-      await sql`
-        DELETE FROM feed_likes
-        WHERE user_id = ${parseInt(user_id)} AND post_id = ${parseInt(post_id)}
-      `;
+      await sql`DELETE FROM feed_likes WHERE user_id = ${userId} AND post_id = ${postId}`;
       liked = false;
     } else {
       await sql`
         INSERT INTO feed_likes (user_id, post_id)
-        VALUES (${parseInt(user_id)}, ${parseInt(post_id)})
+        VALUES (${userId}, ${postId})
         ON CONFLICT DO NOTHING
       `;
       liked = true;
     }
 
     const [{ count }] = await sql`
-      SELECT COUNT(*)::int AS count FROM feed_likes WHERE post_id = ${parseInt(post_id)}
+      SELECT COUNT(*)::int AS count FROM feed_likes WHERE post_id = ${postId}
     `;
 
     return res.json({ liked, like_count: count });

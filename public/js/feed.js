@@ -5,7 +5,10 @@
 const user = App.requireAuth();
 if (!user) throw new Error('Not authenticated');
 
+if (!App.requireTrip()) throw new Error('no trip selected');
+
 App.initNav('feed');
+App.initTripPill();
 App.initProfileModal();
 
 // ---- Compose ----
@@ -40,7 +43,7 @@ async function submitPost() {
   try {
     await App.apiFetch('/api/feed', {
       method: 'POST',
-      body: JSON.stringify({ user_id: user.id, content }),
+      body: JSON.stringify(App.tripBody({ content })),
     });
     textarea.value = '';
     charCount.textContent = '500';
@@ -61,7 +64,7 @@ async function loadFeed() {
   const list = document.getElementById('feedList');
 
   try {
-    const { posts } = await App.apiFetch(`/api/feed?user_id=${user.id}`);
+    const { posts } = await App.apiFetch('/api/feed?' + App.tripParams().toString());
     renderFeed(posts);
   } catch (err) {
     list.innerHTML = `<div class="empty-state"><p>Failed to load feed.</p></div>`;
