@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   App.initNav();
+  App.initTripPill();
   App.initProfileModal();
   setupCategoryChips();
   setupSort();
@@ -63,7 +64,10 @@ async function loadUserProfile() {
   const avatarEl = document.getElementById('userProfileAvatar');
 
   try {
-    const data = await App.apiFetch('/api/profile?id=' + profileUserId);
+    const params = new URLSearchParams({ id: profileUserId });
+    const tripId = App.getTripId();
+    if (tripId) params.set('trip_id', tripId);
+    const data = await App.apiFetch('/api/profile?' + params.toString());
     const u = data.user;
 
     nameEl.textContent = u.name;
@@ -82,6 +86,8 @@ async function loadReviews() {
 
   try {
     const params = new URLSearchParams({ type: 'personal', user_id: profileUserId });
+    const tripId = App.getTripId();
+    if (tripId) params.set('trip_id', tripId);
     const data = await App.apiFetch('/api/leaderboard?' + params.toString());
     allReviews = data.leaderboard || [];
     renderReviews();

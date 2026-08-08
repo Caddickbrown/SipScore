@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#1a2744">
+  <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg">
+  <link rel="apple-touch-icon" href="/icons/favicon.svg">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SipScore">
+  <title>SipScore — Trips</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="app-header">
+    <a href="/drinks.html" class="app-logo">Sip<span>Score</span></a>
+    <div class="header-right">
+      <div class="user-avatar" id="headerAvatar" title="Profile"></div>
+    </div>
+  </header>
+
+  <div class="page-intro">
+    <h1 class="page-title">Your Trips</h1>
+    <p class="page-subtitle">Every holiday keeps its own ratings, rankings and feed.</p>
+  </div>
+
+  <div class="trip-actions-row">
+    <button class="btn btn-gold" id="newTripBtn">＋ New Trip</button>
+    <button class="btn btn-outline" id="joinTripBtn">Join with Code</button>
+  </div>
+
+  <div id="tripsList" class="trips-list">
+    <div class="loading-wrap"><div class="spinner"></div></div>
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav" id="bottomNav">
+    <a href="/drinks.html" class="nav-item" data-page="drinks">
+      <svg viewBox="0 0 24 24"><path d="M8 22h8M12 11v11M7 3h10l-2 8H9L7 3z"/></svg>
+      <span class="nav-label">Drinks</span>
+    </a>
+    <a href="/leaderboard.html" class="nav-item" data-page="leaderboard">
+      <svg viewBox="0 0 24 24"><path d="M6 9H3l2-5h14l2 5h-3M6 9a6 6 0 0 0 12 0M8 21H5l3-3h8l3 3h-3M12 18v-3"/></svg>
+      <span class="nav-label">Rankings</span>
+    </a>
+    <a href="/feed.html" class="nav-item" data-page="feed">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span class="nav-label">Feed</span>
+    </a>
+    <a href="/trips.html" class="nav-item" data-page="trips">
+      <svg viewBox="0 0 24 24"><path d="M3 7h18v13H3zM8 7V4h8v3M3 12h18"/></svg>
+      <span class="nav-label">Trips</span>
+    </a>
+  </nav>
+
+  <!-- New trip sheet -->
+  <div class="modal-overlay" id="newTripModal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <h3 class="modal-title" id="tripFormTitle">New Trip</h3>
+      <form id="tripForm" onsubmit="saveTrip(event)">
+        <div class="form-group">
+          <label class="form-label" for="tripName">Trip Name</label>
+          <input class="form-input" type="text" id="tripName" maxlength="100"
+                 placeholder="e.g. Amalfi 2026" autocomplete="off" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="tripDestination">Destination <span class="form-optional">optional</span></label>
+          <input class="form-input" type="text" id="tripDestination" maxlength="120"
+                 placeholder="e.g. Positano, Italy" autocomplete="off">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="tripStart">From <span class="form-optional">optional</span></label>
+            <input class="form-input" type="date" id="tripStart">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="tripEnd">To <span class="form-optional">optional</span></label>
+            <input class="form-input" type="date" id="tripEnd">
+          </div>
+        </div>
+        <p class="form-error" id="tripFormError"></p>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-gold btn-full" id="tripSaveBtn">Create Trip</button>
+          <button type="button" class="btn btn-outline btn-full" onclick="closeTripModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Join trip sheet -->
+  <div class="modal-overlay" id="joinTripModal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <h3 class="modal-title">Join a Trip</h3>
+      <p class="modal-subtitle">Ask whoever set the trip up for its 6-character code.</p>
+      <form id="joinForm" onsubmit="joinTrip(event)">
+        <div class="form-group">
+          <label class="form-label" for="joinCode">Invite Code</label>
+          <input class="form-input code-input" type="text" id="joinCode" maxlength="10"
+                 placeholder="ABC123" autocomplete="off" autocapitalize="characters"
+                 spellcheck="false" required>
+        </div>
+        <div id="joinPreview" class="join-preview"></div>
+        <p class="form-error" id="joinFormError"></p>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-gold btn-full" id="joinSaveBtn">Join Trip</button>
+          <button type="button" class="btn btn-outline btn-full" onclick="closeJoinModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Trip detail sheet -->
+  <div class="modal-overlay" id="tripDetailModal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <h3 class="modal-title" id="detailName"></h3>
+      <p class="modal-subtitle" id="detailMeta"></p>
+
+      <div class="invite-code-block">
+        <span class="invite-code-label">Invite code</span>
+        <div class="invite-code-row">
+          <span class="invite-code" id="detailCode"></span>
+          <button type="button" class="btn btn-outline btn-sm" id="copyCodeBtn">Copy</button>
+        </div>
+        <p class="invite-code-hint">Share this so others can join the trip.</p>
+      </div>
+
+      <div class="modal-divider"></div>
+      <div class="detail-section-label">Who's on this trip</div>
+      <div id="detailMembers" class="trip-members"></div>
+
+      <div class="modal-divider"></div>
+      <div class="modal-actions">
+        <button class="btn btn-gold btn-full" id="detailSwitchBtn">Make Active Trip</button>
+        <button class="btn btn-outline btn-full" id="detailEditBtn">Edit Details</button>
+        <button class="btn btn-danger btn-full" id="detailLeaveBtn">Leave Trip</button>
+        <button class="btn btn-outline btn-full" onclick="closeDetailModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile modal -->
+  <div class="modal-overlay" id="profileModal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="profile-row">
+        <div class="profile-avatar-wrapper">
+          <div class="profile-avatar-lg"></div>
+          <label class="profile-avatar-edit" for="avatarInput" title="Change photo">
+            <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </label>
+          <input type="file" id="avatarInput" accept="image/*" style="display:none">
+        </div>
+        <div class="profile-text-info">
+          <div class="profile-display-name"></div>
+          <div class="profile-stats-text">Loading…</div>
+        </div>
+      </div>
+      <div class="modal-divider"></div>
+      <nav class="modal-nav">
+        <a href="/my-reviews.html" class="modal-nav-item">
+          <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          My Reviews
+        </a>
+        <a href="/add-drink.html" class="modal-nav-item">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+          Add Drink
+        </a>
+        <a href="/trips.html" class="modal-nav-item">
+          <svg viewBox="0 0 24 24"><path d="M3 7h18v13H3zM8 7V4h8v3M3 12h18"/></svg>
+          My Trips
+        </a>
+        <a href="/trips.html?new=1" class="modal-nav-item" id="newTripNavItem">
+          <svg viewBox="0 0 24 24"><path d="M3 7h18v13H3zM8 7V4h8v3M12 11v6M9 14h6"/></svg>
+          New Trip
+        </a>
+      </nav>
+      <div class="modal-divider"></div>
+      <div class="modal-actions">
+        <button class="btn btn-outline btn-full" onclick="App.closeProfileModal()">Close</button>
+        <button class="btn btn-danger btn-full" id="logoutBtn">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script src="/js/app.js"></script>
+  <script src="/js/trips.js"></script>
+</body>
+</html>

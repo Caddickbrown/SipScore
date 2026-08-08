@@ -1,4 +1,4 @@
-const { neon } = require('@neondatabase/serverless');
+const { getSql, setCors, ensureSchema } = require('../lib/db');
 
 const WINES = [
   { name: 'Pontiglio', type: 'White', style: 'Light and Crisp', source: 'Corfu, Greece' },
@@ -63,65 +63,18 @@ const COCKTAILS = [
   { name: 'Mimosa', type: 'Wine-based', style: 'Bubbly', source: 'USA' },
 ];
 
-function setCors(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-}
-
 module.exports = async (req, res) => {
-  setCors(res);
+  setCors(res, 'POST, OPTIONS');
   res.setHeader('Content-Type', 'application/json');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const sql = neon(process.env.DATABASE_URL);
+  const sql = getSql();
 
   try {
-    // Create tables
-    await sql`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(50) UNIQUE NOT NULL,
-        pin_hash VARCHAR(128) NOT NULL,
-        pin_salt VARCHAR(32) NOT NULL,
-        avatar_colour VARCHAR(7) NOT NULL DEFAULT '#c9a96e',
-        created_at TIMESTAMPTZ DEFAULT NOW()
-      )
-    `;
-
-    await sql`
-      CREATE TABLE IF NOT EXISTS drinks (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(200) NOT NULL,
-        category VARCHAR(20) NOT NULL,
-        type VARCHAR(100),
-        varietal VARCHAR(100),
-        style VARCHAR(100),
-        source VARCHAR(200),
-        added_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-        is_seeded BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMPTZ DEFAULT NOW()
-      )
-    `;
-
-    // Migrations for existing databases
-    await sql`ALTER TABLE drinks ADD COLUMN IF NOT EXISTS varietal VARCHAR(100)`;
-    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_image TEXT`;
-
-    await sql`
-      CREATE TABLE IF NOT EXISTS ratings (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        drink_id INTEGER NOT NULL REFERENCES drinks(id) ON DELETE CASCADE,
-        stars SMALLINT NOT NULL CHECK (stars >= 1 AND stars <= 5),
-        notes TEXT,
-        created_at TIMESTAMPTZ DEFAULT NOW(),
-        updated_at TIMESTAMPTZ DEFAULT NOW(),
-        UNIQUE(user_id, drink_id)
-      )
-    `;
+    // Tables, trip columns and the legacy-trip backfill all live in lib/db.
+    await ensureSchema(sql);
 
     // Check if already seeded
     const [{ count }] = await sql`SELECT COUNT(*) as count FROM drinks WHERE is_seeded = true`;
@@ -132,16 +85,16 @@ module.exports = async (req, res) => {
     // Seed wines
     for (const wine of WINES) {
       await sql`
-        INSERT INTO drinks (name, category, type, style, source, is_seeded)
-        VALUES (${wine.name}, 'wine', ${wine.type}, ${wine.style}, ${wine.source}, true)
+        INSERT INTO drinks (name, category, type, style, source, is_seeded, trip_id)
+        VALUES (${wine.name}, 'wine', ${wine.type}, ${wine.style}, ${wine.source}, true, NULL)
       `;
     }
 
     // Seed cocktails
     for (const cocktail of COCKTAILS) {
       await sql`
-        INSERT INTO drinks (name, category, type, style, source, is_seeded)
-        VALUES (${cocktail.name}, 'cocktail', ${cocktail.type}, ${cocktail.style}, ${cocktail.source}, true)
+        INSERT INTO drinks (name, category, type, style, source, is_seeded, trip_id)
+        VALUES (${cocktail.name}, 'cocktail', ${cocktail.type}, ${cocktail.style}, ${cocktail.source}, true, NULL)
       `;
     }
 

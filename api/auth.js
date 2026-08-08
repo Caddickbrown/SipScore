@@ -1,5 +1,5 @@
-const { neon } = require('@neondatabase/serverless');
 const crypto = require('crypto');
+const { getSql, setCors, ensureSchema } = require('../lib/db');
 
 const AVATAR_COLOURS = [
   '#c9a96e', '#1a6b5c', '#7c5cbf', '#c17b5c',
@@ -14,20 +14,33 @@ function hashPin(pin, salt) {
   return crypto.createHmac('sha256', salt).update(String(pin)).digest('hex');
 }
 
-function setCors(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+// Returned on sign-in so the client can pick an active trip straight away
+// instead of making a second round-trip.
+async function tripsForUser(sql, userId) {
+  return sql`
+    SELECT
+      t.id, t.name, t.destination, t.start_date, t.end_date,
+      t.invite_code, t.created_by_user_id, t.created_at,
+      tm.role,
+      (SELECT COUNT(*)::int FROM trip_members m WHERE m.trip_id = t.id) AS member_count,
+      (SELECT COUNT(*)::int FROM drinks d WHERE d.trip_id = t.id)       AS drink_count,
+      (SELECT COUNT(*)::int FROM ratings r WHERE r.trip_id = t.id)      AS rating_count,
+      (SELECT COUNT(*)::int FROM ratings r
+         WHERE r.trip_id = t.id AND r.user_id = ${userId})              AS my_rating_count
+    FROM trips t
+    JOIN trip_members tm ON tm.trip_id = t.id AND tm.user_id = ${userId}
+    ORDER BY COALESCE(t.start_date, t.created_at::date) DESC, t.id DESC
+  `;
 }
 
 module.exports = async (req, res) => {
-  setCors(res);
+  setCors(res, 'POST, OPTIONS');
   res.setHeader('Content-Type', 'application/json');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const sql = neon(process.env.DATABASE_URL);
+  const sql = getSql();
   const { action, name, pin } = req.body || {};
 
   if (!name || !pin) {
@@ -46,6 +59,8 @@ module.exports = async (req, res) => {
   }
 
   try {
+    await ensureSchema(sql);
+
     if (action === 'register') {
       const existing = await sql`
         SELECT id FROM users WHERE LOWER(name) = LOWER(${trimmedName})
@@ -64,7 +79,7 @@ module.exports = async (req, res) => {
         RETURNING id, name, avatar_colour, avatar_image
       `;
 
-      return res.json({ user });
+      return res.json({ user, trips: [] });
 
     } else if (action === 'login') {
       const [user] = await sql`
@@ -82,6 +97,8 @@ module.exports = async (req, res) => {
         return res.status(401).json({ error: 'Incorrect PIN' });
       }
 
+      const trips = await tripsForUser(sql, user.id);
+
       return res.json({
         user: {
           id: user.id,
@@ -89,6 +106,7 @@ module.exports = async (req, res) => {
           avatar_colour: user.avatar_colour,
           avatar_image: user.avatar_image || null,
         },
+        trips,
       });
 
     } else {

@@ -3,3 +3,10 @@ node_modules/
 .env.local
 .vercel
 .env*.local
+
+# Xcode
+ios/**/xcuserdata/
+ios/**/*.xcuserdatad
+ios/DerivedData/
+ios/build/
+.DS_Store

@@ -1,42 +1,54 @@
-const { neon } = require('@neondatabase/serverless');
+const { getSql, setCors, ensureSchema, parseId, requireMembership } = require('../lib/db');
 
-function setCors(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+// Clients cached from before trips existed won't send a trip_id. If the user is
+// only on one trip there's no ambiguity, so use it rather than failing.
+async function resolveTripId(sql, userId, tripId) {
+  if (tripId) return tripId;
+  const rows = await sql`SELECT trip_id FROM trip_members WHERE user_id = ${userId} LIMIT 2`;
+  return rows.length === 1 ? rows[0].trip_id : null;
 }
 
 module.exports = async (req, res) => {
-  setCors(res);
+  setCors(res, 'POST, DELETE, OPTIONS');
   res.setHeader('Content-Type', 'application/json');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const sql = neon(process.env.DATABASE_URL);
+  const sql = getSql();
+  await ensureSchema(sql);
 
-  // POST — upsert a rating
+  /* -------- POST — upsert a rating -------- */
   if (req.method === 'POST') {
-    const { user_id, drink_id, stars, notes } = req.body || {};
+    const { notes } = req.body || {};
+    const userId = parseId((req.body || {}).user_id);
+    const drinkId = parseId((req.body || {}).drink_id);
+    const stars = parseId((req.body || {}).stars);
 
-    if (!user_id || !drink_id || !stars) {
+    if (!userId || !drinkId || !stars) {
       return res.status(400).json({ error: 'user_id, drink_id and stars are required' });
     }
-
-    const starsNum = parseInt(stars);
-    if (starsNum < 1 || starsNum > 5) {
+    if (stars < 1 || stars > 5) {
       return res.status(400).json({ error: 'Stars must be between 1 and 5' });
     }
 
     try {
+      const tripId = await resolveTripId(sql, userId, parseId((req.body || {}).trip_id));
+      if (!tripId) {
+        return res.status(400).json({ error: 'Pick a trip before rating a drink' });
+      }
+
+      const membership = await requireMembership(sql, res, tripId, userId);
+      if (!membership) return;
+
       const [rating] = await sql`
-        INSERT INTO ratings (user_id, drink_id, stars, notes)
-        VALUES (${parseInt(user_id)}, ${parseInt(drink_id)}, ${starsNum}, ${notes || null})
-        ON CONFLICT (user_id, drink_id)
+        INSERT INTO ratings (user_id, drink_id, trip_id, stars, notes)
+        VALUES (${userId}, ${drinkId}, ${tripId}, ${stars}, ${notes || null})
+        ON CONFLICT (user_id, drink_id, trip_id)
         DO UPDATE SET
           stars = EXCLUDED.stars,
           notes = EXCLUDED.notes,
           updated_at = NOW()
-        RETURNING id, user_id, drink_id, stars, notes, updated_at
+        RETURNING id, user_id, drink_id, trip_id, stars, notes, updated_at
       `;
       return res.json({ rating });
     } catch (err) {
@@ -45,18 +57,24 @@ module.exports = async (req, res) => {
     }
   }
 
-  // DELETE — remove a rating
+  /* -------- DELETE — remove a rating -------- */
   if (req.method === 'DELETE') {
-    const { user_id, drink_id } = req.body || {};
+    const userId = parseId((req.body || {}).user_id);
+    const drinkId = parseId((req.body || {}).drink_id);
 
-    if (!user_id || !drink_id) {
+    if (!userId || !drinkId) {
       return res.status(400).json({ error: 'user_id and drink_id are required' });
     }
 
     try {
+      const tripId = await resolveTripId(sql, userId, parseId((req.body || {}).trip_id));
+      if (!tripId) {
+        return res.status(400).json({ error: 'Pick a trip before removing a rating' });
+      }
+
       await sql`
         DELETE FROM ratings
-        WHERE user_id = ${parseInt(user_id)} AND drink_id = ${parseInt(drink_id)}
+        WHERE user_id = ${userId} AND drink_id = ${drinkId} AND trip_id = ${tripId}
       `;
       return res.json({ success: true });
     } catch (err) {

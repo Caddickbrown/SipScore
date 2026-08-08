@@ -14,7 +14,10 @@ document.addEventListener('DOMContentLoaded', () => {
   user = App.requireAuth();
   if (!user) return;
 
+  if (!App.requireTrip()) return;
+
   App.initNav('leaderboard');
+  App.initTripPill();
   App.initProfileModal();
   setupCategoryChips();
 
@@ -48,8 +51,7 @@ async function loadLeaderboard() {
   const list = document.getElementById('leaderboardList');
   safeHTML(list, '<div class="loading-wrap"><div class="spinner"></div></div>');
 
-  const params = new URLSearchParams({ type: currentTab });
-  if (currentTab === 'personal') params.set('user_id', user.id);
+  const params = App.tripParams({ type: currentTab });
   if (currentCategory) params.set('category', currentCategory);
 
   try {

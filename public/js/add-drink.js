@@ -21,7 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
   user = App.requireAuth();
   if (!user) return;
 
+  if (!App.requireTrip()) return;
+
   App.initNav('add');
+  App.initTripPill();
   App.initProfileModal();
 
   const params = new URLSearchParams(window.location.search);
@@ -81,6 +84,7 @@ async function handleAdd(e) {
         style,
         source,
         user_id: user.id,
+        trip_id: App.getTripId(),
       }),
     });
 
