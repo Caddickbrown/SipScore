@@ -63,6 +63,18 @@ function loadRateScript() {
     window: {},
     App: {
       STAR_LABELS: ['', 'Poor', 'Fair', 'Good', 'Great', 'Outstanding'],
+      // Mirrors app.js: every request carries the signed-in user and the
+      // trip they're rating on.
+      tripParams(extra = {}) {
+        const params = new URLSearchParams({ user_id: '42', trip_id: '3' });
+        Object.entries(extra).forEach(([key, value]) => {
+          if (value !== null && value !== undefined && value !== '') params.set(key, value);
+        });
+        return params;
+      },
+      tripBody(extra = {}) {
+        return { user_id: 42, trip_id: 3, ...extra };
+      },
     },
     DOMPurify: {},
     URLSearchParams,
@@ -124,7 +136,44 @@ test('loadDrink requests the drink endpoint with query parameters', async () => 
 
   await context.loadDrink();
 
-  assert.equal(requestedPath, '/api/drink?id=7&user_id=42');
+  const query = new URLSearchParams(requestedPath.split('?')[1]);
+  assert.equal(requestedPath.split('?')[0], '/api/drink');
+  assert.equal(query.get('id'), '7');
+  assert.equal(query.get('user_id'), '42');
+  assert.equal(query.get('trip_id'), '3', 'the drink is fetched for the active trip');
+});
+
+test('saveRating posts the rating against the active trip', async () => {
+  const { context } = loadRateScript();
+  let body = null;
+
+  context.App.apiFetch = async (path, options) => {
+    body = JSON.parse(options.body);
+    return {};
+  };
+  context.App.showToast = () => {};
+  // saveRating schedules a reload once the toast has been seen.
+  context.window.location = { replace() {} };
+  context.document.getElementById = (id) => {
+    if (id === 'saveBtn') return { disabled: false, textContent: '' };
+    if (id === 'notesInput') return { value: ' Lovely ' };
+    throw new Error(`Unexpected element requested: ${id}`);
+  };
+  vm.runInNewContext(`
+    user = { id: 42 };
+    drinkId = 7;
+    selectedStars = 4;
+  `, context);
+
+  await context.saveRating();
+
+  assert.deepEqual(body, {
+    user_id: 42,
+    trip_id: 3,
+    drink_id: 7,
+    stars: 4,
+    notes: 'Lovely',
+  });
 });
 
 test('touch interaction selects a star rating on mobile', () => {
