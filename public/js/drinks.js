@@ -268,6 +268,19 @@ function drinkCard(d) {
   a.appendChild(accent);
   a.appendChild(body);
   a.appendChild(arrow);
+
+  // Optional thumbnail
+  if (d.image) {
+    const thumb = document.createElement('div');
+    thumb.className = 'drink-card-thumb';
+    const thumbImg = document.createElement('img');
+    thumbImg.src = d.image;
+    thumbImg.alt = d.name;
+    thumbImg.loading = 'lazy';
+    thumb.appendChild(thumbImg);
+    a.appendChild(thumb);
+  }
+
   return a;
 }
 

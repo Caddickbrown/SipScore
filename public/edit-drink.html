@@ -86,6 +86,20 @@
           >
         </div>
 
+        <!-- Photo picker -->
+        <div class="form-group photo-picker">
+          <label class="form-label">Photo <span class="form-optional">(optional)</span></label>
+          <div id="photoPreview" class="photo-picker-preview" style="display:none;">
+            <img id="photoPreviewImg" src="" alt="Drink photo">
+            <button type="button" class="photo-picker-preview-remove" onclick="removePhoto()" title="Remove photo">×</button>
+          </div>
+          <label class="photo-picker-btn" id="photoPickerBtn" for="drinkPhotoInput">
+            <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Add a photo
+          </label>
+          <input type="file" id="drinkPhotoInput" accept="image/*" style="display:none;" onchange="handlePhotoSelected(this)">
+        </div>
+
         <!-- Wine fields -->
         <div id="wineFields">
           <div class="form-group">

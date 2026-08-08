@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
     try {
       const drinks = await sql`
         SELECT
-          d.id, d.name, d.category, d.type, d.varietal, d.style, d.source,
+          d.id, d.name, d.category, d.type, d.varietal, d.style, d.source, d.image,
           d.trip_id, d.created_at,
           ROUND(AVG(r.stars) FILTER (
             WHERE ${tripId}::int IS NULL OR r.trip_id = ${tripId}
@@ -68,7 +68,7 @@ module.exports = async (req, res) => {
 
   /* -------- POST — add a new drink -------- */
   if (req.method === 'POST') {
-    const { name, category, type, varietal, style, source } = req.body || {};
+    const { name, category, type, varietal, style, source, image } = req.body || {};
     const userId = parseId((req.body || {}).user_id);
     const tripId = parseId((req.body || {}).trip_id);
 
@@ -84,6 +84,17 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Name must be at least 2 characters' });
     }
 
+    // Validate optional image
+    const drinkImage = image || null;
+    if (drinkImage !== null) {
+      if (typeof drinkImage !== 'string' || !drinkImage.startsWith('data:image/')) {
+        return res.status(400).json({ error: 'image must be a valid image data URL' });
+      }
+      if (drinkImage.length > 400_000) {
+        return res.status(400).json({ error: 'Image is too large (max ~300 KB)' });
+      }
+    }
+
     try {
       // A drink is tagged with the trip it was added on, but stays in the
       // shared catalogue so other trips can find and rate it too.
@@ -93,10 +104,10 @@ module.exports = async (req, res) => {
       }
 
       const [drink] = await sql`
-        INSERT INTO drinks (name, category, type, varietal, style, source, added_by_user_id, trip_id)
+        INSERT INTO drinks (name, category, type, varietal, style, source, image, added_by_user_id, trip_id)
         VALUES (${trimmedName}, ${category}, ${type || null}, ${varietal || null},
-                ${style || null}, ${source || null}, ${userId}, ${tripId})
-        RETURNING id, name, category, type, varietal, style, source, trip_id
+                ${style || null}, ${source || null}, ${drinkImage}, ${userId}, ${tripId})
+        RETURNING id, name, category, type, varietal, style, source, image, trip_id
       `;
       return res.status(201).json({ drink });
     } catch (err) {

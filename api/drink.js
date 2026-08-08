@@ -42,7 +42,7 @@ module.exports = async (req, res) => {
           style    = ${style || null},
           source   = ${source || null}
         WHERE id = ${drinkId}
-        RETURNING id, name, category, type, varietal, style, source, trip_id
+        RETURNING id, name, category, type, varietal, style, source, image, trip_id
       `;
 
       if (!updated) return res.status(404).json({ error: 'Drink not found' });
@@ -68,7 +68,7 @@ module.exports = async (req, res) => {
     // catalogue — you can see how a drink did last holiday too.
     const [drink] = await sql`
       SELECT
-        d.id, d.name, d.category, d.type, d.varietal, d.style, d.source,
+        d.id, d.name, d.category, d.type, d.varietal, d.style, d.source, d.image,
         d.trip_id, d.created_at,
         ROUND(AVG(r.stars) FILTER (
           WHERE ${tripId}::int IS NULL OR r.trip_id = ${tripId}

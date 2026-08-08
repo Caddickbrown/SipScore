@@ -119,6 +119,16 @@ function renderHero(drink) {
   document.getElementById('heroMeta').textContent = App.drinkMeta(drink) || '';
   document.title = 'SipScore \u2014 ' + drink.name;
 
+  // Show drink photo if present
+  if (drink.image) {
+    const photoWrap = document.getElementById('heroDrinkPhotoWrap');
+    const photoImg  = document.getElementById('heroDrinkPhoto');
+    if (photoWrap && photoImg) {
+      photoImg.src = drink.image;
+      photoWrap.style.display = 'block';
+    }
+  }
+
   const editWrap = document.getElementById('editDrinkWrap');
   const editLink = document.getElementById('editDrinkLink');
   if (editWrap && editLink) {

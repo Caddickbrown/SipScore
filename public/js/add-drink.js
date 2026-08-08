@@ -2,6 +2,7 @@
 
 let user;
 let currentCategory = 'wine';
+let pendingPhoto = null; // base64 data URL or null
 
 const ALL_CATEGORIES = ['wine', 'cocktail', 'beer', 'cider', 'spirit', 'mocktail', 'hotdrink', 'softdrink', 'milkshake'];
 
@@ -53,6 +54,55 @@ function setCategory(cat) {
   document.getElementById('addError').textContent = '';
 }
 
+// ---- Photo handling ----
+
+function resizeDrinkPhoto(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 800;
+      let { width, height } = img;
+      if (width > height) {
+        if (width > MAX) { height = Math.round(height * MAX / width); width = MAX; }
+      } else {
+        if (height > MAX) { width = Math.round(width * MAX / height); height = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL('image/jpeg', 0.82));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Could not load image')); };
+    img.src = url;
+  });
+}
+
+async function handlePhotoSelected(input) {
+  const file = input.files[0];
+  input.value = '';
+  if (!file) return;
+
+  try {
+    const base64 = await resizeDrinkPhoto(file);
+    pendingPhoto = base64;
+    document.getElementById('photoPreviewImg').src = base64;
+    document.getElementById('photoPreview').style.display = 'block';
+    document.getElementById('photoPickerBtn').classList.add('has-photo');
+  } catch (err) {
+    App.showToast('Could not load photo', 'error');
+  }
+}
+
+function removePhoto() {
+  pendingPhoto = null;
+  document.getElementById('photoPreviewImg').src = '';
+  document.getElementById('photoPreview').style.display = 'none';
+  document.getElementById('photoPickerBtn').classList.remove('has-photo');
+}
+
 async function handleAdd(e) {
   e.preventDefault();
 
@@ -83,6 +133,7 @@ async function handleAdd(e) {
         varietal,
         style,
         source,
+        image: pendingPhoto,
         user_id: user.id,
         trip_id: App.getTripId(),
       }),

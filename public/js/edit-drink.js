@@ -3,6 +3,7 @@
 let user;
 let drinkId;
 let currentCategory = 'wine';
+let pendingPhoto = undefined; // undefined = no change, null = remove, string = new base64
 
 const ALL_CATEGORIES = ['wine', 'cocktail', 'beer', 'cider', 'spirit', 'mocktail', 'hotdrink', 'softdrink', 'milkshake'];
 
@@ -65,6 +66,13 @@ async function loadDrink() {
       if (el) el.value = drink.source || '';
     }
 
+    // Pre-fill existing photo
+    if (drink.image) {
+      document.getElementById('photoPreviewImg').src = drink.image;
+      document.getElementById('photoPreview').style.display = 'block';
+      document.getElementById('photoPickerBtn').classList.add('has-photo');
+    }
+
     document.getElementById('editForm').style.display = 'block';
   } catch (err) {
     document.getElementById('heroTitle').textContent = 'Drink not found';
@@ -100,6 +108,55 @@ function setCategory(cat, clearFields = true) {
   }
 }
 
+// ---- Photo handling ----
+
+function resizeDrinkPhoto(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 800;
+      let { width, height } = img;
+      if (width > height) {
+        if (width > MAX) { height = Math.round(height * MAX / width); width = MAX; }
+      } else {
+        if (height > MAX) { width = Math.round(width * MAX / height); height = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL('image/jpeg', 0.82));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Could not load image')); };
+    img.src = url;
+  });
+}
+
+async function handlePhotoSelected(input) {
+  const file = input.files[0];
+  input.value = '';
+  if (!file) return;
+
+  try {
+    const base64 = await resizeDrinkPhoto(file);
+    pendingPhoto = base64;
+    document.getElementById('photoPreviewImg').src = base64;
+    document.getElementById('photoPreview').style.display = 'block';
+    document.getElementById('photoPickerBtn').classList.add('has-photo');
+  } catch (err) {
+    App.showToast('Could not load photo', 'error');
+  }
+}
+
+function removePhoto() {
+  pendingPhoto = null; // explicitly clear
+  document.getElementById('photoPreviewImg').src = '';
+  document.getElementById('photoPreview').style.display = 'none';
+  document.getElementById('photoPickerBtn').classList.remove('has-photo');
+}
+
 async function handleEdit(e) {
   e.preventDefault();
 
@@ -121,10 +178,19 @@ async function handleEdit(e) {
   document.getElementById('editError').textContent = '';
 
   try {
+    // Save drink metadata
     await App.apiFetch('/api/drink?id=' + drinkId, {
       method: 'PATCH',
       body: JSON.stringify({ name, category: currentCategory, type, varietal, style, source }),
     });
+
+    // If photo changed, save it separately (new upload or explicit removal)
+    if (pendingPhoto !== undefined) {
+      await App.apiFetch('/api/drink-image?id=' + drinkId, {
+        method: 'PATCH',
+        body: JSON.stringify({ user_id: user.id, image: pendingPhoto }),
+      });
+    }
 
     App.showToast('Changes saved!', 'success');
     setTimeout(() => {
