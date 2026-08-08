@@ -14,6 +14,7 @@ struct ProfileView: View {
     @State private var errorMessage: String?
     @State private var serverOverride = AppConfig.baseURLOverride
     @State private var confirmSignOut = false
+    @State private var showNewTrip = false
 
     var body: some View {
         NavigationStack {
@@ -58,6 +59,16 @@ struct ProfileView: View {
                 }
 
                 Section {
+                    Button {
+                        showNewTrip = true
+                    } label: {
+                        Label("New Trip", systemImage: "suitcase.fill")
+                    }
+                } footer: {
+                    Text("Starting a trip makes it the one you're rating on.")
+                }
+
+                Section {
                     TextField(AppConfig.defaultBaseURL, text: $serverOverride)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
@@ -91,6 +102,13 @@ struct ProfileView: View {
                 Button("Sign Out", role: .destructive) {
                     session.signOut()
                     dismiss()
+                }
+            }
+            .sheet(isPresented: $showNewTrip) {
+                TripFormView(trip: nil) {
+                    await session.refreshTrips()
+                    // The new trip is now active, so the stats below it are stale.
+                    await loadStats()
                 }
             }
             .onChange(of: photoItem) { _, newValue in

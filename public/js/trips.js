@@ -36,8 +36,32 @@ document.addEventListener('DOMContentLoaded', () => {
     previewTimer = setTimeout(previewCode, 350);
   });
 
+  // "New Trip" in the profile menu links here with ?new=1. On this page there's
+  // no need to reload — just close the profile sheet and open the form.
+  const newTripNavItem = document.getElementById('newTripNavItem');
+  if (newTripNavItem) {
+    newTripNavItem.addEventListener('click', (e) => {
+      e.preventDefault();
+      App.closeProfileModal();
+      openTripModal();
+    });
+  }
+
   loadTrips();
+  openCreateFormIfRequested();
 });
+
+// Arriving from another page's profile menu.
+function openCreateFormIfRequested() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('new') !== '1') return;
+
+  openTripModal();
+  // Drop the flag so a refresh or back-navigation doesn't reopen the form.
+  params.delete('new');
+  const query = params.toString();
+  window.history.replaceState({}, '', '/trips.html' + (query ? '?' + query : ''));
+}
 
 function dismissOnBackdrop(id, close) {
   const overlay = document.getElementById(id);
