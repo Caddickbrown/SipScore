@@ -186,7 +186,7 @@ async function handleEdit(e) {
 
     // If photo changed, save it separately (new upload or explicit removal)
     if (pendingPhoto !== undefined) {
-      await App.apiFetch('/api/drink-image?id=' + drinkId, {
+      await App.apiFetch('/api/drink?id=' + drinkId, {
         method: 'PATCH',
         body: JSON.stringify({ user_id: user.id, image: pendingPhoto }),
       });

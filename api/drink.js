@@ -24,6 +24,35 @@ module.exports = async (req, res) => {
   if (req.method === 'PATCH') {
     const { name, category, type, varietal, style, source } = req.body || {};
 
+    // Sub-action: update only the image (sent from edit-drink.js photo picker)
+    if (Object.prototype.hasOwnProperty.call(req.body || {}, 'image') && !name) {
+      const { image, user_id } = req.body;
+      const userId = parseId(user_id);
+      if (!userId) return res.status(400).json({ error: 'user_id is required' });
+
+      const newImage = image ?? null;
+      if (newImage !== null) {
+        if (typeof newImage !== 'string' || !newImage.startsWith('data:image/')) {
+          return res.status(400).json({ error: 'image must be a valid image data URL' });
+        }
+        if (newImage.length > 400_000) {
+          return res.status(400).json({ error: 'Image is too large (max ~300 KB)' });
+        }
+      }
+
+      try {
+        const [updated] = await sql`
+          UPDATE drinks SET image = ${newImage} WHERE id = ${drinkId}
+          RETURNING id, image
+        `;
+        if (!updated) return res.status(404).json({ error: 'Drink not found' });
+        return res.json({ drink: updated });
+      } catch (err) {
+        console.error('PATCH drink image error:', err);
+        return res.status(500).json({ error: err.message });
+      }
+    }
+
     if (!name || !name.trim()) {
       return res.status(400).json({ error: 'Name is required' });
     }
