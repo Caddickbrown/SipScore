@@ -67,6 +67,14 @@
           <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M8 3h8l1 4H7L8 3z"/><path d="M7 7l1 14h8l1-14"/><path d="M10 11c0 2 4 2 4 4s-4 2-4 4"/></svg>
           Milkshake
         </button>
+        <button type="button" class="category-btn" id="catMead" onclick="setCategory('mead')">
+          <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M8 3h8l2 5H6L8 3z"/><path d="M6 8l1 13h10L18 8"/><path d="M9 13c1-1 2-1 3 0s2 1 3 0"/></svg>
+          Mead
+        </button>
+        <button type="button" class="category-btn" id="catOther" onclick="setCategory('other')">
+          <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>
+          Other
+        </button>
       </div>
     </div>
 
@@ -370,7 +378,34 @@
           </div>
         </div>
 
-        <div class="form-error" id="editError"></div>
+        <!-- Mead fields -->
+        <div id="meadFields" style="display:none;">
+          <div class="form-group">
+            <label class="form-label" for="meadType">Style</label>
+            <select class="form-select" id="meadType">
+              <option value="">Select style…</option>
+              <option value="Dry">Dry</option>
+              <option value="Semi-Sweet">Semi-Sweet</option>
+              <option value="Sweet">Sweet</option>
+              <option value="Sparkling">Sparkling</option>
+              <option value="Fruit Mead">Fruit Mead (Melomel)</option>
+              <option value="Spiced Mead">Spiced Mead (Metheglin)</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="meadSource">Meadery / Origin</label>
+            <input class="form-input" type="text" id="meadSource" placeholder="e.g. Lyme Bay Winery, Devon" autocapitalize="words" maxlength="100">
+          </div>
+        </div>
+
+        <!-- Other fields -->
+        <div id="otherFields" style="display:none;">
+          <div class="form-group">
+            <label class="form-label" for="otherSource">Producer / Origin</label>
+            <input class="form-input" type="text" id="otherSource" placeholder="e.g. Local brewery, Italy" autocapitalize="words" maxlength="100">
+          </div>
+        </div>
 
         <button type="submit" class="btn btn-gold btn-full" id="saveBtn">
           Save Changes

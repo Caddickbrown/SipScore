@@ -5,7 +5,7 @@ let drinkId;
 let currentCategory = 'wine';
 let pendingPhoto = undefined; // undefined = no change, null = remove, string = new base64
 
-const ALL_CATEGORIES = ['wine', 'cocktail', 'beer', 'cider', 'spirit', 'mocktail', 'hotdrink', 'softdrink', 'milkshake'];
+const ALL_CATEGORIES = ['wine', 'cocktail', 'beer', 'cider', 'spirit', 'mocktail', 'hotdrink', 'softdrink', 'milkshake', 'mead', 'other'];
 
 const FIELD_MAP = {
   wine:      { fields: 'wineFields',      type: 'wineType',      varietal: 'wineVarietal', style: 'wineStyle',      source: 'wineSource' },
@@ -17,6 +17,8 @@ const FIELD_MAP = {
   hotdrink:  { fields: 'hotdrinkFields',  type: 'hotdrinkType',  varietal: null,           style: 'hotdrinkStyle',  source: 'hotdrinkSource' },
   softdrink: { fields: 'softdrinkFields', type: 'softdrinkType', varietal: null,           style: null,             source: 'softdrinkSource' },
   milkshake: { fields: 'milkshakeFields', type: 'milkshakeType', varietal: null,           style: 'milkshakeStyle', source: null },
+  mead:      { fields: 'meadFields',      type: 'meadType',      varietal: null,           style: null,             source: 'meadSource' },
+  other:     { fields: 'otherFields',     type: null,            varietal: null,           style: null,             source: 'otherSource' },
 };
 
 document.addEventListener('DOMContentLoaded', async () => {

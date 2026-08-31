@@ -175,6 +175,8 @@ const CATEGORY_META = {
   hotdrink:  { badge: 'badge-hotdrink',  accent: 'accent-hotdrink',  label: 'Hot Drink' },
   softdrink: { badge: 'badge-softdrink', accent: 'accent-softdrink', label: 'Soft Drink' },
   milkshake: { badge: 'badge-milkshake', accent: 'accent-milkshake', label: 'Milkshake' },
+  mead:      { badge: 'badge-mead',      accent: 'accent-mead',      label: 'Mead' },
+  other:     { badge: 'badge-other',     accent: 'accent-other',     label: 'Other' },
 };
 
 function badgeClass(category, type) {
