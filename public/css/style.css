@@ -2980,6 +2980,26 @@ input, select, textarea {
 
   :root:not([data-theme="light"]) .login-page,
   [data-theme="dark"] .login-page     { background: #0a1120; }
+
+  /* btn-primary: navy bg + white-remap conflict — use explicit light text */
+  :root:not([data-theme="light"]) .btn-primary,
+  [data-theme="dark"] .btn-primary    { background: #2a3a58; color: #e8eaf0; }
+  :root:not([data-theme="light"]) .btn-primary:hover,
+  [data-theme="dark"] .btn-primary:hover { background: #334568; }
+
+  /* chip.active: same --white conflict */
+  :root:not([data-theme="light"]) .chip.active,
+  [data-theme="dark"] .chip.active    { background: #2a3a58; border-color: #2a3a58; color: #e8eaf0; }
+
+  /* scope-btn active: --white bg + --navy text both remap to near-black */
+  :root:not([data-theme="light"]) .scope-btn.active,
+  [data-theme="dark"] .scope-btn.active { background: #2a3a58; color: #e8eaf0; box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+  :root:not([data-theme="light"]) .scope-btn,
+  [data-theme="dark"] .scope-btn      { color: #8fa3c0; }
+
+  /* drink-hero-title: --white remaps to card surface on navy hero bg */
+  :root:not([data-theme="light"]) .drink-hero-title,
+  [data-theme="dark"] .drink-hero-title { color: #e8eaf0; }
 }
 
 /* Hide sidebar on mobile */
