@@ -24,6 +24,16 @@
   --radius-sm: 9px;
   --nav-height: 68px;
   --header-height: 58px;
+  /* Component colour tokens */
+  --star-empty:      #d9d0bf;
+  --card-arrow:      #c8c0b0;
+  --placeholder:     #aaa;
+  --error-red:       #dc2626;
+  --error-red-bg:    #fee2e2;
+  --error-red-hover: #fecaca;
+  --toast-error-bg:  #dc2626;
+  --warn-red:        #e05c5c;
+  --like-red:        #e05c5c;
 }
 
 /* =============================================
@@ -540,7 +550,7 @@ button {
 }
 
 .star-icon.empty {
-  color: #d9d0bf;
+  color: var(--star-empty, #d9d0bf);
 }
 
 .rating-avg {
@@ -575,7 +585,7 @@ button {
   display: flex;
   align-items: center;
   padding: 0 14px 0 4px;
-  color: #c8c0b0;
+  color: var(--card-arrow, #c8c0b0);
   font-size: 1.1rem;
   flex-shrink: 0;
 }
@@ -639,12 +649,12 @@ button {
 .btn-ghost:hover { color: var(--text); }
 
 .btn-danger {
-  background: #fee2e2;
-  color: #dc2626;
+  background: var(--error-red-bg, #fee2e2);
+  color: var(--error-red, #dc2626);
   border: none;
 }
 
-.btn-danger:hover { background: #fecaca; }
+.btn-danger:hover { background: var(--error-red-hover, #fecaca); }
 
 .btn-full { width: 100%; }
 
@@ -743,7 +753,7 @@ button {
   cursor: pointer;
   padding: 6px 4px;
   font-size: 2.5rem;
-  color: #d9d0bf;
+  color: var(--star-empty, #d9d0bf);
   transition: color 0.12s, transform 0.1s;
   line-height: 1;
   -webkit-tap-highlight-color: transparent;
@@ -800,7 +810,7 @@ button {
 }
 
 .notes-textarea::placeholder {
-  color: #aaa;
+  color: var(--placeholder, #aaa);
   font-weight: 300;
 }
 
@@ -1127,7 +1137,7 @@ button {
 }
 
 .form-input::placeholder {
-  color: #aaa;
+  color: var(--placeholder, #aaa);
   font-weight: 300;
 }
 
@@ -1318,7 +1328,7 @@ button {
 
 .form-error {
   font-size: 0.8rem;
-  color: #dc2626;
+  color: var(--error-red, #dc2626);
   text-align: center;
   margin-bottom: 14px;
   min-height: 20px;
@@ -1551,7 +1561,7 @@ button {
 }
 
 #toast.toast-error {
-  background: #dc2626;
+  background: var(--toast-error-bg, #dc2626);
   color: var(--white);
 }
 
@@ -1812,7 +1822,7 @@ input, select, textarea {
 }
 
 .feed-char-warn {
-  color: #e05c5c;
+  color: var(--warn-red, #e05c5c);
 }
 
 .feed-post-btn {
@@ -1884,7 +1894,7 @@ input, select, textarea {
 
 .feed-delete-btn:hover {
   opacity: 1;
-  color: #e05c5c;
+  color: var(--warn-red, #e05c5c);
 }
 
 .feed-delete-btn svg {
@@ -1939,12 +1949,12 @@ input, select, textarea {
 }
 
 .feed-like-btn.liked {
-  color: #e05c5c;
+  color: var(--like-red, #e05c5c);
 }
 
 .feed-like-btn.liked svg {
-  fill: #e05c5c;
-  stroke: #e05c5c;
+  fill: var(--like-red, #e05c5c);
+  stroke: var(--like-red, #e05c5c);
 }
 
 .feed-like-count {
@@ -2054,7 +2064,7 @@ input, select, textarea {
 
 .feed-reply-delete-btn:hover {
   opacity: 1;
-  color: #e05c5c;
+  color: var(--warn-red, #e05c5c);
 }
 
 .feed-reply-delete-btn svg {
@@ -2165,12 +2175,12 @@ input, select, textarea {
 }
 
 .feed-reply-like-btn.liked {
-  color: #e05c5c;
+  color: var(--like-red, #e05c5c);
 }
 
 .feed-reply-like-btn.liked svg {
-  fill: #e05c5c;
-  stroke: #e05c5c;
+  fill: var(--like-red, #e05c5c);
+  stroke: var(--like-red, #e05c5c);
 }
 
 .feed-reply-like-count {
@@ -2859,6 +2869,15 @@ input, select, textarea {
     --shadow-sm:   0 1px 4px rgba(0, 0, 0, 0.4);
     --shadow:      0 2px 16px rgba(0, 0, 0, 0.45);
     --shadow-lg:   0 8px 32px rgba(0, 0, 0, 0.55);
+    --star-empty:      #3a4a60;
+    --card-arrow:      #3a4a60;
+    --placeholder:     #4a5a70;
+    --error-red:       #e87070;
+    --error-red-bg:    #2a0e0e;
+    --error-red-hover: #3a1212;
+    --toast-error-bg:  #7a1a1a;
+    --warn-red:        #e87070;
+    --like-red:        #e87070;
   }
 }
 
@@ -2879,6 +2898,15 @@ input, select, textarea {
   --shadow-sm:   0 1px 4px rgba(0, 0, 0, 0.4);
   --shadow:      0 2px 16px rgba(0, 0, 0, 0.45);
   --shadow-lg:   0 8px 32px rgba(0, 0, 0, 0.55);
+  --star-empty:      #3a4a60;
+  --card-arrow:      #3a4a60;
+  --placeholder:     #4a5a70;
+  --error-red:       #e87070;
+  --error-red-bg:    #2a0e0e;
+  --error-red-hover: #3a1212;
+  --toast-error-bg:  #7a1a1a;
+  --warn-red:        #e87070;
+  --like-red:        #e87070;
 }
 
 [data-theme="light"] {
@@ -3165,3 +3193,4 @@ input, select, textarea {
 }
 .theme-toggle-btn:hover { color: var(--gold); }
 .theme-toggle-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+
