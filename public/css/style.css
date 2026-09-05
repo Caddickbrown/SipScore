@@ -3117,9 +3117,10 @@ input, select, textarea {
   /* ---- Widen the header top bar ---- */
   .app-header {
     left: var(--sidebar-width);
-    /* hide trip-pill in header — it's in the sidebar */
   }
   .app-header .trip-pill { display: none; }
+  .app-header .theme-toggle-btn { display: none; }
+  .app-header .user-avatar#headerAvatar { display: none; }
 
   /* ---- Content column ---- */
   .drinks-list,
