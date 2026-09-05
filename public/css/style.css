@@ -353,6 +353,53 @@ button {
   color: var(--gold-dark);
 }
 
+.style-tag-custom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.style-tag-custom-input {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.78rem;
+  padding: 4px 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 50px;
+  background: var(--white);
+  color: var(--navy);
+  width: 90px;
+  min-height: 32px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.style-tag-custom-input:focus {
+  border-color: var(--gold);
+}
+
+.style-tag-custom-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  color: var(--slate);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.style-tag-custom-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold-dark);
+}
+
 /* =============================================
    DRINK CARDS
    ============================================= */

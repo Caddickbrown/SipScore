@@ -15,14 +15,60 @@ function initStyleTags(containerId) {
   container.querySelectorAll('.style-tag').forEach(btn => {
     btn.addEventListener('click', () => btn.classList.toggle('active'));
   });
+
+  // Append custom tag input
+  const wrap = document.createElement('div');
+  wrap.className = 'style-tag-custom';
+  wrap.innerHTML = `<input type="text" class="style-tag-custom-input" placeholder="Custom…" maxlength="40" autocapitalize="words"><button type="button" class="style-tag-custom-btn">+</button>`;
+  container.appendChild(wrap);
+
+  const input = wrap.querySelector('.style-tag-custom-input');
+  const btn   = wrap.querySelector('.style-tag-custom-btn');
+
+  function addCustomTag() {
+    const val = input.value.trim();
+    if (!val) return;
+    // Don't duplicate
+    const existing = [...container.querySelectorAll('.style-tag')].find(b => b.dataset.tag.toLowerCase() === val.toLowerCase());
+    if (existing) {
+      existing.classList.add('active');
+      input.value = '';
+      return;
+    }
+    const tag = document.createElement('button');
+    tag.type = 'button';
+    tag.className = 'style-tag active';
+    tag.dataset.tag = val;
+    tag.textContent = val;
+    tag.addEventListener('click', () => tag.classList.toggle('active'));
+    container.insertBefore(tag, wrap);
+    input.value = '';
+  }
+
+  btn.addEventListener('click', addCustomTag);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addCustomTag(); } });
 }
 
 function setStyleTags(containerId, value) {
   const container = document.getElementById(containerId);
   if (!container || !value) return;
   const active = new Set(value.split(',').map(s => s.trim()));
+  // Activate presets
   container.querySelectorAll('.style-tag').forEach(btn => {
     btn.classList.toggle('active', active.has(btn.dataset.tag));
+  });
+  // Inject any custom tags not already in the preset list
+  const presetTags = new Set([...container.querySelectorAll('.style-tag')].map(b => b.dataset.tag.toLowerCase()));
+  const customWrap = container.querySelector('.style-tag-custom');
+  active.forEach(tag => {
+    if (!tag || presetTags.has(tag.toLowerCase())) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'style-tag active';
+    btn.dataset.tag = tag;
+    btn.textContent = tag;
+    btn.addEventListener('click', () => btn.classList.toggle('active'));
+    container.insertBefore(btn, customWrap);
   });
 }
 
