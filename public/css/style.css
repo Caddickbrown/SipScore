@@ -3114,13 +3114,9 @@ input, select, textarea {
   .sidebar-theme-btn:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.75); }
   .sidebar-theme-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.6; flex-shrink: 0; }
 
-  /* ---- Widen the header top bar ---- */
-  .app-header {
-    left: var(--sidebar-width);
-  }
-  .app-header .trip-pill { display: none; }
-  .app-header .theme-toggle-btn { display: none; }
-  .app-header .user-avatar#headerAvatar { display: none; }
+  /* ---- Header is redundant on desktop — sidebar handles everything ---- */
+  .app-header { display: none; }
+  body:not(.no-nav) { padding-top: 0; }
 
   /* ---- Content column ---- */
   .drinks-list,
