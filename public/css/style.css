@@ -1940,8 +1940,6 @@ input, select, textarea {
   color: var(--gold-dark);
 }
 
-.feed-delete-btn {
-
 .feed-delete-btn:hover {
   opacity: 1;
   color: var(--warn-red, #e05c5c);
