@@ -2953,6 +2953,9 @@ input, select, textarea {
   [data-theme="dark"] .login-page     { background: #0a1120; }
 }
 
+/* Hide sidebar on mobile */
+.sidebar-nav { display: none; }
+
 /* =============================================
    DESKTOP LAYOUT  (≥ 900px)
    ============================================= */
@@ -3149,9 +3152,6 @@ input, select, textarea {
     left: var(--sidebar-width);
   }
 }
-
-/* Hide sidebar on mobile */
-.sidebar-nav { display: none; }
 
 /* ---- Dark mode toggle button (mobile, in header) ---- */
 .theme-toggle-btn {
