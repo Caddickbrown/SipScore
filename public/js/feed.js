@@ -22,29 +22,59 @@ const textarea = document.getElementById('postContent');
 const charCount = document.getElementById('charCount');
 const postBtn = document.getElementById('postBtn');
 const postPhotoInput = document.getElementById('postPhotoInput');
-const composePhotoPreview = document.getElementById('composePhotoPreview');
-const composePhotoImg = document.getElementById('composePhotoImg');
-const removePhotoBtn = document.getElementById('removePhotoBtn');
+const composePhotoStrip = document.getElementById('composePhotoStrip');
 
-let _pendingPhoto = null; // base64 string or null
+let _pendingPhotos = []; // array of base64 strings, max 6
 
-postPhotoInput.addEventListener('change', () => {
-  const file = postPhotoInput.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    _pendingPhoto = e.target.result;
-    composePhotoImg.src = _pendingPhoto;
-    composePhotoPreview.style.display = 'block';
-  };
-  reader.readAsDataURL(file);
+function resizeFeedPhoto(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 1200;
+      let { width, height } = img;
+      if (width > height) {
+        if (width > MAX) { height = Math.round(height * MAX / width); width = MAX; }
+      } else {
+        if (height > MAX) { width = Math.round(width * MAX / height); height = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL('image/jpeg', 0.82));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(); };
+    img.src = url;
+  });
+}
+
+function renderComposeStrip() {
+  composePhotoStrip.innerHTML = '';
+  _pendingPhotos.forEach((src, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'feed-compose-thumb';
+    wrap.innerHTML = `<img src="${src}" alt="Photo ${i+1}"><button type="button" class="feed-compose-thumb-remove" aria-label="Remove">×</button>`;
+    wrap.querySelector('.feed-compose-thumb-remove').addEventListener('click', () => {
+      _pendingPhotos.splice(i, 1);
+      renderComposeStrip();
+    });
+    composePhotoStrip.appendChild(wrap);
+  });
+}
+
+postPhotoInput.addEventListener('change', async () => {
+  const files = Array.from(postPhotoInput.files);
   postPhotoInput.value = '';
-});
-
-removePhotoBtn.addEventListener('click', () => {
-  _pendingPhoto = null;
-  composePhotoImg.src = '';
-  composePhotoPreview.style.display = 'none';
+  for (const file of files) {
+    if (_pendingPhotos.length >= 6) { App.showToast('Max 6 photos', 'error'); break; }
+    try {
+      _pendingPhotos.push(await resizeFeedPhoto(file));
+    } catch {
+      App.showToast('Could not load photo', 'error');
+    }
+  }
+  renderComposeStrip();
 });
 
 textarea.addEventListener('input', () => {
@@ -60,14 +90,14 @@ textarea.addEventListener('keydown', (e) => {
 
 async function submitPost() {
   const content = textarea.value.trim();
-  if (!content && !_pendingPhoto) return;
+  if (!content && !_pendingPhotos.length) return;
 
   postBtn.disabled = true;
   postBtn.textContent = 'Posting…';
 
   try {
     const body = App.tripBody({ content });
-    if (_pendingPhoto) body.image = _pendingPhoto;
+    if (_pendingPhotos.length) body.image = JSON.stringify(_pendingPhotos);
 
     await App.apiFetch('/api/feed', {
       method: 'POST',
@@ -76,9 +106,8 @@ async function submitPost() {
     textarea.value = '';
     charCount.textContent = '500';
     charCount.classList.remove('feed-char-warn');
-    _pendingPhoto = null;
-    composePhotoImg.src = '';
-    composePhotoPreview.style.display = 'none';
+    _pendingPhotos = [];
+    renderComposeStrip();
     await loadFeed();
     App.showToast('Posted!');
   } catch (err) {
@@ -129,6 +158,20 @@ function renderFeed(posts) {
     const likeCount = post.like_count || 0;
     const replyCount = post.reply_count || 0;
 
+    let photos = [];
+    if (post.image) {
+      try { photos = JSON.parse(post.image); } catch { photos = [post.image]; }
+      if (!Array.isArray(photos)) photos = [photos];
+    }
+
+    const photosHtml = photos.length ? `
+      <div class="feed-post-photos feed-post-photos--${Math.min(photos.length, 4)}">
+        ${photos.slice(0, 6).map((src, i) => `
+          <div class="feed-post-photo-wrap">
+            <img src="${DOMPurify.sanitize(src)}" alt="Photo ${i+1}" loading="lazy">
+          </div>`).join('')}
+      </div>` : '';
+
     return `
       <article class="feed-post" data-id="${post.id}">
         <div class="feed-post-avatar user-link" data-user-id="${post.user_id}"></div>
@@ -145,7 +188,7 @@ function renderFeed(posts) {
             </button>` : ''}
           </div>
           ${content ? `<p class="feed-post-content">${content}</p>` : ''}
-          ${post.image ? `<img class="feed-post-image" src="${DOMPurify.sanitize(post.image)}" alt="Post photo" loading="lazy">` : ''}
+          ${photosHtml}
           <div class="feed-post-actions">
             <button class="feed-like-btn ${liked ? 'liked' : ''}" data-id="${post.id}" data-liked="${liked ? '1' : '0'}">
               <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
