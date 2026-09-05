@@ -20,6 +20,23 @@ const FIELD_MAP = {
   other:     { fields: 'otherFields',     type: null,            style: null,              source: 'otherSource' },
 };
 
+// ---- Style tag picker ----
+
+function initStyleTags(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.querySelectorAll('.style-tag').forEach(btn => {
+    btn.addEventListener('click', () => btn.classList.toggle('active'));
+  });
+}
+
+function getStyleTags(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return null;
+  const active = [...container.querySelectorAll('.style-tag.active')].map(b => b.dataset.tag);
+  return active.length ? active.join(',') : null;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   user = App.requireAuth();
   if (!user) return;
@@ -29,6 +46,8 @@ document.addEventListener('DOMContentLoaded', () => {
   App.initNav('add');
   App.initTripPill();
   App.initProfileModal();
+
+  initStyleTags('wineStyle');
 
   const params = new URLSearchParams(window.location.search);
   const prefillName = params.get('name');
@@ -117,7 +136,16 @@ async function handleAdd(e) {
   const map = FIELD_MAP[currentCategory];
   const type     = map.type     ? (document.getElementById(map.type)?.value        || null) : null;
   const varietal = map.varietal ? (document.getElementById(map.varietal)?.value.trim() || null) : null;
-  const style    = map.style    ? (document.getElementById(map.style)?.value        || null) : null;
+  // Wine style uses a tag picker (multi-select); other categories use a plain <select>
+  let style = null;
+  if (map.style) {
+    const el = document.getElementById(map.style);
+    if (el && el.classList.contains('style-tags')) {
+      style = getStyleTags(map.style);
+    } else {
+      style = el?.value || null;
+    }
+  }
   const source   = map.source   ? (document.getElementById(map.source)?.value.trim() || null) : null;
 
   const btn = document.getElementById('addBtn');

@@ -317,6 +317,42 @@ button {
   color: var(--gold-dark);
 }
 
+/* ---- Style tag picker ---- */
+.style-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.style-tag {
+  flex-shrink: 0;
+  padding: 5px 14px;
+  border-radius: 50px;
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  font-family: 'Jost', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--slate);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+.style-tag.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: var(--white);
+}
+
+.style-tag:hover:not(.active) {
+  border-color: var(--gold);
+  color: var(--gold-dark);
+}
+
 /* =============================================
    DRINK CARDS
    ============================================= */

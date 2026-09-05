@@ -7,6 +7,32 @@ let pendingPhoto = undefined; // undefined = no change, null = remove, string = 
 
 const ALL_CATEGORIES = ['wine', 'cocktail', 'beer', 'cider', 'spirit', 'mocktail', 'hotdrink', 'softdrink', 'milkshake', 'mead', 'other'];
 
+// ---- Style tag picker ----
+
+function initStyleTags(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.querySelectorAll('.style-tag').forEach(btn => {
+    btn.addEventListener('click', () => btn.classList.toggle('active'));
+  });
+}
+
+function setStyleTags(containerId, value) {
+  const container = document.getElementById(containerId);
+  if (!container || !value) return;
+  const active = new Set(value.split(',').map(s => s.trim()));
+  container.querySelectorAll('.style-tag').forEach(btn => {
+    btn.classList.toggle('active', active.has(btn.dataset.tag));
+  });
+}
+
+function getStyleTags(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return null;
+  const active = [...container.querySelectorAll('.style-tag.active')].map(b => b.dataset.tag);
+  return active.length ? active.join(',') : null;
+}
+
 const FIELD_MAP = {
   wine:      { fields: 'wineFields',      type: 'wineType',      varietal: 'wineVarietal', style: 'wineStyle',      source: 'wineSource' },
   cocktail:  { fields: 'cocktailFields',  type: 'cocktailType',  varietal: null,           style: 'cocktailStyle',  source: 'cocktailSource' },
@@ -24,6 +50,8 @@ const FIELD_MAP = {
 document.addEventListener('DOMContentLoaded', async () => {
   user = App.requireAuth();
   if (!user) return;
+
+  initStyleTags('wineStyle');
 
   const params = new URLSearchParams(window.location.search);
   drinkId = parseInt(params.get('id'));
@@ -62,7 +90,14 @@ async function loadDrink() {
       const el = document.getElementById(map.varietal);
       if (el) el.value = drink.varietal || '';
     }
-    if (map.style) setSelectValue(map.style, drink.style);
+    if (map.style) {
+      const el = document.getElementById(map.style);
+      if (el && el.classList.contains('style-tags')) {
+        setStyleTags(map.style, drink.style);
+      } else {
+        setSelectValue(map.style, drink.style);
+      }
+    }
     if (map.source) {
       const el = document.getElementById(map.source);
       if (el) el.value = drink.source || '';
@@ -171,7 +206,16 @@ async function handleEdit(e) {
   const map = FIELD_MAP[currentCategory];
   const type     = map.type     ? (document.getElementById(map.type)?.value        || null) : null;
   const varietal = map.varietal ? (document.getElementById(map.varietal)?.value.trim() || null) : null;
-  const style    = map.style    ? (document.getElementById(map.style)?.value        || null) : null;
+  // Wine style uses a tag picker (multi-select); other categories use a plain <select>
+  let style = null;
+  if (map.style) {
+    const el = document.getElementById(map.style);
+    if (el && el.classList.contains('style-tags')) {
+      style = getStyleTags(map.style);
+    } else {
+      style = el?.value || null;
+    }
+  }
   const source   = map.source   ? (document.getElementById(map.source)?.value.trim() || null) : null;
 
   const btn = document.getElementById('saveBtn');
