@@ -53,15 +53,15 @@ module.exports = async (req, res) => {
 
   /* -------- POST — create a post -------- */
   if (req.method === 'POST') {
-    const { content } = req.body || {};
+    const { content, image } = req.body || {};
     const userId = parseId((req.body || {}).user_id);
     const tripId = parseId((req.body || {}).trip_id);
 
-    if (!userId || !content || !content.trim()) {
-      return res.status(400).json({ error: 'user_id and content are required' });
+    if (!userId || (!content?.trim() && !image)) {
+      return res.status(400).json({ error: 'user_id and content or image are required' });
     }
 
-    const trimmed = content.trim();
+    const trimmed = (content || '').trim();
     if (trimmed.length > 500) {
       return res.status(400).json({ error: 'Content must be 500 characters or fewer' });
     }
@@ -74,9 +74,9 @@ module.exports = async (req, res) => {
       if (!membership) return;
 
       const [post] = await sql`
-        INSERT INTO feed_posts (user_id, trip_id, content)
-        VALUES (${userId}, ${tripId}, ${trimmed})
-        RETURNING id, content, created_at, trip_id
+        INSERT INTO feed_posts (user_id, trip_id, content, image)
+        VALUES (${userId}, ${tripId}, ${trimmed || null}, ${image || null})
+        RETURNING id, content, image, created_at, trip_id
       `;
       return res.status(201).json({ post });
     } catch (err) {

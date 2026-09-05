@@ -21,6 +21,31 @@ if (composeAvatar) {
 const textarea = document.getElementById('postContent');
 const charCount = document.getElementById('charCount');
 const postBtn = document.getElementById('postBtn');
+const postPhotoInput = document.getElementById('postPhotoInput');
+const composePhotoPreview = document.getElementById('composePhotoPreview');
+const composePhotoImg = document.getElementById('composePhotoImg');
+const removePhotoBtn = document.getElementById('removePhotoBtn');
+
+let _pendingPhoto = null; // base64 string or null
+
+postPhotoInput.addEventListener('change', () => {
+  const file = postPhotoInput.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    _pendingPhoto = e.target.result;
+    composePhotoImg.src = _pendingPhoto;
+    composePhotoPreview.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+  postPhotoInput.value = '';
+});
+
+removePhotoBtn.addEventListener('click', () => {
+  _pendingPhoto = null;
+  composePhotoImg.src = '';
+  composePhotoPreview.style.display = 'none';
+});
 
 textarea.addEventListener('input', () => {
   const remaining = 500 - textarea.value.length;
@@ -35,19 +60,25 @@ textarea.addEventListener('keydown', (e) => {
 
 async function submitPost() {
   const content = textarea.value.trim();
-  if (!content) return;
+  if (!content && !_pendingPhoto) return;
 
   postBtn.disabled = true;
   postBtn.textContent = 'Posting…';
 
   try {
+    const body = App.tripBody({ content });
+    if (_pendingPhoto) body.image = _pendingPhoto;
+
     await App.apiFetch('/api/feed', {
       method: 'POST',
-      body: JSON.stringify(App.tripBody({ content })),
+      body: JSON.stringify(body),
     });
     textarea.value = '';
     charCount.textContent = '500';
     charCount.classList.remove('feed-char-warn');
+    _pendingPhoto = null;
+    composePhotoImg.src = '';
+    composePhotoPreview.style.display = 'none';
     await loadFeed();
     App.showToast('Posted!');
   } catch (err) {
@@ -110,6 +141,7 @@ function renderFeed(posts) {
             </button>` : ''}
           </div>
           <p class="feed-post-content">${content}</p>
+          ${post.image ? `<img class="feed-post-image" src="${DOMPurify.sanitize(post.image)}" alt="Post photo" loading="lazy">` : ''}
           <div class="feed-post-actions">
             <button class="feed-like-btn ${liked ? 'liked' : ''}" data-id="${post.id}" data-liked="${liked ? '1' : '0'}">
               <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>

@@ -1815,6 +1815,47 @@ input, select, textarea {
   margin-top: 6px;
 }
 
+.feed-photo-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--slate);
+  margin-right: auto;
+  transition: color 0.18s, background 0.18s;
+}
+.feed-photo-btn:hover { color: var(--gold); background: var(--gold-pale); }
+.feed-photo-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+
+.feed-compose-photo-preview {
+  position: relative;
+  margin-top: 8px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1.5px solid var(--border);
+}
+.feed-compose-photo-preview img {
+  display: block;
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+}
+.feed-remove-photo-btn {
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.55);
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+}
+.feed-remove-photo-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+
 .feed-char-count {
   font-size: 0.72rem;
   color: var(--slate);
@@ -1915,6 +1956,16 @@ input, select, textarea {
   white-space: pre-wrap;
   word-break: break-word;
   margin-bottom: 8px;
+}
+
+.feed-post-image {
+  display: block;
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
 }
 
 .feed-post-actions {

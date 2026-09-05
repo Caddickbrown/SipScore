@@ -44,7 +44,17 @@
           maxlength="500"
           rows="2"
         ></textarea>
+        <div id="composePhotoPreview" class="feed-compose-photo-preview" style="display:none">
+          <img id="composePhotoImg" src="" alt="Photo preview">
+          <button type="button" id="removePhotoBtn" class="feed-remove-photo-btn" aria-label="Remove photo">
+            <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
         <div class="feed-compose-footer">
+          <label class="feed-photo-btn" for="postPhotoInput" title="Attach photo">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            <input type="file" id="postPhotoInput" accept="image/*" style="display:none">
+          </label>
           <span class="feed-char-count" id="charCount">500</span>
           <button class="btn btn-primary feed-post-btn" id="postBtn">Post</button>
         </div>
