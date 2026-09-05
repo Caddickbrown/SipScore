@@ -1922,6 +1922,7 @@ input, select, textarea {
   flex: 1;
 }
 
+.feed-edit-btn,
 .feed-delete-btn {
   background: none;
   border: none;
@@ -1934,11 +1935,19 @@ input, select, textarea {
   transition: opacity 0.2s;
 }
 
+.feed-edit-btn:hover {
+  opacity: 1;
+  color: var(--gold-dark);
+}
+
+.feed-delete-btn {
+
 .feed-delete-btn:hover {
   opacity: 1;
   color: var(--warn-red, #e05c5c);
 }
 
+.feed-edit-btn svg,
 .feed-delete-btn svg {
   width: 15px;
   height: 15px;
@@ -1947,6 +1956,21 @@ input, select, textarea {
   stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.feed-edit-compose {
+  margin-bottom: 8px;
+}
+
+.feed-edit-textarea {
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.feed-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
 }
 
 .feed-post-content {

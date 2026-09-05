@@ -1,7 +1,7 @@
 const { getSql, setCors, ensureSchema, parseId, requireMembership } = require('../lib/db');
 
 module.exports = async (req, res) => {
-  setCors(res, 'GET, POST, DELETE, OPTIONS');
+  setCors(res, 'GET, POST, PATCH, DELETE, OPTIONS');
   res.setHeader('Content-Type', 'application/json');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -81,6 +81,37 @@ module.exports = async (req, res) => {
       return res.status(201).json({ post });
     } catch (err) {
       console.error('POST feed error:', err);
+      return res.status(500).json({ error: err.message });
+    }
+  }
+
+  /* -------- PATCH — edit own post content -------- */
+  if (req.method === 'PATCH') {
+    const { content, post_id } = req.body || {};
+    const userId = parseId((req.body || {}).user_id);
+    const postId = parseId(post_id);
+
+    if (!userId || !postId || !content?.trim()) {
+      return res.status(400).json({ error: 'user_id, post_id and content are required' });
+    }
+    const trimmed = content.trim();
+    if (trimmed.length > 500) {
+      return res.status(400).json({ error: 'Content must be 500 characters or fewer' });
+    }
+
+    try {
+      const result = await sql`
+        UPDATE feed_posts
+        SET content = ${trimmed}
+        WHERE id = ${postId} AND user_id = ${userId}
+        RETURNING id, content
+      `;
+      if (result.length === 0) {
+        return res.status(404).json({ error: 'Post not found or not yours' });
+      }
+      return res.json({ post: result[0] });
+    } catch (err) {
+      console.error('PATCH feed error:', err);
       return res.status(500).json({ error: err.message });
     }
   }

@@ -136,7 +136,11 @@ function renderFeed(posts) {
           <div class="feed-post-header">
             <span class="feed-post-name user-link" data-user-id="${post.user_id}">${DOMPurify.sanitize(post.user_name)}</span>
             <span class="feed-post-time">${timeAgo(post.created_at)}</span>
-            ${isOwn ? `<button class="feed-delete-btn" data-id="${post.id}" aria-label="Delete post">
+            ${isOwn ? `
+            <button class="feed-edit-btn" data-id="${post.id}" aria-label="Edit post">
+              <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="feed-delete-btn" data-id="${post.id}" aria-label="Delete post">
               <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
             </button>` : ''}
           </div>
@@ -176,6 +180,11 @@ function renderFeed(posts) {
   // Like buttons
   list.querySelectorAll('.feed-like-btn').forEach(btn => {
     btn.addEventListener('click', () => toggleLike(btn));
+  });
+
+  // Edit buttons
+  list.querySelectorAll('.feed-edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => editPost(btn));
   });
 
   // Delete buttons
@@ -232,6 +241,60 @@ async function toggleLike(btn) {
     btn.dataset.liked = wasLiked ? '1' : '0';
     btn.classList.toggle('liked', wasLiked);
     countEl.textContent = current > 0 ? current : '';
+  }
+}
+
+function editPost(btn) {
+  const postId = parseInt(btn.dataset.id);
+  const article = btn.closest('.feed-post');
+  const contentEl = article.querySelector('.feed-post-content');
+  if (!contentEl || article.querySelector('.feed-edit-compose')) return; // already editing
+
+  const current = contentEl.textContent;
+  contentEl.style.display = 'none';
+
+  const compose = document.createElement('div');
+  compose.className = 'feed-edit-compose';
+  compose.innerHTML = `
+    <textarea class="feed-textarea feed-edit-textarea" maxlength="500" rows="3">${current}</textarea>
+    <div class="feed-edit-actions">
+      <button class="btn btn-ghost btn-sm feed-edit-cancel-btn">Cancel</button>
+      <button class="btn btn-primary btn-sm feed-edit-save-btn">Save</button>
+    </div>`;
+  contentEl.insertAdjacentElement('afterend', compose);
+  compose.querySelector('textarea').focus();
+
+  compose.querySelector('.feed-edit-cancel-btn').addEventListener('click', () => {
+    compose.remove();
+    contentEl.style.display = '';
+  });
+
+  compose.querySelector('.feed-edit-save-btn').addEventListener('click', () =>
+    savePost(postId, compose, contentEl));
+}
+
+async function savePost(postId, compose, contentEl) {
+  const textarea = compose.querySelector('textarea');
+  const newContent = textarea.value.trim();
+  if (!newContent) return;
+
+  const saveBtn = compose.querySelector('.feed-edit-save-btn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving…';
+
+  try {
+    await App.apiFetch('/api/feed', {
+      method: 'PATCH',
+      body: JSON.stringify({ user_id: user.id, post_id: postId, content: newContent }),
+    });
+    compose.remove();
+    contentEl.textContent = newContent;
+    contentEl.style.display = '';
+    App.showToast('Post updated');
+  } catch (err) {
+    App.showToast(err.message || 'Failed to save', 'error');
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save';
   }
 }
 
