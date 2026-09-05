@@ -2,6 +2,12 @@
    app.js — Shared utilities for SipScore
    ============================================= */
 
+// Apply theme immediately to avoid flash
+(function() {
+  const t = localStorage.getItem('sipscore-theme');
+  if (t) document.documentElement.setAttribute('data-theme', t);
+})();
+
 const STAR_LABELS = ['', 'Poor', 'Fair', 'Good', 'Great', 'Outstanding'];
 
 // ---- User / Auth ----
@@ -387,15 +393,133 @@ function showCropModal(file) {
 
 // ---- Navigation ----
 
-function initNav(activePage) {
-  const nav = document.getElementById('bottomNav');
-  if (!nav) return;
-  const items = nav.querySelectorAll('.nav-item');
-  items.forEach(item => {
-    if (item.dataset.page === activePage) {
-      item.classList.add('active');
-    }
+// ---- Theme toggle ----
+
+function initTheme() {
+  const stored = localStorage.getItem('sipscore-theme');
+  if (stored) {
+    document.documentElement.setAttribute('data-theme', stored);
+  }
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const isDark = current === 'dark' ||
+    (!current && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const next = isDark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('sipscore-theme', next);
+  // Update all toggle button icons
+  document.querySelectorAll('.theme-toggle-btn, .sidebar-theme-btn').forEach(btn => {
+    updateThemeIcon(btn, next);
   });
+}
+
+function updateThemeIcon(btn, theme) {
+  if (!btn) return;
+  const isDark = theme === 'dark' ||
+    (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  btn.querySelector('svg').innerHTML = isDark
+    ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+    : '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+}
+
+// ---- Sidebar ----
+
+function initSidebar(activePage) {
+  const user = getUser();
+  const trip = getTrip();
+  const sidebar = document.getElementById('sidebarNav');
+  if (!sidebar) return;
+
+  sidebar.innerHTML = `
+    <a href="/drinks.html" class="sidebar-logo">Sip<span>Score</span></a>
+    <div class="sidebar-divider"></div>
+    <a href="/drinks.html" class="sidebar-nav-item${activePage === 'drinks' ? ' active' : ''}">
+      <svg viewBox="0 0 24 24"><path d="M8 22h8M12 11v11M7 3h10l-2 8H9L7 3z"/></svg>
+      Drinks
+    </a>
+    <a href="/leaderboard.html" class="sidebar-nav-item${activePage === 'leaderboard' ? ' active' : ''}">
+      <svg viewBox="0 0 24 24"><path d="M6 9H3l2-5h14l2 5h-3M6 9a6 6 0 0 0 12 0M8 21H5l3-3h8l3 3h-3M12 18v-3"/></svg>
+      Rankings
+    </a>
+    <a href="/feed.html" class="sidebar-nav-item${activePage === 'feed' ? ' active' : ''}">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Feed
+    </a>
+    <a href="/trips.html" class="sidebar-nav-item${activePage === 'trips' ? ' active' : ''}">
+      <svg viewBox="0 0 24 24"><path d="M3 7h18v13H3zM8 7V4h8v3M3 12h18"/></svg>
+      Trips
+    </a>
+    <a href="/add-drink.html" class="sidebar-nav-item${activePage === 'add' ? ' active' : ''}">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+      Add Drink
+    </a>
+    <div class="sidebar-spacer"></div>
+    <button type="button" class="sidebar-trip-pill" id="sidebarTripPill" title="Switch trip">
+      <svg viewBox="0 0 24 24"><path d="M3 7h18v13H3zM8 7V4h8v3M3 12h18"/></svg>
+      <span class="sidebar-trip-name" id="sidebarTripName">${trip ? trip.name : 'No trip'}</span>
+    </button>
+    <button type="button" class="sidebar-theme-btn" id="sidebarThemeBtn">
+      <svg viewBox="0 0 24 24"></svg>
+      <span id="sidebarThemeLabel">Toggle theme</span>
+    </button>
+    <div class="sidebar-avatar-row" id="sidebarAvatarRow">
+      <div class="user-avatar" id="sidebarAvatar" style="width:30px;height:30px;font-size:0.75rem;"></div>
+      <span class="sidebar-avatar-name">${user ? user.name : ''}</span>
+    </div>
+  `;
+
+  // Apply avatar
+  if (user) {
+    applyAvatarToEl(sidebar.querySelector('#sidebarAvatar'), user);
+  }
+
+  // Trip pill click — reuse the existing trip modal
+  const sidebarTripPill = sidebar.querySelector('#sidebarTripPill');
+  if (sidebarTripPill) {
+    sidebarTripPill.addEventListener('click', () => {
+      const mobilePill = document.getElementById('tripPill');
+      if (mobilePill) mobilePill.click();
+    });
+  }
+
+  // Theme toggle
+  const themeBtn = sidebar.querySelector('#sidebarThemeBtn');
+  const stored = localStorage.getItem('sipscore-theme');
+  const effectiveTheme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  if (themeBtn) {
+    updateThemeIcon(themeBtn, effectiveTheme);
+    themeBtn.addEventListener('click', toggleTheme);
+  }
+
+  // Avatar row — open profile modal
+  const avatarRow = sidebar.querySelector('#sidebarAvatarRow');
+  if (avatarRow && user) {
+    avatarRow.addEventListener('click', () => openProfileModal(user));
+  }
+}
+
+function initNav(activePage) {
+  // Bottom nav (mobile)
+  const nav = document.getElementById('bottomNav');
+  if (nav) {
+    nav.querySelectorAll('.nav-item').forEach(item => {
+      if (item.dataset.page === activePage) item.classList.add('active');
+    });
+  }
+
+  // Sidebar (desktop)
+  initSidebar(activePage);
+
+  // Mobile theme toggle in header
+  const mobileThemeBtn = document.getElementById('themeToggleBtn');
+  if (mobileThemeBtn) {
+    const stored = localStorage.getItem('sipscore-theme');
+    const effectiveTheme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    updateThemeIcon(mobileThemeBtn, effectiveTheme);
+    mobileThemeBtn.addEventListener('click', toggleTheme);
+  }
 }
 
 // ---- Profile modal ----
@@ -552,5 +676,6 @@ window.App = {
   openProfileModal,
   closeProfileModal,
   showToast,
+  toggleTheme,
   STAR_LABELS,
 };

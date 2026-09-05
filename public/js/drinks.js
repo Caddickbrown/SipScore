@@ -271,16 +271,20 @@ function drinkCard(d) {
   a.appendChild(body);
   a.appendChild(arrow);
 
-  // Optional thumbnail
+  // Optional thumbnail (first photo if multiple)
   if (d.image) {
-    const thumb = document.createElement('div');
-    thumb.className = 'drink-card-thumb';
-    const thumbImg = document.createElement('img');
-    thumbImg.src = d.image;
-    thumbImg.alt = d.name;
-    thumbImg.loading = 'lazy';
-    thumb.appendChild(thumbImg);
-    a.appendChild(thumb);
+    let thumbSrc;
+    try { thumbSrc = JSON.parse(d.image)[0]; } catch { thumbSrc = d.image; }
+    if (thumbSrc) {
+      const thumb = document.createElement('div');
+      thumb.className = 'drink-card-thumb';
+      const thumbImg = document.createElement('img');
+      thumbImg.src = thumbSrc;
+      thumbImg.alt = d.name;
+      thumbImg.loading = 'lazy';
+      thumb.appendChild(thumbImg);
+      a.appendChild(thumb);
+    }
   }
 
   return a;

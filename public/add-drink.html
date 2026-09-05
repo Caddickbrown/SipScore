@@ -16,12 +16,17 @@
 <body>
 
   <!-- Header -->
+  <nav class="sidebar-nav" id="sidebarNav"></nav>
+
   <header class="app-header">
     <a href="/drinks.html" class="app-logo">Sip<span>Score</span></a>
     <div class="header-right">
       <button type="button" class="trip-pill" id="tripPill" title="Switch trip">
         <svg viewBox="0 0 24 24"><path d="M3 7h18v13H3zM8 7V4h8v3M3 12h18"/></svg>
         <span class="trip-pill-name" id="tripPillName">Trip</span>
+      </button>
+      <button type="button" class="theme-toggle-btn" id="themeToggleBtn" title="Toggle theme">
+        <svg viewBox="0 0 24 24"></svg>
       </button>
       <div class="user-avatar" id="headerAvatar" title="Profile"></div>
     </div>
@@ -104,16 +109,13 @@
 
         <!-- Photo picker -->
         <div class="form-group photo-picker">
-          <label class="form-label">Photo <span class="form-optional">(optional)</span></label>
-          <div id="photoPreview" class="photo-picker-preview" style="display:none;">
-            <img id="photoPreviewImg" src="" alt="Drink photo">
-            <button type="button" class="photo-picker-preview-remove" onclick="removePhoto()" title="Remove photo">×</button>
-          </div>
+          <label class="form-label">Photos <span class="form-optional">(optional, up to 6)</span></label>
+          <div id="photoGallery" class="photo-gallery"></div>
           <label class="photo-picker-btn" id="photoPickerBtn" for="drinkPhotoInput">
             <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            Add a photo
+            Add photos
           </label>
-          <input type="file" id="drinkPhotoInput" accept="image/*" style="display:none;" onchange="handlePhotoSelected(this)">
+          <input type="file" id="drinkPhotoInput" accept="image/*" multiple style="display:none;" onchange="handlePhotoSelected(this)">
         </div>
 
         <!-- Wine fields -->

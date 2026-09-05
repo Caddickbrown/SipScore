@@ -24,6 +24,7 @@ module.exports = async (req, res) => {
         SELECT
           fp.id,
           fp.content,
+          fp.image,
           fp.created_at,
           fp.trip_id,
           u.id            AS user_id,

@@ -2,7 +2,7 @@
 
 let user;
 let currentCategory = 'wine';
-let pendingPhoto = null; // base64 data URL or null
+let pendingPhotos = []; // array of base64 data URLs
 
 const ALL_CATEGORIES = ['wine', 'cocktail', 'beer', 'cider', 'spirit', 'mocktail', 'hotdrink', 'softdrink', 'milkshake', 'mead', 'other'];
 
@@ -112,7 +112,7 @@ function setCategory(cat) {
   document.getElementById('addError').textContent = '';
 }
 
-// ---- Photo handling ----
+// ---- Photo handling (multi-image) ----
 
 function resizeDrinkPhoto(file) {
   return new Promise((resolve, reject) => {
@@ -138,27 +138,37 @@ function resizeDrinkPhoto(file) {
   });
 }
 
-async function handlePhotoSelected(input) {
-  const file = input.files[0];
-  input.value = '';
-  if (!file) return;
-
-  try {
-    const base64 = await resizeDrinkPhoto(file);
-    pendingPhoto = base64;
-    document.getElementById('photoPreviewImg').src = base64;
-    document.getElementById('photoPreview').style.display = 'block';
-    document.getElementById('photoPickerBtn').classList.add('has-photo');
-  } catch (err) {
-    App.showToast('Could not load photo', 'error');
-  }
+function renderPhotoGallery() {
+  const gallery = document.getElementById('photoGallery');
+  if (!gallery) return;
+  gallery.innerHTML = '';
+  pendingPhotos.forEach((src, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'photo-gallery-thumb';
+    wrap.innerHTML = `<img src="${src}" alt="Photo ${i+1}"><button type="button" class="photo-gallery-remove" aria-label="Remove">×</button>`;
+    wrap.querySelector('.photo-gallery-remove').addEventListener('click', () => {
+      pendingPhotos.splice(i, 1);
+      renderPhotoGallery();
+    });
+    gallery.appendChild(wrap);
+  });
 }
 
-function removePhoto() {
-  pendingPhoto = null;
-  document.getElementById('photoPreviewImg').src = '';
-  document.getElementById('photoPreview').style.display = 'none';
-  document.getElementById('photoPickerBtn').classList.remove('has-photo');
+async function handlePhotoSelected(input) {
+  const files = Array.from(input.files);
+  input.value = '';
+  if (!files.length) return;
+
+  for (const file of files) {
+    if (pendingPhotos.length >= 6) { App.showToast('Max 6 photos', 'error'); break; }
+    try {
+      const base64 = await resizeDrinkPhoto(file);
+      pendingPhotos.push(base64);
+    } catch {
+      App.showToast('Could not load a photo', 'error');
+    }
+  }
+  renderPhotoGallery();
 }
 
 async function handleAdd(e) {
@@ -200,7 +210,7 @@ async function handleAdd(e) {
         varietal,
         style,
         source,
-        image: pendingPhoto,
+        image: pendingPhotos.length ? JSON.stringify(pendingPhotos) : null,
         user_id: user.id,
         trip_id: App.getTripId(),
       }),

@@ -84,14 +84,26 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Name must be at least 2 characters' });
     }
 
-    // Validate optional image
+    // Validate optional image (may be a JSON array of data URLs or single legacy URL)
     const drinkImage = image || null;
     if (drinkImage !== null) {
-      if (typeof drinkImage !== 'string' || !drinkImage.startsWith('data:image/')) {
-        return res.status(400).json({ error: 'image must be a valid image data URL' });
-      }
-      if (drinkImage.length > 400_000) {
-        return res.status(400).json({ error: 'Image is too large (max ~300 KB)' });
+      let imgs;
+      try { imgs = JSON.parse(drinkImage); } catch { imgs = null; }
+      if (imgs && Array.isArray(imgs)) {
+        for (const img of imgs) {
+          if (typeof img !== 'string' || !img.startsWith('data:image/')) {
+            return res.status(400).json({ error: 'Each image must be a valid image data URL' });
+          }
+          if (img.length > 400_000) return res.status(400).json({ error: 'An image is too large (max ~300 KB each)' });
+        }
+        if (imgs.length > 6) return res.status(400).json({ error: 'Maximum 6 images per drink' });
+      } else {
+        if (typeof drinkImage !== 'string' || !drinkImage.startsWith('data:image/')) {
+          return res.status(400).json({ error: 'image must be a valid image data URL' });
+        }
+        if (drinkImage.length > 400_000) {
+          return res.status(400).json({ error: 'Image is too large (max ~300 KB)' });
+        }
       }
     }
 

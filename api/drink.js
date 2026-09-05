@@ -32,11 +32,24 @@ module.exports = async (req, res) => {
 
       const newImage = image ?? null;
       if (newImage !== null) {
-        if (typeof newImage !== 'string' || !newImage.startsWith('data:image/')) {
-          return res.status(400).json({ error: 'image must be a valid image data URL' });
-        }
-        if (newImage.length > 400_000) {
-          return res.status(400).json({ error: 'Image is too large (max ~300 KB)' });
+        // Accept either a JSON array of data URLs or a single legacy data URL
+        let images;
+        try { images = JSON.parse(newImage); } catch { images = null; }
+        if (images && Array.isArray(images)) {
+          for (const img of images) {
+            if (typeof img !== 'string' || !img.startsWith('data:image/')) {
+              return res.status(400).json({ error: 'Each image must be a valid image data URL' });
+            }
+            if (img.length > 400_000) return res.status(400).json({ error: 'An image is too large (max ~300 KB each)' });
+          }
+          if (images.length > 6) return res.status(400).json({ error: 'Maximum 6 images per drink' });
+        } else {
+          if (typeof newImage !== 'string' || !newImage.startsWith('data:image/')) {
+            return res.status(400).json({ error: 'image must be a valid image data URL' });
+          }
+          if (newImage.length > 400_000) {
+            return res.status(400).json({ error: 'Image is too large (max ~300 KB)' });
+          }
         }
       }
 

@@ -3,7 +3,7 @@
 let user;
 let drinkId;
 let currentCategory = 'wine';
-let pendingPhoto = undefined; // undefined = no change, null = remove, string = new base64
+let pendingPhotos = undefined; // undefined = no change, null = clear all, array = new set
 
 const ALL_CATEGORIES = ['wine', 'cocktail', 'beer', 'cider', 'spirit', 'mocktail', 'hotdrink', 'softdrink', 'milkshake', 'mead', 'other'];
 
@@ -154,12 +154,17 @@ async function loadDrink() {
       if (el) el.value = drink.source || '';
     }
 
-    // Pre-fill existing photo
+    // Pre-fill existing photos
     if (drink.image) {
-      document.getElementById('photoPreviewImg').src = drink.image;
-      document.getElementById('photoPreview').style.display = 'block';
-      document.getElementById('photoPickerBtn').classList.add('has-photo');
+      try {
+        window._loadedPhotos = JSON.parse(drink.image);
+      } catch {
+        window._loadedPhotos = [drink.image]; // legacy single image
+      }
+    } else {
+      window._loadedPhotos = [];
     }
+    renderPhotoGallery();
 
     document.getElementById('editForm').style.display = 'block';
   } catch (err) {
@@ -196,7 +201,7 @@ function setCategory(cat, clearFields = true) {
   }
 }
 
-// ---- Photo handling ----
+// ---- Photo handling (multi-image) ----
 
 function resizeDrinkPhoto(file) {
   return new Promise((resolve, reject) => {
@@ -222,27 +227,41 @@ function resizeDrinkPhoto(file) {
   });
 }
 
-async function handlePhotoSelected(input) {
-  const file = input.files[0];
-  input.value = '';
-  if (!file) return;
-
-  try {
-    const base64 = await resizeDrinkPhoto(file);
-    pendingPhoto = base64;
-    document.getElementById('photoPreviewImg').src = base64;
-    document.getElementById('photoPreview').style.display = 'block';
-    document.getElementById('photoPickerBtn').classList.add('has-photo');
-  } catch (err) {
-    App.showToast('Could not load photo', 'error');
-  }
+function renderPhotoGallery() {
+  const gallery = document.getElementById('photoGallery');
+  if (!gallery) return;
+  const photos = pendingPhotos !== undefined ? pendingPhotos || [] : window._loadedPhotos || [];
+  gallery.innerHTML = '';
+  photos.forEach((src, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'photo-gallery-thumb';
+    wrap.innerHTML = `<img src="${src}" alt="Photo ${i+1}"><button type="button" class="photo-gallery-remove" aria-label="Remove">×</button>`;
+    wrap.querySelector('.photo-gallery-remove').addEventListener('click', () => {
+      if (pendingPhotos === undefined) pendingPhotos = [...(window._loadedPhotos || [])];
+      pendingPhotos.splice(i, 1);
+      renderPhotoGallery();
+    });
+    gallery.appendChild(wrap);
+  });
 }
 
-function removePhoto() {
-  pendingPhoto = null; // explicitly clear
-  document.getElementById('photoPreviewImg').src = '';
-  document.getElementById('photoPreview').style.display = 'none';
-  document.getElementById('photoPickerBtn').classList.remove('has-photo');
+async function handlePhotoSelected(input) {
+  const files = Array.from(input.files);
+  input.value = '';
+  if (!files.length) return;
+
+  if (pendingPhotos === undefined) pendingPhotos = [...(window._loadedPhotos || [])];
+
+  for (const file of files) {
+    if (pendingPhotos.length >= 6) { App.showToast('Max 6 photos', 'error'); break; }
+    try {
+      const base64 = await resizeDrinkPhoto(file);
+      pendingPhotos.push(base64);
+    } catch {
+      App.showToast('Could not load a photo', 'error');
+    }
+  }
+  renderPhotoGallery();
 }
 
 async function handleEdit(e) {
@@ -281,11 +300,12 @@ async function handleEdit(e) {
       body: JSON.stringify({ name, category: currentCategory, type, varietal, style, source }),
     });
 
-    // If photo changed, save it separately (new upload or explicit removal)
-    if (pendingPhoto !== undefined) {
+    // If photos changed, save them separately
+    if (pendingPhotos !== undefined) {
+      const imageVal = pendingPhotos.length ? JSON.stringify(pendingPhotos) : null;
       await App.apiFetch('/api/drink?id=' + drinkId, {
         method: 'PATCH',
-        body: JSON.stringify({ user_id: user.id, image: pendingPhoto }),
+        body: JSON.stringify({ user_id: user.id, image: imageVal }),
       });
     }
 

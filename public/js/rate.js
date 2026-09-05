@@ -119,13 +119,16 @@ function renderHero(drink) {
   document.getElementById('heroMeta').textContent = App.drinkMeta(drink) || '';
   document.title = 'SipScore \u2014 ' + drink.name;
 
-  // Show drink photo if present
+  // Show drink photos if present
   if (drink.image) {
+    let photos;
+    try { photos = JSON.parse(drink.image); } catch { photos = [drink.image]; }
     const photoWrap = document.getElementById('heroDrinkPhotoWrap');
-    const photoImg  = document.getElementById('heroDrinkPhoto');
-    if (photoWrap && photoImg) {
-      photoImg.src = drink.image;
-      photoWrap.style.display = 'block';
+    if (photoWrap && photos.length) {
+      photoWrap.innerHTML = photos.map((src, i) =>
+        `<img src="${src}" alt="Photo ${i+1}" class="drink-hero-photo-img" loading="lazy">`
+      ).join('');
+      photoWrap.style.display = 'flex';
     }
   }
 
