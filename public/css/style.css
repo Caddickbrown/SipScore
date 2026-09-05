@@ -1411,8 +1411,8 @@ button {
   right: -2px;
   width: 22px;
   height: 22px;
-  background: var(--navy);
-  border: 2px solid var(--white);
+  background: var(--gold);
+  border: 2px solid var(--ivory);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1422,13 +1422,13 @@ button {
 }
 
 .profile-avatar-edit:hover {
-  background: var(--gold);
+  background: var(--gold-dark);
 }
 
 .profile-avatar-edit svg {
   width: 11px;
   height: 11px;
-  stroke: var(--white);
+  stroke: #fff;
   fill: none;
   stroke-width: 2;
   stroke-linecap: round;
