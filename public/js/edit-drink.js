@@ -13,7 +13,7 @@ function initStyleTags(containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
   container.querySelectorAll('.style-tag').forEach(btn => {
-    btn.addEventListener('click', () => btn.classList.toggle('active'));
+    btn.addEventListener('click', (e) => { e.preventDefault(); btn.classList.toggle('active'); });
   });
 
   // Append custom tag input
@@ -23,7 +23,7 @@ function initStyleTags(containerId) {
   container.appendChild(wrap);
 
   const input = wrap.querySelector('.style-tag-custom-input');
-  const btn   = wrap.querySelector('.style-tag-custom-btn');
+  const addBtn = wrap.querySelector('.style-tag-custom-btn');
 
   function addCustomTag() {
     const val = input.value.trim();
@@ -36,16 +36,16 @@ function initStyleTags(containerId) {
       return;
     }
     const tag = document.createElement('button');
-    tag.type = 'button';
+    tag.setAttribute('type', 'button');
     tag.className = 'style-tag active';
     tag.dataset.tag = val;
     tag.textContent = val;
-    tag.addEventListener('click', () => tag.classList.toggle('active'));
+    tag.addEventListener('click', (e) => { e.preventDefault(); tag.classList.toggle('active'); });
     container.insertBefore(tag, wrap);
     input.value = '';
   }
 
-  btn.addEventListener('click', addCustomTag);
+  addBtn.addEventListener('click', (e) => { e.preventDefault(); addCustomTag(); });
   input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addCustomTag(); } });
 }
 
@@ -67,7 +67,7 @@ function setStyleTags(containerId, value) {
     btn.className = 'style-tag active';
     btn.dataset.tag = tag;
     btn.textContent = tag;
-    btn.addEventListener('click', () => btn.classList.toggle('active'));
+    btn.addEventListener('click', (e) => { e.preventDefault(); btn.classList.toggle('active'); });
     container.insertBefore(btn, customWrap);
   });
 }
