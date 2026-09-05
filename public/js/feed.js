@@ -622,5 +622,75 @@ document.getElementById('feedList').addEventListener('click', (e) => {
   }
 });
 
+// ---- Photo lightbox ----
+const lightbox     = document.getElementById('photoLightbox');
+const lightboxImg  = document.getElementById('lightboxImg');
+const lightboxDots = document.getElementById('lightboxDots');
+const lightboxPrev = document.getElementById('lightboxPrev');
+const lightboxNext = document.getElementById('lightboxNext');
+
+let _lbPhotos = [];
+let _lbIndex  = 0;
+
+function openLightbox(photos, startIndex) {
+  _lbPhotos = photos;
+  _lbIndex  = startIndex;
+  lightbox.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  showLightboxSlide();
+}
+
+function closeLightbox() {
+  lightbox.style.display = 'none';
+  document.body.style.overflow = '';
+  lightboxImg.src = '';
+}
+
+function showLightboxSlide() {
+  lightboxImg.src = _lbPhotos[_lbIndex];
+  lightboxPrev.style.visibility = _lbPhotos.length > 1 ? 'visible' : 'hidden';
+  lightboxNext.style.visibility = _lbPhotos.length > 1 ? 'visible' : 'hidden';
+  // Dots
+  lightboxDots.innerHTML = _lbPhotos.map((_, i) =>
+    `<span class="lb-dot${i === _lbIndex ? ' active' : ''}"></span>`).join('');
+}
+
+document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+lightboxPrev.addEventListener('click', () => { _lbIndex = (_lbIndex - 1 + _lbPhotos.length) % _lbPhotos.length; showLightboxSlide(); });
+lightboxNext.addEventListener('click', () => { _lbIndex = (_lbIndex + 1) % _lbPhotos.length; showLightboxSlide(); });
+
+document.addEventListener('keydown', (e) => {
+  if (lightbox.style.display === 'none') return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft')  { _lbIndex = (_lbIndex - 1 + _lbPhotos.length) % _lbPhotos.length; showLightboxSlide(); }
+  if (e.key === 'ArrowRight') { _lbIndex = (_lbIndex + 1) % _lbPhotos.length; showLightboxSlide(); }
+});
+
+// Swipe support
+let _lbTouchX = null;
+lightbox.addEventListener('touchstart', (e) => { _lbTouchX = e.touches[0].clientX; }, { passive: true });
+lightbox.addEventListener('touchend', (e) => {
+  if (_lbTouchX === null) return;
+  const dx = e.changedTouches[0].clientX - _lbTouchX;
+  _lbTouchX = null;
+  if (Math.abs(dx) < 40) return;
+  if (dx < 0) { _lbIndex = (_lbIndex + 1) % _lbPhotos.length; }
+  else        { _lbIndex = (_lbIndex - 1 + _lbPhotos.length) % _lbPhotos.length; }
+  showLightboxSlide();
+}, { passive: true });
+
+// Tap on any feed photo to open lightbox
+document.getElementById('feedList').addEventListener('click', (e) => {
+  const wrap = e.target.closest('.feed-post-photo-wrap');
+  if (!wrap) return;
+  const grid = wrap.closest('.feed-post-photos');
+  if (!grid) return;
+  const wraps = Array.from(grid.querySelectorAll('.feed-post-photo-wrap img'));
+  const photos = wraps.map(img => img.src);
+  const index  = wraps.indexOf(e.target.closest('img') || wrap.querySelector('img'));
+  openLightbox(photos, Math.max(0, index));
+});
+
 // ---- Init ----
 loadFeed();
