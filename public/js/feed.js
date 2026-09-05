@@ -124,7 +124,7 @@ function renderFeed(posts) {
 
   list.innerHTML = posts.map(post => {
     const isOwn = post.user_id === user.id;
-    const content = DOMPurify.sanitize(post.content);
+    const content = DOMPurify.sanitize(post.content || '');
     const liked = post.liked_by_viewer;
     const likeCount = post.like_count || 0;
     const replyCount = post.reply_count || 0;
@@ -144,7 +144,7 @@ function renderFeed(posts) {
               <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
             </button>` : ''}
           </div>
-          <p class="feed-post-content">${content}</p>
+          ${content ? `<p class="feed-post-content">${content}</p>` : ''}
           ${post.image ? `<img class="feed-post-image" src="${DOMPurify.sanitize(post.image)}" alt="Post photo" loading="lazy">` : ''}
           <div class="feed-post-actions">
             <button class="feed-like-btn ${liked ? 'liked' : ''}" data-id="${post.id}" data-liked="${liked ? '1' : '0'}">
