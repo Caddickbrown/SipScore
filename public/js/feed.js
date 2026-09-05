@@ -656,7 +656,11 @@ function showLightboxSlide() {
 }
 
 document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
-lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+lightbox.addEventListener('click', (e) => {
+  if (e.target.closest('button')) return;
+  if (e.target === lightboxImg) return;
+  closeLightbox();
+});
 lightboxPrev.addEventListener('click', () => { _lbIndex = (_lbIndex - 1 + _lbPhotos.length) % _lbPhotos.length; showLightboxSlide(); });
 lightboxNext.addEventListener('click', () => { _lbIndex = (_lbIndex + 1) % _lbPhotos.length; showLightboxSlide(); });
 
