@@ -48,6 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
   App.initProfileModal();
 
   initStyleTags('wineStyle');
+  initStyleTags('cocktailStyle');
+  initStyleTags('spiritStyle');
+  initStyleTags('mocktailStyle');
+  initStyleTags('hotdrinkStyle');
+  initStyleTags('milkshakeStyle');
 
   const params = new URLSearchParams(window.location.search);
   const prefillName = params.get('name');

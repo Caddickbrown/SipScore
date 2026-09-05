@@ -52,6 +52,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!user) return;
 
   initStyleTags('wineStyle');
+  initStyleTags('cocktailStyle');
+  initStyleTags('spiritStyle');
+  initStyleTags('mocktailStyle');
+  initStyleTags('hotdrinkStyle');
+  initStyleTags('milkshakeStyle');
 
   const params = new URLSearchParams(window.location.search);
   drinkId = parseInt(params.get('id'));
