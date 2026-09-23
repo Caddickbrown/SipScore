@@ -1,4 +1,4 @@
-const { getSql, setCors, ensureSchema } = require('../lib/db');
+const { withHandler } = require('../lib/db');
 
 const WINES = [
   { name: 'Pontiglio', type: 'White', style: 'Light and Crisp', source: 'Corfu, Greece' },
@@ -63,49 +63,46 @@ const COCKTAILS = [
   { name: 'Mimosa', type: 'Wine-based', style: 'Bubbly', source: 'USA' },
 ];
 
-module.exports = async (req, res) => {
-  setCors(res, 'POST, OPTIONS');
-  res.setHeader('Content-Type', 'application/json');
+// Set SEED_TOKEN in the environment to require an `x-seed-token` header.
+// Without it the endpoint stays open (it is idempotent: it only ever seeds once).
+function authorised(req) {
+  const expected = process.env.SEED_TOKEN;
+  if (!expected) return true;
+  const headers = req.headers || {};
+  return headers['x-seed-token'] === expected;
+}
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+module.exports = withHandler(['POST'], async (req, res, sql) => {
+  if (!authorised(req)) return res.status(401).json({ error: 'Seed token required' });
 
-  const sql = getSql();
-
-  try {
-    // Tables, trip columns and the legacy-trip backfill all live in lib/db.
-    await ensureSchema(sql);
-
-    // Check if already seeded
-    const [{ count }] = await sql`SELECT COUNT(*) as count FROM drinks WHERE is_seeded = true`;
-    if (parseInt(count) > 0) {
-      return res.json({ success: true, message: 'Already seeded', count: parseInt(count) });
-    }
-
-    // Seed wines
-    for (const wine of WINES) {
-      await sql`
-        INSERT INTO drinks (name, category, type, style, source, is_seeded, trip_id)
-        VALUES (${wine.name}, 'wine', ${wine.type}, ${wine.style}, ${wine.source}, true, NULL)
-      `;
-    }
-
-    // Seed cocktails
-    for (const cocktail of COCKTAILS) {
-      await sql`
-        INSERT INTO drinks (name, category, type, style, source, is_seeded, trip_id)
-        VALUES (${cocktail.name}, 'cocktail', ${cocktail.type}, ${cocktail.style}, ${cocktail.source}, true, NULL)
-      `;
-    }
-
-    return res.json({
-      success: true,
-      message: 'Database seeded successfully',
-      wines: WINES.length,
-      cocktails: COCKTAILS.length,
-    });
-  } catch (err) {
-    console.error('Seed error:', err);
-    return res.status(500).json({ error: err.message });
+  // Tables, trip columns and the legacy-trip backfill all live in lib/db.
+  const [{ count }] = await sql`SELECT COUNT(*)::int AS count FROM drinks WHERE is_seeded = true`;
+  if (count > 0) {
+    return res.json({ success: true, message: 'Already seeded', count });
   }
-};
+
+  const rows = [
+    ...WINES.map(w => ({ ...w, category: 'wine' })),
+    ...COCKTAILS.map(c => ({ ...c, category: 'cocktail' })),
+  ];
+
+  // One multi-row insert rather than a round-trip per drink.
+  await sql`
+    INSERT INTO drinks (name, category, type, style, source, is_seeded, trip_id)
+    SELECT name, category, type, style, source, true, NULL
+    FROM unnest(
+      ${rows.map(r => r.name)}::text[],
+      ${rows.map(r => r.category)}::text[],
+      ${rows.map(r => r.type)}::text[],
+      ${rows.map(r => r.style)}::text[],
+      ${rows.map(r => r.source)}::text[]
+    ) AS x(name, category, type, style, source)
+  `;
+
+  return res.json({
+    success: true,
+    message: 'Database seeded successfully',
+    wines: WINES.length,
+    cocktails: COCKTAILS.length,
+  });
+});

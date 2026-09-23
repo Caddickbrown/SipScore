@@ -1,145 +1,144 @@
-const { getSql, setCors, ensureSchema, parseId, requireMembership } = require('../lib/db');
+const {
+  withHandler,
+  parseId,
+  LIMITS,
+  cleanText,
+  validateImages,
+  requireMembership,
+} = require('../lib/db');
 
-module.exports = async (req, res) => {
-  setCors(res, 'GET, POST, PATCH, DELETE, OPTIONS');
-  res.setHeader('Content-Type', 'application/json');
+const PAGE_SIZE = 50;
+// Feed photos are resized to 1200px client-side; allow some headroom per image.
+// The client also keeps the whole request under Vercel's 4.5 MB body limit.
+const FEED_IMAGE_OPTIONS = { maxEach: 900_000, maxCount: 6 };
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
+/* -------- GET — posts for a trip (or all the viewer's trips), newest first -------- */
+async function handleGet(req, res, sql) {
+  const viewerId = parseId(req.query.user_id);
+  const tripId = parseId(req.query.trip_id);
+  const beforeId = parseId(req.query.before_id);
 
-  const sql = getSql();
-  await ensureSchema(sql);
+  if (!viewerId) return res.status(400).json({ error: 'user_id is required' });
 
-  /* -------- GET — posts for a trip, newest first -------- */
-  if (req.method === 'GET') {
-    const viewerId = parseId(req.query.user_id);
-    const tripId = parseId(req.query.trip_id);
-
-    try {
-      if (tripId && viewerId) {
-        const membership = await requireMembership(sql, res, tripId, viewerId);
-        if (!membership) return;
-      }
-
-      const posts = await sql`
-        SELECT
-          fp.id,
-          fp.content,
-          fp.image,
-          fp.created_at,
-          fp.trip_id,
-          u.id            AS user_id,
-          u.name          AS user_name,
-          u.avatar_colour,
-          u.avatar_image,
-          COUNT(DISTINCT fl.id)::int AS like_count,
-          BOOL_OR(fl.user_id = ${viewerId}) AS liked_by_viewer,
-          COUNT(DISTINCT fr.id)::int AS reply_count
-        FROM feed_posts fp
-        JOIN users u ON u.id = fp.user_id
-        LEFT JOIN feed_likes fl ON fl.post_id = fp.id
-        LEFT JOIN feed_replies fr ON fr.post_id = fp.id
-        WHERE ${tripId}::int IS NULL OR fp.trip_id = ${tripId}
-        GROUP BY fp.id, fp.content, fp.created_at, fp.trip_id,
-                 u.id, u.name, u.avatar_colour, u.avatar_image
-        ORDER BY fp.created_at DESC
-        LIMIT 100
-      `;
-      return res.json({ posts });
-    } catch (err) {
-      console.error('GET feed error:', err);
-      return res.status(500).json({ error: err.message });
-    }
+  if (tripId) {
+    const membership = await requireMembership(sql, res, tripId, viewerId);
+    if (!membership) return undefined;
   }
 
-  /* -------- POST — create a post -------- */
-  if (req.method === 'POST') {
-    const { content, image } = req.body || {};
-    const userId = parseId((req.body || {}).user_id);
-    const tripId = parseId((req.body || {}).trip_id);
+  // Counts come from correlated subqueries rather than joining likes and
+  // replies together, which multiplied rows (likes × replies) per post.
+  const rows = await sql`
+    SELECT
+      fp.id, fp.content, fp.image, fp.created_at, fp.trip_id,
+      u.id AS user_id, u.name AS user_name, u.avatar_colour, u.avatar_image,
+      (SELECT COUNT(*)::int FROM feed_likes fl WHERE fl.post_id = fp.id) AS like_count,
+      EXISTS (
+        SELECT 1 FROM feed_likes fl WHERE fl.post_id = fp.id AND fl.user_id = ${viewerId}
+      ) AS liked_by_viewer,
+      (SELECT COUNT(*)::int FROM feed_replies fr WHERE fr.post_id = fp.id) AS reply_count
+    FROM feed_posts fp
+    JOIN users u ON u.id = fp.user_id
+    WHERE CASE WHEN ${tripId}::int IS NOT NULL THEN fp.trip_id = ${tripId}
+               ELSE fp.trip_id IN (SELECT trip_id FROM trip_members WHERE user_id = ${viewerId})
+          END
+      AND (${beforeId}::int IS NULL OR fp.id < ${beforeId})
+    ORDER BY fp.id DESC
+    LIMIT ${PAGE_SIZE + 1}
+  `;
 
-    if (!userId || (!content?.trim() && !image)) {
-      return res.status(400).json({ error: 'user_id and content or image are required' });
-    }
+  const hasMore = rows.length > PAGE_SIZE;
+  return res.json({ posts: rows.slice(0, PAGE_SIZE), has_more: hasMore });
+}
 
-    const trimmed = (content || '').trim();
-    if (trimmed.length > 500) {
-      return res.status(400).json({ error: 'Content must be 500 characters or fewer' });
-    }
-    if (!tripId) {
-      return res.status(400).json({ error: 'Pick a trip before posting' });
-    }
+/* -------- POST — create a post -------- */
+async function handlePost(req, res, sql, body) {
+  const userId = parseId(body.user_id);
+  const tripId = parseId(body.trip_id);
 
-    try {
-      const membership = await requireMembership(sql, res, tripId, userId);
-      if (!membership) return;
+  const content = cleanText(body.content, LIMITS.postContent, 'Post');
+  if (content.error) return res.status(400).json({ error: content.error });
 
-      const [post] = await sql`
-        INSERT INTO feed_posts (user_id, trip_id, content, image)
-        VALUES (${userId}, ${tripId}, ${trimmed || null}, ${image || null})
-        RETURNING id, content, image, created_at, trip_id
-      `;
-      return res.status(201).json({ post });
-    } catch (err) {
-      console.error('POST feed error:', err);
-      return res.status(500).json({ error: err.message });
-    }
+  const image = validateImages(body.image, FEED_IMAGE_OPTIONS);
+  if (image.error) return res.status(400).json({ error: image.error });
+
+  if (!userId || (!content.value && !image.value)) {
+    return res.status(400).json({ error: 'Write something or add a photo' });
+  }
+  if (!tripId) {
+    return res.status(400).json({ error: 'Pick a trip before posting' });
   }
 
-  /* -------- PATCH — edit own post content -------- */
-  if (req.method === 'PATCH') {
-    const { content, post_id } = req.body || {};
-    const userId = parseId((req.body || {}).user_id);
-    const postId = parseId(post_id);
+  const membership = await requireMembership(sql, res, tripId, userId);
+  if (!membership) return undefined;
 
-    if (!userId || !postId || !content?.trim()) {
-      return res.status(400).json({ error: 'user_id, post_id and content are required' });
-    }
-    const trimmed = content.trim();
-    if (trimmed.length > 500) {
-      return res.status(400).json({ error: 'Content must be 500 characters or fewer' });
-    }
+  // Returned in the same shape as GET so the client can show it straight away.
+  const [post] = await sql`
+    WITH p AS (
+      INSERT INTO feed_posts (user_id, trip_id, content, image)
+      VALUES (${userId}, ${tripId}, ${content.value}, ${image.value})
+      RETURNING id, content, image, created_at, trip_id, user_id
+    )
+    SELECT
+      p.id, p.content, p.image, p.created_at, p.trip_id,
+      u.id AS user_id, u.name AS user_name, u.avatar_colour, u.avatar_image,
+      0 AS like_count, false AS liked_by_viewer, 0 AS reply_count
+    FROM p JOIN users u ON u.id = p.user_id
+  `;
+  return res.status(201).json({ post });
+}
 
-    try {
-      const result = await sql`
-        UPDATE feed_posts
-        SET content = ${trimmed}
-        WHERE id = ${postId} AND user_id = ${userId}
-        RETURNING id, content
-      `;
-      if (result.length === 0) {
-        return res.status(404).json({ error: 'Post not found or not yours' });
-      }
-      return res.json({ post: result[0] });
-    } catch (err) {
-      console.error('PATCH feed error:', err);
-      return res.status(500).json({ error: err.message });
-    }
+/* -------- PATCH — edit own post content -------- */
+// Ownership is the check for editing and deleting: you can always tidy up
+// your own posts, even after leaving the trip.
+async function handlePatch(req, res, sql, body) {
+  const userId = parseId(body.user_id);
+  const postId = parseId(body.post_id);
+
+  const content = cleanText(body.content, LIMITS.postContent, 'Post');
+  if (content.error) return res.status(400).json({ error: content.error });
+
+  if (!userId || !postId) {
+    return res.status(400).json({ error: 'user_id and post_id are required' });
   }
 
-  /* -------- DELETE — remove own post -------- */
-  if (req.method === 'DELETE') {
-    const userId = parseId((req.body || {}).user_id);
-    const postId = parseId((req.body || {}).post_id);
+  // A photo-only post can have its caption cleared; a text-only one can't be emptied.
+  const result = await sql`
+    UPDATE feed_posts
+    SET content = ${content.value}
+    WHERE id = ${postId} AND user_id = ${userId}
+      AND (${content.value}::text IS NOT NULL OR image IS NOT NULL)
+    RETURNING id, content
+  `;
+  if (result.length === 0) {
+    if (!content.value) return res.status(400).json({ error: 'A post needs text or a photo' });
+    return res.status(404).json({ error: 'Post not found or not yours' });
+  }
+  return res.json({ post: result[0] });
+}
 
-    if (!userId || !postId) {
-      return res.status(400).json({ error: 'user_id and post_id are required' });
-    }
+/* -------- DELETE — remove own post -------- */
+async function handleDelete(req, res, sql, body) {
+  const userId = parseId(body.user_id);
+  const postId = parseId(body.post_id);
 
-    try {
-      const result = await sql`
-        DELETE FROM feed_posts
-        WHERE id = ${postId} AND user_id = ${userId}
-        RETURNING id
-      `;
-      if (result.length === 0) {
-        return res.status(404).json({ error: 'Post not found or not yours' });
-      }
-      return res.json({ success: true });
-    } catch (err) {
-      console.error('DELETE feed error:', err);
-      return res.status(500).json({ error: err.message });
-    }
+  if (!userId || !postId) {
+    return res.status(400).json({ error: 'user_id and post_id are required' });
   }
 
-  return res.status(405).json({ error: 'Method not allowed' });
-};
+  const result = await sql`
+    DELETE FROM feed_posts
+    WHERE id = ${postId} AND user_id = ${userId}
+    RETURNING id
+  `;
+  if (result.length === 0) {
+    return res.status(404).json({ error: 'Post not found or not yours' });
+  }
+  return res.json({ success: true });
+}
+
+module.exports = withHandler(['GET', 'POST', 'PATCH', 'DELETE'], async (req, res, sql, body) => {
+  if (req.method === 'GET') return handleGet(req, res, sql);
+  if (req.method === 'POST') return handlePost(req, res, sql, body);
+  if (req.method === 'PATCH') return handlePatch(req, res, sql, body);
+  return handleDelete(req, res, sql, body);
+});

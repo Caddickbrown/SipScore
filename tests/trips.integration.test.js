@@ -4,16 +4,17 @@
    Exercises the trip-scoping work against a real Postgres.
 
    Skipped unless TEST_DATABASE_URL points at a server the test may
-   create throwaway databases on, e.g.
+   create throwaway databases on. TCP and unix-socket URLs both work:
 
-     TEST_DATABASE_URL=postgres://postgres@/postgres?host=/tmp&port=55432 \
-       node --test tests/
+     TEST_DATABASE_URL=postgres://postgres@127.0.0.1:5432/postgres npm test
+     TEST_DATABASE_URL='postgres://postgres@/postgres?host=/tmp&port=5432' npm test
    ============================================= */
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const { Client } = require('pg');
+const { parse: parseConnectionString } = require('pg-connection-string');
 const { installShim, call } = require('./helpers/neon-shim');
 
 const ADMIN_URL = process.env.TEST_DATABASE_URL;
@@ -25,10 +26,10 @@ if (!ADMIN_URL) {
 
 let dbCounter = 0;
 
-function urlForDatabase(name) {
-  const url = new URL(ADMIN_URL.replace(/^postgres(ql)?:\/\//, 'http://'));
-  url.pathname = '/' + name;
-  return url.toString().replace(/^http:\/\//, 'postgres://');
+// Same server and credentials as TEST_DATABASE_URL, different database. Works
+// for socket URLs (?host=/tmp) too, which the WHATWG URL parser rejects.
+function configForDatabase(name) {
+  return { ...parseConnectionString(ADMIN_URL), database: name };
 }
 
 // Fresh database + freshly-required modules per test, because lib/db caches
@@ -41,7 +42,7 @@ async function freshApp(seedLegacy) {
   await admin.query(`CREATE DATABASE ${name}`);
   await admin.end();
 
-  const client = new Client({ connectionString: urlForDatabase(name) });
+  const client = new Client(configForDatabase(name));
   await client.connect();
 
   if (seedLegacy) await seedLegacy(client);
@@ -618,4 +619,335 @@ test('a client that predates trips still works when the user has one trip', asyn
     body: { user_id: daniel.id, drink_id: drink.id, stars: 2 },
   });
   assert.equal(ambiguous.status, 400);
+});
+
+/* =============================================
+   Hardening — regression tests for the code review fixes
+   ============================================= */
+
+const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==';
+
+test('trip isolation holds on every read and write path', async (t) => {
+  const app = await freshApp();
+  t.after(() => app.close());
+  const f = await twoTripFixture(app);
+  const stranger = await registerUser(app, 'Stranger');
+  const likes = require(path.join(__dirname, '..', 'api', 'feed-like.js'));
+  const replyLikes = require(path.join(__dirname, '..', 'api', 'feed-reply-like.js'));
+  const replies = require(path.join(__dirname, '..', 'api', 'feed-replies.js'));
+
+  const { body: { post } } = await call(app.feed, 'POST', {
+    body: { user_id: f.daniel.id, trip_id: f.corfu.id, content: 'Corfu only' },
+  });
+  const { body: { reply } } = await call(replies, 'POST', {
+    body: { user_id: f.alex.id, post_id: post.id, content: 'Agreed' },
+  });
+  await call(app.ratings, 'POST', {
+    body: { user_id: f.daniel.id, drink_id: f.corfiata.id, trip_id: f.corfu.id, stars: 5, notes: 'secret' },
+  });
+
+  // Omitting user_id no longer skips the membership check.
+  assert.equal((await call(app.feed, 'GET', { query: { trip_id: String(f.corfu.id) } })).status, 400);
+  assert.equal((await call(app.drink, 'GET', { query: { id: String(f.corfiata.id), trip_id: String(f.corfu.id) } })).status, 400);
+  assert.equal((await call(app.leaderboard, 'GET', { query: { trip_id: String(f.corfu.id) } })).status, 400);
+  assert.equal((await call(app.drinks, 'GET', { query: { trip_id: String(f.corfu.id) } })).status, 400);
+
+  // All-time views only cover the caller's own trips.
+  const allFeed = await call(app.feed, 'GET', { query: { user_id: String(stranger.id) } });
+  assert.equal(allFeed.status, 200);
+  assert.equal(allFeed.body.posts.length, 0, 'no posts from trips you are not on');
+  const allBoard = await call(app.leaderboard, 'GET', { query: { type: 'social', user_id: String(stranger.id) } });
+  assert.equal(allBoard.body.leaderboard.length, 0);
+  const allDrink = await call(app.drink, 'GET', { query: { id: String(f.corfiata.id), user_id: String(stranger.id) } });
+  assert.equal(allDrink.status, 200);
+  assert.equal(allDrink.body.ratings.length, 0, 'no reviews from trips you are not on');
+  assert.equal(allDrink.body.drink.overall_rating_count, 1, 'anonymous catalogue totals stay global');
+
+  // Trip-scoped drink list and personal board for a non-member.
+  assert.equal((await call(app.drinks, 'GET', {
+    query: { user_id: String(stranger.id), trip_id: String(f.corfu.id) },
+  })).status, 403);
+  assert.equal((await call(app.leaderboard, 'GET', {
+    query: { type: 'personal', user_id: String(f.daniel.id), viewer_id: String(stranger.id), trip_id: String(f.corfu.id) },
+  })).status, 403);
+  const mate = await call(app.leaderboard, 'GET', {
+    query: { type: 'personal', user_id: String(f.daniel.id), viewer_id: String(f.alex.id), trip_id: String(f.corfu.id) },
+  });
+  assert.equal(mate.status, 200, 'a trip-mate can see your ratings');
+  assert.equal(mate.body.leaderboard.length, 1);
+
+  // Likes, replies and reply likes need membership too.
+  assert.equal((await call(likes, 'POST', { body: { user_id: stranger.id, post_id: post.id } })).status, 403);
+  assert.equal((await call(replies, 'POST', { body: { user_id: stranger.id, post_id: post.id, content: 'hi' } })).status, 403);
+  assert.equal((await call(replies, 'GET', { query: { post_id: String(post.id), viewer_id: String(stranger.id) } })).status, 403);
+  assert.equal((await call(replies, 'GET', { query: { post_id: String(post.id) } })).status, 400);
+  assert.equal((await call(replyLikes, 'POST', { body: { user_id: stranger.id, reply_id: reply.id } })).status, 403);
+
+  // Removing a rating needs membership, like adding one.
+  assert.equal((await call(app.ratings, 'DELETE', {
+    body: { user_id: stranger.id, drink_id: f.corfiata.id, trip_id: f.corfu.id },
+  })).status, 403);
+
+  // Members still can.
+  const liked = await call(likes, 'POST', { body: { user_id: f.alex.id, post_id: post.id } });
+  assert.deepEqual(liked.body, { liked: true, like_count: 1 });
+  const unliked = await call(likes, 'POST', { body: { user_id: f.alex.id, post_id: post.id } });
+  assert.deepEqual(unliked.body, { liked: false, like_count: 0 }, 'second press toggles off');
+  const missing = await call(likes, 'POST', { body: { user_id: f.alex.id, post_id: 999999 } });
+  assert.equal(missing.status, 404);
+});
+
+test('images must be real base64 image data', async (t) => {
+  const app = await freshApp();
+  t.after(() => app.close());
+  const f = await twoTripFixture(app);
+
+  const breakout = '" onerror="alert(1)';
+  const post = await call(app.feed, 'POST', {
+    body: { user_id: f.daniel.id, trip_id: f.corfu.id, content: 'hi', image: breakout },
+  });
+  assert.equal(post.status, 400, 'arbitrary strings are rejected');
+
+  const attr = `data:image/png;base64,AAAA" onerror="alert(1)`;
+  for (const image of [attr, JSON.stringify([PNG, attr]), 'javascript:alert(1)', 'data:text/html;base64,PGI+']) {
+    const res = await call(app.drinks, 'POST', {
+      body: { user_id: f.daniel.id, trip_id: f.corfu.id, name: 'Evil', category: 'wine', image },
+    });
+    assert.equal(res.status, 400, `rejected: ${image.slice(0, 40)}`);
+  }
+
+  const tooMany = await call(app.drinks, 'POST', {
+    body: { user_id: f.daniel.id, trip_id: f.corfu.id, name: 'Busy', category: 'wine', image: JSON.stringify(Array(7).fill(PNG)) },
+  });
+  assert.equal(tooMany.status, 400);
+
+  const ok = await call(app.drinks, 'POST', {
+    body: { user_id: f.daniel.id, trip_id: f.corfu.id, name: 'Pictured', category: 'wine', image: JSON.stringify([PNG, PNG]) },
+  });
+  assert.equal(ok.status, 201, JSON.stringify(ok.body));
+
+  // Lists ship only a thumbnail and a count.
+  const list = await call(app.drinks, 'GET', {
+    query: { user_id: String(f.daniel.id), trip_id: String(f.corfu.id), search: 'Pictured' },
+  });
+  assert.equal(list.body.drinks[0].image, PNG);
+  assert.equal(list.body.drinks[0].photo_count, 2);
+
+  const photoPost = await call(app.feed, 'POST', {
+    body: { user_id: f.daniel.id, trip_id: f.corfu.id, image: JSON.stringify([PNG]) },
+  });
+  assert.equal(photoPost.status, 201, 'a photo-only post is fine');
+  assert.equal(photoPost.body.post.user_name, 'Daniel', 'POST returns the full post shape');
+
+  const avatar = await call(app.profile, 'PATCH', { body: { user_id: f.daniel.id, avatar_image: attr } });
+  assert.equal(avatar.status, 400);
+  const goodAvatar = await call(app.profile, 'PATCH', { body: { user_id: f.daniel.id, avatar_image: PNG } });
+  assert.equal(goodAvatar.status, 200);
+});
+
+test('every category the UI offers is accepted, and bad input gets a clear 4xx', async (t) => {
+  const app = await freshApp();
+  t.after(() => app.close());
+  const f = await twoTripFixture(app);
+  const replies = require(path.join(__dirname, '..', 'api', 'feed-replies.js'));
+  const add = body => call(app.drinks, 'POST', { body: { user_id: f.daniel.id, trip_id: f.corfu.id, ...body } });
+
+  for (const category of ['mead', 'other']) {
+    const res = await add({ name: `A ${category}`, category });
+    assert.equal(res.status, 201, `${category}: ${JSON.stringify(res.body)}`);
+  }
+  assert.equal((await add({ name: 'Nope', category: 'lemonade-ish' })).status, 400);
+
+  // Values that used to reach Postgres and come back as raw errors.
+  const longStyle = await add({ name: 'Tagged', category: 'wine', style: 'x'.repeat(120) });
+  assert.equal(longStyle.status, 201, 'style is TEXT now; many tags fit');
+  const hugeStyle = await add({ name: 'Tagged', category: 'wine', style: 'x'.repeat(600) });
+  assert.equal(hugeStyle.status, 400);
+  const longName = await add({ name: 'n'.repeat(250), category: 'wine' });
+  assert.equal(longName.status, 400);
+  assert.match(longName.body.error, /200 characters/);
+
+  const missingDrink = await call(app.ratings, 'POST', {
+    body: { user_id: f.daniel.id, drink_id: 999999, trip_id: f.corfu.id, stars: 5 },
+  });
+  assert.equal(missingDrink.status, 404);
+  assert.doesNotMatch(missingDrink.body.error, /constraint|violates|relation/i);
+
+  const badStars = await call(app.ratings, 'POST', {
+    body: { user_id: f.daniel.id, drink_id: f.corfiata.id, trip_id: f.corfu.id, stars: 3.5 },
+  });
+  assert.equal(badStars.status, 400);
+
+  const longNotes = await call(app.ratings, 'POST', {
+    body: { user_id: f.daniel.id, drink_id: f.corfiata.id, trip_id: f.corfu.id, stars: 3, notes: 'n'.repeat(1001) },
+  });
+  assert.equal(longNotes.status, 400);
+
+  const orphanReply = await call(replies, 'POST', { body: { user_id: f.daniel.id, post_id: 999999, content: 'hi' } });
+  assert.equal(orphanReply.status, 404);
+
+  const { body: { post: a } } = await call(app.feed, 'POST', { body: { user_id: f.daniel.id, trip_id: f.corfu.id, content: 'A' } });
+  const { body: { post: b } } = await call(app.feed, 'POST', { body: { user_id: f.daniel.id, trip_id: f.corfu.id, content: 'B' } });
+  const { body: { reply } } = await call(replies, 'POST', { body: { user_id: f.daniel.id, post_id: a.id, content: 'on A' } });
+  const crossed = await call(replies, 'POST', {
+    body: { user_id: f.daniel.id, post_id: b.id, parent_reply_id: reply.id, content: 'wrong thread' },
+  });
+  assert.equal(crossed.status, 404, 'a sub-reply must belong to the same post as its parent');
+
+  const badDate = await call(app.trips, 'POST', {
+    body: { action: 'create', user_id: f.daniel.id, name: 'Leap', start_date: '2026-02-31' },
+  });
+  assert.equal(badDate.status, 400);
+
+  const wrongMethod = await call(app.feed, 'PUT', {});
+  assert.equal(wrongMethod.status, 405);
+});
+
+test('drink edits are limited to people on its trip, and take details and photos together', async (t) => {
+  const app = await freshApp();
+  t.after(() => app.close());
+  const f = await twoTripFixture(app);
+  const stranger = await registerUser(app, 'Stranger');
+
+  const denied = await call(app.drink, 'PATCH', {
+    query: { id: String(f.corfiata.id) },
+    body: { user_id: stranger.id, name: 'Vandalised' },
+  });
+  assert.equal(denied.status, 403);
+
+  const noUser = await call(app.drink, 'PATCH', {
+    query: { id: String(f.corfiata.id) },
+    body: { name: 'Anonymous edit' },
+  });
+  assert.equal(noUser.status, 400);
+
+  const edited = await call(app.drink, 'PATCH', {
+    query: { id: String(f.corfiata.id) },
+    body: { user_id: f.alex.id, name: 'Corfiata Reserve', category: 'wine', type: 'White', image: JSON.stringify([PNG]) },
+  });
+  assert.equal(edited.status, 200, JSON.stringify(edited.body));
+  assert.equal(edited.body.drink.name, 'Corfiata Reserve');
+  assert.equal(edited.body.drink.image, JSON.stringify([PNG]));
+
+  const cleared = await call(app.drink, 'PATCH', {
+    query: { id: String(f.corfiata.id) },
+    body: { user_id: f.alex.id, image: null },
+  });
+  assert.equal(cleared.body.drink.image, null, 'image-only update still works');
+});
+
+test('the feed pages by id and the owner can caption-edit a photo post', async (t) => {
+  const app = await freshApp();
+  t.after(() => app.close());
+  const f = await twoTripFixture(app);
+
+  for (let i = 1; i <= 55; i++) {
+    await app.client.query('INSERT INTO feed_posts (user_id, trip_id, content) VALUES ($1, $2, $3)', [f.daniel.id, f.corfu.id, `post ${i}`]);
+  }
+  const first = await call(app.feed, 'GET', { query: { user_id: String(f.daniel.id), trip_id: String(f.corfu.id) } });
+  assert.equal(first.body.posts.length, 50);
+  assert.equal(first.body.has_more, true);
+  assert.equal(first.body.posts[0].content, 'post 55');
+  const last = first.body.posts[first.body.posts.length - 1];
+  const second = await call(app.feed, 'GET', {
+    query: { user_id: String(f.daniel.id), trip_id: String(f.corfu.id), before_id: String(last.id) },
+  });
+  assert.equal(second.body.posts.length, 5);
+  assert.equal(second.body.has_more, false);
+
+  const { body: { post } } = await call(app.feed, 'POST', {
+    body: { user_id: f.daniel.id, trip_id: f.corfu.id, content: 'caption', image: JSON.stringify([PNG]) },
+  });
+  const uncaptioned = await call(app.feed, 'PATCH', { body: { user_id: f.daniel.id, post_id: post.id, content: '' } });
+  assert.equal(uncaptioned.status, 200, 'a photo post can lose its caption');
+  const textOnly = first.body.posts[0];
+  const emptied = await call(app.feed, 'PATCH', { body: { user_id: f.daniel.id, post_id: textOnly.id, content: '  ' } });
+  assert.equal(emptied.status, 400, 'a text-only post cannot be emptied');
+  const notMine = await call(app.feed, 'PATCH', { body: { user_id: f.alex.id, post_id: textOnly.id, content: 'hijack' } });
+  assert.equal(notMine.status, 404);
+});
+
+test('names are unique regardless of case', async (t) => {
+  const app = await freshApp();
+  t.after(() => app.close());
+  await registerUser(app, 'Daniel');
+
+  const dupe = await call(app.auth, 'POST', { body: { action: 'register', name: 'DANIEL', pin: '9999' } });
+  assert.equal(dupe.status, 409);
+
+  const { rows } = await app.client.query(`SELECT to_regclass('public.users_name_lower_key') IS NOT NULL AS present`);
+  assert.equal(rows[0].present, true, 'the database enforces it too');
+
+  const wrongPin = await call(app.auth, 'POST', { body: { action: 'login', name: 'daniel', pin: '0000' } });
+  assert.equal(wrongPin.status, 401);
+  const rightPin = await call(app.auth, 'POST', { body: { action: 'login', name: 'daniel', pin: '1234' } });
+  assert.equal(rightPin.status, 200);
+});
+
+test('a later schema change never folds catalogue drinks into a phantom trip', async (t) => {
+  const app = await freshApp();
+  t.after(() => app.close());
+
+  await call(app.seed, 'POST', {});
+  const daniel = await registerUser(app, 'Daniel');
+
+  // Undo one migration step so the probe reports "not migrated" on the next
+  // cold start — exactly what happens whenever a new column is added.
+  await app.client.query('DROP INDEX users_name_lower_key');
+  delete require.cache[require.resolve('../lib/db')];
+  await require('../lib/db').ensureSchema();
+
+  const { rows: trips } = await app.client.query('SELECT COUNT(*)::int AS n FROM trips');
+  assert.equal(trips[0].n, 0, 'no "Corfu" trip conjured from seeded drinks');
+  const { rows: drinks } = await app.client.query('SELECT COUNT(*)::int AS n FROM drinks WHERE trip_id IS NOT NULL');
+  assert.equal(drinks[0].n, 0, 'catalogue drinks stay trip-less');
+
+  // And once trips exist, catalogue drinks still aren't swept into the oldest one.
+  await call(app.trips, 'POST', { body: { action: 'create', user_id: daniel.id, name: 'Real trip' } });
+  await app.client.query('DROP INDEX users_name_lower_key');
+  delete require.cache[require.resolve('../lib/db')];
+  await require('../lib/db').ensureSchema();
+  const { rows: after } = await app.client.query('SELECT COUNT(*)::int AS n FROM drinks WHERE trip_id IS NOT NULL');
+  assert.equal(after[0].n, 0);
+});
+
+test('seeding can be locked with SEED_TOKEN', async (t) => {
+  const app = await freshApp();
+  t.after(() => { delete process.env.SEED_TOKEN; return app.close(); });
+  process.env.SEED_TOKEN = 'let-me-in';
+
+  const denied = await call(app.seed, 'POST', {});
+  assert.equal(denied.status, 401);
+
+  const res = await app.seed(
+    { method: 'POST', query: {}, body: {}, headers: { 'x-seed-token': 'let-me-in' } },
+    require('./helpers/neon-shim').mockRes()
+  );
+  const { rows } = await app.client.query('SELECT COUNT(*)::int AS n FROM drinks WHERE is_seeded');
+  assert.equal(rows[0].n, 57);
+  assert.ok(res);
+});
+
+test('cider sweetness moves out of the type column', async (t) => {
+  const app = await freshApp();
+  t.after(() => app.close());
+  const f = await twoTripFixture(app);
+
+  // How the old form stored it: sweetness in `type`.
+  await app.client.query(`INSERT INTO drinks (name, category, type) VALUES ('Old Rosie', 'cider', 'Medium Dry'), ('Pinky', 'cider', 'Rosé')`);
+  delete require.cache[require.resolve('../lib/db')];
+  await require('../lib/db').ensureSchema();
+
+  const { rows } = await app.client.query(`SELECT name, type, style FROM drinks WHERE category = 'cider' ORDER BY name`);
+  assert.deepEqual(rows, [
+    { name: 'Old Rosie', type: null, style: 'Medium Dry' },
+    { name: 'Pinky', type: 'Rosé', style: null },
+  ]);
+
+  const added = await call(app.drinks, 'POST', {
+    body: { user_id: f.daniel.id, trip_id: f.corfu.id, name: 'Thatchers', category: 'cider', type: 'Apple', style: 'Medium' },
+  });
+  assert.equal(added.status, 201);
+  assert.equal(added.body.drink.type, 'Apple');
+  assert.equal(added.body.drink.style, 'Medium');
 });
