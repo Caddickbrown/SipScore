@@ -20,8 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('copyCodeBtn').addEventListener('click', copyInviteCode);
   document.getElementById('detailSwitchBtn').addEventListener('click', switchToDetailTrip);
   document.getElementById('detailEditBtn').addEventListener('click', () => {
+    const trip = detailTrip;   // closing the sheet clears detailTrip
     closeDetailModal();
-    openTripModal(detailTrip);
+    openTripModal(trip);
   });
   document.getElementById('detailLeaveBtn').addEventListener('click', leaveDetailTrip);
 
@@ -202,18 +203,13 @@ function openTripModal(trip = null) {
   document.getElementById('tripSaveBtn').textContent = trip ? 'Save Changes' : 'Create Trip';
   document.getElementById('tripName').value = trip ? trip.name : '';
   document.getElementById('tripDestination').value = trip && trip.destination ? trip.destination : '';
-  document.getElementById('tripStart').value = isoDate(trip && trip.start_date);
-  document.getElementById('tripEnd').value = isoDate(trip && trip.end_date);
+  document.getElementById('tripStart').value = App.isoDate(trip && trip.start_date);
+  document.getElementById('tripEnd').value = App.isoDate(trip && trip.end_date);
   document.getElementById('tripFormError').textContent = '';
 
   showModal('newTripModal');
 }
 
-function isoDate(value) {
-  if (!value) return '';
-  const d = new Date(value);
-  return isNaN(d) ? '' : d.toISOString().slice(0, 10);
-}
 
 function closeTripModal() {
   hideModal('newTripModal');

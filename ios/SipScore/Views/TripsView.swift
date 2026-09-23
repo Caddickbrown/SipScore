@@ -595,6 +595,8 @@ struct MemberReviewsView: View {
     let member: TripMember
     let trip: Trip
 
+    @Environment(SessionStore.self) private var session
+
     @State private var reviews: [Drink] = []
     @State private var isLoading = true
     @State private var errorMessage: String?
@@ -639,7 +641,8 @@ struct MemberReviewsView: View {
         isLoading = true
         defer { isLoading = false }
         do {
-            reviews = try await APIClient.shared.reviews(forUserId: member.id, tripId: trip.id)
+            reviews = try await APIClient.shared.reviews(forUserId: member.id, tripId: trip.id,
+                                                          viewerId: session.user?.id)
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription

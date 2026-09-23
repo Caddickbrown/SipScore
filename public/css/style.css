@@ -27,13 +27,19 @@
   /* Component colour tokens */
   --star-empty:      #d9d0bf;
   --card-arrow:      #c8c0b0;
-  --placeholder:     #aaa;
+  --placeholder:     #857f73;
   --error-red:       #dc2626;
   --error-red-bg:    #fee2e2;
   --error-red-hover: #fecaca;
   --toast-error-bg:  #dc2626;
   --warn-red:        #e05c5c;
   --like-red:        #e05c5c;
+  /* Text on navy, gold-free coloured surfaces (buttons, avatars, toasts).
+     Separate from --white, which is the card *surface* and goes dark. */
+  --on-navy:         #ffffff;
+  /* Invite codes and similar high-emphasis text on --gold-pale. */
+  --code-text:       #1a2744;
+  color-scheme: light;
 }
 
 /* =============================================
@@ -127,7 +133,7 @@ button {
   justify-content: center;
   font-weight: 600;
   font-size: 0.85rem;
-  color: var(--white);
+  color: var(--on-navy);
   cursor: pointer;
   border: 2px solid rgba(201, 169, 110, 0.35);
   transition: border-color 0.2s, transform 0.15s;
@@ -319,7 +325,7 @@ button {
 .chip.active {
   background: var(--navy);
   border-color: var(--navy);
-  color: var(--white);
+  color: var(--on-navy);
 }
 
 .chip:hover:not(.active) {
@@ -355,7 +361,7 @@ button {
 .style-tag.active {
   background: var(--navy);
   border-color: var(--navy);
-  color: var(--white);
+  color: var(--on-navy);
 }
 
 .style-tag:hover:not(.active) {
@@ -463,6 +469,8 @@ button {
 .accent-hotdrink  { background: #78350f; }
 .accent-softdrink { background: #dc2626; }
 .accent-milkshake { background: #db2777; }
+.accent-mead      { background: #c99a2e; }
+.accent-other     { background: #8a94a6; }
 
 .drink-card-body {
   flex: 1;
@@ -514,6 +522,8 @@ button {
 .badge-hotdrink  { background: #fef3e2; color: #78350f; }
 .badge-softdrink { background: #fee2e2; color: #991b1b; }
 .badge-milkshake { background: #fce7f3; color: #9d174d; }
+.badge-mead      { background: #fdf3d1; color: #7a5a0a; }
+.badge-other     { background: #eef1f6; color: #3f4a5c; }
 
 .drink-meta {
   font-size: 0.78rem;
@@ -613,7 +623,7 @@ button {
 
 .btn-primary {
   background: var(--navy);
-  color: var(--white);
+  color: var(--on-navy);
 }
 
 .btn-primary:hover { background: var(--navy-mid); }
@@ -669,7 +679,7 @@ button {
    ============================================= */
 .drink-hero {
   background: var(--navy);
-  color: var(--white);
+  color: var(--on-navy);
   padding: calc(20px + env(safe-area-inset-top)) 16px 28px;
 }
 
@@ -711,7 +721,7 @@ button {
   font-size: 1.9rem;
   font-weight: 500;
   line-height: 1.15;
-  color: var(--white);
+  color: var(--on-navy);
   margin-bottom: 6px;
 }
 
@@ -811,7 +821,7 @@ button {
 }
 
 .notes-textarea::placeholder {
-  color: var(--placeholder, #aaa);
+  color: var(--placeholder);
   font-weight: 300;
 }
 
@@ -889,7 +899,7 @@ button {
   justify-content: center;
   font-size: 0.7rem;
   font-weight: 700;
-  color: var(--white);
+  color: var(--on-navy);
   flex-shrink: 0;
   margin-top: 1px;
 }
@@ -1011,8 +1021,8 @@ button {
 }
 
 .rank-1 { background: var(--gold); color: var(--navy); }
-.rank-2 { background: #b0b8c4; color: var(--white); }
-.rank-3 { background: #c9855a; color: var(--white); }
+.rank-2 { background: #b0b8c4; color: var(--navy); }
+.rank-3 { background: #c9855a; color: var(--on-navy); }
 .rank-other { background: var(--ivory); color: var(--slate); border: 1px solid var(--border); }
 
 .leaderboard-item-info {
@@ -1115,6 +1125,7 @@ button {
   background: var(--ivory);
   font-family: 'Jost', sans-serif;
   font-size: 0.95rem;
+  line-height: 1.4;
   color: var(--text);
   outline: none;
   transition: border-color 0.2s, background 0.2s;
@@ -1138,7 +1149,7 @@ button {
 }
 
 .form-input::placeholder {
-  color: var(--placeholder, #aaa);
+  color: var(--placeholder);
   font-weight: 300;
 }
 
@@ -1149,8 +1160,16 @@ button {
 
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
+}
+
+@media (min-width: 400px) {
+  .category-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (min-width: 600px) {
+  .category-grid { grid-template-columns: repeat(4, 1fr); }
 }
 
 .category-btn {
@@ -1170,12 +1189,13 @@ button {
   align-items: center;
   justify-content: center;
   gap: 7px;
+  white-space: nowrap;
 }
 
 .category-btn.active {
   background: var(--navy);
   border-color: var(--navy);
-  color: var(--white);
+  color: var(--on-navy);
 }
 
 /* =============================================
@@ -1288,7 +1308,7 @@ button {
 
 .login-tab.active {
   background: var(--navy);
-  color: var(--white);
+  color: var(--on-navy);
 }
 
 .pin-row {
@@ -1307,7 +1327,7 @@ button {
   font-size: 1.4rem;
   font-weight: 600;
   font-family: 'Jost', sans-serif;
-  color: var(--navy);
+  color: var(--text);
   background: var(--ivory);
   outline: none;
   transition: border-color 0.2s;
@@ -1400,7 +1420,7 @@ button {
   justify-content: center;
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--white);
+  color: var(--on-navy);
   flex-shrink: 0;
   overflow: hidden;
 }
@@ -1563,7 +1583,7 @@ button {
 
 #toast.toast-error {
   background: var(--toast-error-bg, #dc2626);
-  color: var(--white);
+  color: var(--on-navy);
 }
 
 /* =============================================
@@ -1773,7 +1793,7 @@ input, select, textarea {
   justify-content: center;
   font-weight: 600;
   font-size: 0.85rem;
-  color: var(--white);
+  color: var(--on-navy);
   margin-top: 2px;
 }
 
@@ -1905,7 +1925,7 @@ input, select, textarea {
   justify-content: center;
   font-weight: 600;
   font-size: 0.85rem;
-  color: var(--white);
+  color: var(--on-navy);
 }
 
 .feed-post-body {
@@ -2195,7 +2215,7 @@ input, select, textarea {
   justify-content: center;
   font-weight: 600;
   font-size: 0.72rem;
-  color: var(--white);
+  color: var(--on-navy);
   margin-top: 1px;
 }
 
@@ -2276,7 +2296,7 @@ input, select, textarea {
   justify-content: center;
   font-weight: 600;
   font-size: 0.72rem;
-  color: var(--white);
+  color: var(--on-navy);
   margin-top: 2px;
 }
 
@@ -2403,7 +2423,7 @@ input, select, textarea {
   justify-content: center;
   font-weight: 600;
   font-size: 0.65rem;
-  color: var(--white);
+  color: var(--on-navy);
   margin-top: 2px;
 }
 
@@ -2487,7 +2507,7 @@ input, select, textarea {
   justify-content: center;
   font-weight: 600;
   font-size: 1.1rem;
-  color: var(--white);
+  color: var(--on-navy);
   background: var(--gold);
 }
 
@@ -2757,7 +2777,7 @@ input, select, textarea {
   font-size: 1.42rem;
   font-weight: 500;
   letter-spacing: 0.22em;
-  color: var(--navy);
+  color: var(--code-text);
   user-select: all;
 }
 
@@ -2834,7 +2854,7 @@ input, select, textarea {
 
 .scope-btn.active {
   background: var(--white);
-  color: var(--navy);
+  color: var(--text);
   font-weight: 500;
   box-shadow: var(--shadow-sm);
 }
@@ -2914,7 +2934,7 @@ input, select, textarea {
   align-items: center;
   gap: 5px;
   background: rgba(26,39,68,0.75);
-  color: var(--white);
+  color: var(--on-navy);
   border: none;
   border-radius: 20px;
   padding: 5px 11px;
@@ -2933,8 +2953,54 @@ input, select, textarea {
 
 /* ---- Add-photo picker in forms ---- */
 .photo-picker {
-  margin-bottom: 4px;
+  margin-bottom: 16px;
 }
+
+.photo-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.photo-gallery:empty { display: none; }
+
+.photo-gallery-thumb {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--navy-light);
+  border: 1px solid var(--border);
+}
+
+.photo-gallery-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-gallery-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(15, 25, 41, 0.72);
+  color: #fff;
+  font-size: 1.05rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+
+.photo-gallery-remove:hover { background: rgba(200, 30, 30, 0.85); }
 
 .photo-picker-preview {
   position: relative;
@@ -2961,7 +3027,7 @@ input, select, textarea {
   background: rgba(26,39,68,0.7);
   border: none;
   border-radius: 50%;
-  color: var(--white);
+  color: var(--on-navy);
   font-size: 1rem;
   line-height: 1;
   cursor: pointer;
@@ -2997,7 +3063,7 @@ input, select, textarea {
   stroke: currentColor; fill: none; stroke-width: 1.8;
   stroke-linecap: round; stroke-linejoin: round;
 }
-.photo-picker-btn.has-photo {
+.photo-picker-btn.is-full {
   display: none;
 }
 
@@ -3021,40 +3087,16 @@ input, select, textarea {
 }
 
 /* =============================================
-   DARK MODE TOKENS
+   DARK MODE
+   ---------------------------------------------
+   /js/theme.js resolves the theme in <head> (stored choice, else the
+   OS setting) and always sets data-theme on <html>, so there is exactly
+   one dark definition. Don't add prefers-color-scheme media queries here:
+   they would diverge from the in-app toggle.
    ============================================= */
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --navy:        #0f1929;
-    --navy-mid:    #1a2744;
-    --navy-light:  rgba(201, 169, 110, 0.08);
-    --gold:        #c9a96e;
-    --gold-dark:   #b8924d;
-    --gold-light:  #8a6d3a;
-    --gold-pale:   rgba(201, 169, 110, 0.12);
-    --ivory:       #131c2e;
-    --white:       #1c2840;
-    --slate:       #8fa3c0;
-    --text:        #d6e0ef;
-    --text-light:  #8fa3c0;
-    --border:      rgba(255, 255, 255, 0.09);
-    --shadow-sm:   0 1px 4px rgba(0, 0, 0, 0.4);
-    --shadow:      0 2px 16px rgba(0, 0, 0, 0.45);
-    --shadow-lg:   0 8px 32px rgba(0, 0, 0, 0.55);
-    --star-empty:      #3a4a60;
-    --card-arrow:      #3a4a60;
-    --placeholder:     #4a5a70;
-    --error-red:       #e87070;
-    --error-red-bg:    #2a0e0e;
-    --error-red-hover: #3a1212;
-    --toast-error-bg:  #7a1a1a;
-    --warn-red:        #e87070;
-    --like-red:        #e87070;
-  }
-}
-
 [data-theme="dark"] {
+  color-scheme: dark;
   --navy:        #0f1929;
   --navy-mid:    #1a2744;
   --navy-light:  rgba(201, 169, 110, 0.08);
@@ -3073,106 +3115,59 @@ input, select, textarea {
   --shadow-lg:   0 8px 32px rgba(0, 0, 0, 0.55);
   --star-empty:      #3a4a60;
   --card-arrow:      #3a4a60;
-  --placeholder:     #4a5a70;
+  --placeholder:     #6f819b;
   --error-red:       #e87070;
   --error-red-bg:    #2a0e0e;
   --error-red-hover: #3a1212;
   --toast-error-bg:  #7a1a1a;
   --warn-red:        #e87070;
   --like-red:        #e87070;
+  --on-navy:         #e8eaf0;
+  --code-text:       #e8d5b0;
 }
 
-[data-theme="light"] {
-  --navy:        #1a2744;
-  --navy-mid:    #243460;
-  --navy-light:  rgba(26, 39, 68, 0.06);
-  --gold:        #c9a96e;
-  --gold-dark:   #b8924d;
-  --gold-light:  #e8d5b0;
-  --gold-pale:   #f8f2e6;
-  --ivory:       #faf8f3;
-  --white:       #ffffff;
-  --slate:       #64748b;
-  --text:        #1e2d47;
-  --text-light:  #64748b;
-  --border:      #e5dece;
-  --shadow-sm:   0 1px 4px rgba(26, 39, 68, 0.07);
-  --shadow:      0 2px 16px rgba(26, 39, 68, 0.10);
-  --shadow-lg:   0 8px 32px rgba(26, 39, 68, 0.15);
+/* Hard-coded colours that don't come from tokens */
+[data-theme="dark"] .badge-white     { background: #2a2010; color: #c9a96e; }
+[data-theme="dark"] .badge-rosé,
+[data-theme="dark"] .badge-rose      { background: #2a1020; color: #e8a0b8; }
+[data-theme="dark"] .badge-red       { background: #250c10; color: #e88090; }
+[data-theme="dark"] .badge-sparkling { background: #0e1a30; color: #90b4d8; }
+[data-theme="dark"] .badge-dessert,
+[data-theme="dark"] .badge-dessert-and-fortified { background: #201508; color: #d4a050; }
+[data-theme="dark"] .badge-cocktail  { background: #0a1e14; color: #6db890; }
+[data-theme="dark"] .badge-beer      { background: #1e1200; color: #d4a050; }
+[data-theme="dark"] .badge-cider     { background: #041a0e; color: #6dbf98; }
+[data-theme="dark"] .badge-spirit    { background: #180d2e; color: #b090e8; }
+[data-theme="dark"] .badge-mocktail  { background: #061a28; color: #70c0e8; }
+[data-theme="dark"] .badge-hotdrink  { background: #1a0e04; color: #d4905a; }
+[data-theme="dark"] .badge-softdrink { background: #200808; color: #e87070; }
+[data-theme="dark"] .badge-milkshake { background: #200812; color: #e890b8; }
+[data-theme="dark"] .badge-mead      { background: #221a06; color: #e0c070; }
+[data-theme="dark"] .badge-other     { background: #1a2233; color: #a8b8d0; }
+
+[data-theme="dark"] .btn-danger       { background: #3a0e0e; color: #e87070; }
+[data-theme="dark"] .btn-danger:hover { background: #4a1212; }
+
+[data-theme="dark"] .rank-2 { background: #2a3a50; color: #8fa3c0; }
+[data-theme="dark"] .rank-3 { background: #3a2518; color: #c9855a; }
+
+[data-theme="dark"] .login-page { background: #0a1120; }
+
+/* Selected / primary controls: --navy is near-black in dark mode, so these
+   get a lifted navy that still reads as "selected" against the card. */
+[data-theme="dark"] .btn-primary,
+[data-theme="dark"] .chip.active,
+[data-theme="dark"] .scope-btn.active,
+[data-theme="dark"] .category-btn.active,
+[data-theme="dark"] .style-tag.active,
+[data-theme="dark"] .login-tab.active {
+  background: #2a3a58;
+  border-color: #3a4d72;
+  color: var(--on-navy);
 }
-
-/* Dark mode overrides for hardcoded colours */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) body,
-  [data-theme="dark"] body {
-    color-scheme: dark;
-  }
-
-  :root:not([data-theme="light"]) .badge-white,
-  [data-theme="dark"] .badge-white    { background: #2a2010; color: #c9a96e; }
-  :root:not([data-theme="light"]) .badge-rosé,
-  :root:not([data-theme="light"]) .badge-rose,
-  [data-theme="dark"] .badge-rosé,
-  [data-theme="dark"] .badge-rose     { background: #2a1020; color: #e8a0b8; }
-  :root:not([data-theme="light"]) .badge-red,
-  [data-theme="dark"] .badge-red      { background: #250c10; color: #e88090; }
-  :root:not([data-theme="light"]) .badge-sparkling,
-  [data-theme="dark"] .badge-sparkling{ background: #0e1a30; color: #90b4d8; }
-  :root:not([data-theme="light"]) .badge-dessert,
-  [data-theme="dark"] .badge-dessert  { background: #201508; color: #d4a050; }
-  :root:not([data-theme="light"]) .badge-cocktail,
-  [data-theme="dark"] .badge-cocktail { background: #0a1e14; color: #6db890; }
-  :root:not([data-theme="light"]) .badge-beer,
-  [data-theme="dark"] .badge-beer     { background: #1e1200; color: #d4a050; }
-  :root:not([data-theme="light"]) .badge-cider,
-  [data-theme="dark"] .badge-cider    { background: #041a0e; color: #6dbf98; }
-  :root:not([data-theme="light"]) .badge-spirit,
-  [data-theme="dark"] .badge-spirit   { background: #180d2e; color: #b090e8; }
-  :root:not([data-theme="light"]) .badge-mocktail,
-  [data-theme="dark"] .badge-mocktail { background: #061a28; color: #70c0e8; }
-  :root:not([data-theme="light"]) .badge-hotdrink,
-  [data-theme="dark"] .badge-hotdrink { background: #1a0e04; color: #d4905a; }
-  :root:not([data-theme="light"]) .badge-softdrink,
-  [data-theme="dark"] .badge-softdrink{ background: #200808; color: #e87070; }
-  :root:not([data-theme="light"]) .badge-milkshake,
-  [data-theme="dark"] .badge-milkshake{ background: #200812; color: #e890b8; }
-
-  :root:not([data-theme="light"]) .btn-danger,
-  [data-theme="dark"] .btn-danger     { background: #3a0e0e; color: #e87070; }
-  :root:not([data-theme="light"]) .btn-danger:hover,
-  [data-theme="dark"] .btn-danger:hover{ background: #4a1212; }
-
-  :root:not([data-theme="light"]) .rank-2,
-  [data-theme="dark"] .rank-2         { background: #2a3a50; color: #8fa3c0; }
-  :root:not([data-theme="light"]) .rank-3,
-  [data-theme="dark"] .rank-3         { background: #3a2518; color: #c9855a; }
-
-  :root:not([data-theme="light"]) .form-error,
-  [data-theme="dark"] .form-error     { color: #e87070; }
-
-  :root:not([data-theme="light"]) .login-page,
-  [data-theme="dark"] .login-page     { background: #0a1120; }
-
-  /* btn-primary: navy bg + white-remap conflict — use explicit light text */
-  :root:not([data-theme="light"]) .btn-primary,
-  [data-theme="dark"] .btn-primary    { background: #2a3a58; color: #e8eaf0; }
-  :root:not([data-theme="light"]) .btn-primary:hover,
-  [data-theme="dark"] .btn-primary:hover { background: #334568; }
-
-  /* chip.active: same --white conflict */
-  :root:not([data-theme="light"]) .chip.active,
-  [data-theme="dark"] .chip.active    { background: #2a3a58; border-color: #2a3a58; color: #e8eaf0; }
-
-  /* scope-btn active: --white bg + --navy text both remap to near-black */
-  :root:not([data-theme="light"]) .scope-btn.active,
-  [data-theme="dark"] .scope-btn.active { background: #2a3a58; color: #e8eaf0; box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
-  :root:not([data-theme="light"]) .scope-btn,
-  [data-theme="dark"] .scope-btn      { color: #8fa3c0; }
-
-  /* drink-hero-title: --white remaps to card surface on navy hero bg */
-  :root:not([data-theme="light"]) .drink-hero-title,
-  [data-theme="dark"] .drink-hero-title { color: #e8eaf0; }
-}
+[data-theme="dark"] .btn-primary:hover { background: #334568; }
+[data-theme="dark"] .scope-btn.active  { box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4); }
+[data-theme="dark"] .scope-btn         { color: #8fa3c0; }
 
 /* Hide sidebar on mobile */
 .sidebar-nav { display: none; }
@@ -3184,6 +3179,10 @@ input, select, textarea {
 @media (min-width: 900px) {
   :root {
     --sidebar-width: 220px;
+    /* The top header is hidden on desktop, so sticky bars (search, filter
+       chips, feed compose) must not reserve space for it — they were being
+       pushed down over the content below them. */
+    --header-height: 0px;
   }
 
   /* Body gets left padding to clear the sidebar */
@@ -3387,3 +3386,11 @@ input, select, textarea {
 .theme-toggle-btn:hover { color: var(--gold); }
 .theme-toggle-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; }
 
+
+/* Visibility is controlled with the hidden attribute; never let a class override it. */
+[hidden] { display: none !important; }
+
+/* Feed: status rows inside the replies list, and paging */
+.feed-reply-status { color: var(--slate); font-size: 0.82rem; }
+.feed-reply-error  { color: var(--error-red); }
+.feed-load-more    { margin: 12px 16px 24px; width: calc(100% - 32px); }

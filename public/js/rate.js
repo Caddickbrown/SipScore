@@ -1,14 +1,16 @@
 /* rate.js — Rate a single drink */
 
-/* global App, DOMPurify */
+/* global App */
 
 let user;
 let drinkId;
 let selectedStars = 0;
 let existingRating = null;
 
+// Only ever called with markup built in this file from numbers (stars,
+// spinners) — never with text from the server.
 function safeHTML(el, html) {
-  el.innerHTML = DOMPurify.sanitize(html);
+  el.innerHTML = html;
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -119,17 +121,13 @@ function renderHero(drink) {
   document.getElementById('heroMeta').textContent = App.drinkMeta(drink) || '';
   document.title = 'SipScore \u2014 ' + drink.name;
 
-  // Show drink photos if present
-  if (drink.image) {
-    let photos;
-    try { photos = JSON.parse(drink.image); } catch { photos = [drink.image]; }
-    const photoWrap = document.getElementById('heroDrinkPhotoWrap');
-    if (photoWrap && photos.length) {
-      photoWrap.innerHTML = photos.map((src, i) =>
-        `<img src="${src}" alt="Photo ${i+1}" class="drink-hero-photo-img" loading="lazy">`
-      ).join('');
-      photoWrap.style.display = 'flex';
-    }
+  // Show drink photos if present — built as elements, never as markup.
+  const photos = App.parsePhotos(drink.image);
+  const photoWrap = document.getElementById('heroDrinkPhotoWrap');
+  if (photoWrap && photos.length) {
+    photoWrap.replaceChildren(...photos.map((src, i) =>
+      App.imageEl(src, `${drink.name} photo ${i + 1}`, 'drink-hero-photo-img')));
+    photoWrap.style.display = 'flex';
   }
 
   const editWrap = document.getElementById('editDrinkWrap');
@@ -187,7 +185,6 @@ function renderCommunity(drink, ratings) {
 
 function ratingEntryEl(r) {
   const isMe = r.user_id === user.id;
-  const initials = App.avatarInitials(r.user_name);
 
   const entry = document.createElement('div');
   entry.className = 'rating-entry';

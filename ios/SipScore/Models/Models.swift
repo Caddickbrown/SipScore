@@ -235,7 +235,7 @@ struct TripMember: Codable, Identifiable, Hashable, Sendable {
 // MARK: - Categories
 
 enum DrinkCategory: String, CaseIterable, Identifiable, Sendable {
-    case wine, cocktail, beer, cider, spirit, mocktail, hotdrink, softdrink, milkshake
+    case wine, cocktail, beer, cider, spirit, mocktail, hotdrink, softdrink, milkshake, mead, other
 
     var id: String { rawValue }
 
@@ -250,6 +250,8 @@ enum DrinkCategory: String, CaseIterable, Identifiable, Sendable {
         case .hotdrink:  "Hot Drink"
         case .softdrink: "Soft Drink"
         case .milkshake: "Milkshake"
+        case .mead:      "Mead"
+        case .other:     "Other"
         }
     }
 
@@ -265,7 +267,7 @@ enum DrinkCategory: String, CaseIterable, Identifiable, Sendable {
         case .cocktail:  ["Rum-based", "Vodka-based", "Gin-based", "Tequila-based",
                           "Whiskey-based", "Wine-based", "Mixed"]
         case .beer:      ["Lager", "Ale", "Stout", "IPA", "Wheat Beer", "Pilsner", "Porter"]
-        case .cider:     ["Dry", "Medium Dry", "Medium", "Sweet", "Rosé", "Sparkling"]
+        case .cider:     ["Apple", "Pear (Perry)", "Fruit", "Rosé"]
         case .spirit:    ["Vodka", "Gin", "Rum", "Tequila", "Whiskey", "Brandy", "Ouzo", "Grappa"]
         case .mocktail:  ["Fruit-based", "Herbal", "Sparkling", "Tropical", "Creamy"]
         case .hotdrink:  ["Espresso", "Latte", "Cappuccino", "Flat White", "Americano",
@@ -273,6 +275,8 @@ enum DrinkCategory: String, CaseIterable, Identifiable, Sendable {
                           "Chai", "Hot Chocolate", "Mocha"]
         case .softdrink: ["Cola", "Lemonade", "Juice", "Energy Drink", "Sparkling Water", "Iced Tea"]
         case .milkshake: ["Classic", "Smoothie", "Thick Shake", "Frappe"]
+        case .mead:      ["Dry", "Semi-Sweet", "Sweet", "Sparkling", "Fruit Mead", "Spiced Mead"]
+        case .other:     []
         }
     }
 

@@ -2,13 +2,50 @@
    app.js — Shared utilities for SipScore
    ============================================= */
 
-// Apply theme immediately to avoid flash
-(function() {
-  const t = localStorage.getItem('sipscore-theme');
-  if (t) document.documentElement.setAttribute('data-theme', t);
-})();
+// The theme itself is resolved in <head> by /js/theme.js.
 
 const STAR_LABELS = ['', 'Poor', 'Fair', 'Good', 'Great', 'Outstanding'];
+
+// ---- Safety helpers ----
+
+// Escape text for interpolation into an HTML template string. Prefer
+// textContent / createElement; use this where a template is unavoidable.
+function escapeHtml(value) {
+  return String(value === null || value === undefined ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// drinks.image / feed_posts.image hold a JSON array of data URLs, or (legacy)
+// a single data URL. Returns only well-formed image data URLs.
+function parsePhotos(value) {
+  if (!value) return [];
+  let list;
+  if (Array.isArray(value)) list = value;
+  else if (String(value).trim().startsWith('[')) {
+    try { list = JSON.parse(value); } catch { list = []; }
+  } else list = [value];
+  if (!Array.isArray(list)) return [];
+  return list.filter(src => typeof src === 'string' && /^data:image\/[a-z+.-]+;base64,[A-Za-z0-9+/=]+$/i.test(src));
+}
+
+function imageEl(src, alt, className) {
+  const img = document.createElement('img');
+  img.src = src;
+  img.alt = alt || '';
+  img.loading = 'lazy';
+  if (className) img.className = className;
+  return img;
+}
+
+// Keeps aria-pressed in step with the visual "active" state of toggle buttons.
+function setPressed(el, pressed) {
+  el.classList.toggle('active', pressed);
+  el.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+}
 
 // ---- User / Auth ----
 
@@ -96,11 +133,26 @@ function tripBody(extra = {}) {
   return { user_id: user ? user.id : null, trip_id: getTripId(), ...extra };
 }
 
+// "2026-09-01" (or a timestamp starting with it) as a *local* date. new Date()
+// would read a bare date as UTC midnight, which is the previous day west of UTC.
+function parseDateOnly(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value || ''));
+  if (!match) return null;
+  const d = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return isNaN(d) ? null : d;
+}
+
+// YYYY-MM-DD for <input type="date">, without a timezone round-trip.
+function isoDate(value) {
+  const match = /^(\d{4}-\d{2}-\d{2})/.exec(String(value || ''));
+  return match ? match[1] : '';
+}
+
 function formatTripDates(trip) {
   if (!trip || (!trip.start_date && !trip.end_date)) return '';
   const fmt = (value) => {
-    const d = new Date(value);
-    if (isNaN(d)) return '';
+    const d = parseDateOnly(value);
+    if (!d) return '';
     return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   };
   const start = trip.start_date ? fmt(trip.start_date) : '';
@@ -119,37 +171,38 @@ function initTripPill() {
   pill.addEventListener('click', () => { window.location.href = '/trips.html'; });
 }
 
-// Keep the stored copy in step with the server (name edits, member counts).
-async function refreshTrip() {
-  const trip = getTrip();
-  const user = getUser();
-  if (!trip || !user) return null;
-  try {
-    const { trip: fresh } = await apiFetch(`/api/trips?id=${trip.id}&user_id=${user.id}`);
-    setTrip({ ...trip, ...fresh });
-    return fresh;
-  } catch {
-    // Trip deleted or access lost — fall back to picking one again.
-    clearTrip();
-    return null;
-  }
-}
-
 // ---- API ----
 
+// Every API route answers JSON, but the platform in front of it may not
+// (a 413 for an oversized upload, a 504 timeout), so never assume.
 async function apiFetch(path, options = {}) {
-  const res = await fetch(path, {
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
-    ...options,
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Request failed');
+  let res;
+  try {
+    res = await fetch(path, {
+      ...options,
+      headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+    });
+  } catch {
+    throw new Error('Could not reach SipScore — check your connection');
+  }
+
+  const text = await res.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : {}; } catch { data = null; }
+
+  if (!res.ok) {
+    if (res.status === 413) throw new Error('Those photos are too large — try fewer or smaller ones');
+    const error = new Error((data && data.error) || `Request failed (${res.status})`);
+    error.status = res.status;
+    throw error;
+  }
+  if (data === null) throw new Error('Unexpected response from the server');
   return data;
 }
 
 // ---- Stars ----
 
-function renderStars(avg, size = 'sm') {
+function renderStars(avg) {
   avg = parseFloat(avg) || 0;
   const full = Math.floor(avg);
   const half = avg - full >= 0.5;
@@ -215,7 +268,7 @@ function badgeLabel(category, type) {
 function drinkMeta(drink) {
   const parts = [];
   if (drink.varietal) parts.push(drink.varietal);
-  if (drink.style) parts.push(drink.style);
+  if (drink.style) parts.push(String(drink.style).split(',').map(s => s.trim()).filter(Boolean).join(', '));
   if (drink.source) parts.push(drink.source);
   return parts.join(' \u2022 ');
 }
@@ -223,15 +276,17 @@ function drinkMeta(drink) {
 // ---- Avatar ----
 
 function avatarInitials(name) {
-  const parts = name.trim().split(/\s+/);
+  const clean = String(name || '?').trim() || '?';
+  const parts = clean.split(/\s+/);
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-  return name.slice(0, 2).toUpperCase();
+  return clean.slice(0, 2).toUpperCase();
 }
 
 function applyAvatarToEl(el, user) {
-  if (user.avatar_image) {
+  const [avatar] = parsePhotos(user.avatar_image);
+  if (avatar) {
     el.style.background = '';
-    el.style.backgroundImage = `url(${user.avatar_image})`;
+    el.style.backgroundImage = `url("${avatar}")`;
     el.style.backgroundSize = 'cover';
     el.style.backgroundPosition = 'center';
     el.textContent = '';
@@ -302,13 +357,21 @@ function showCropModal(file) {
         viewport.style.cursor = 'grabbing';
         e.preventDefault();
       });
-      document.addEventListener('mousemove', (e) => {
+      const onMouseMove = (e) => {
         if (!dragging) return;
         const p = clampPos(startImgPos.x + e.clientX - startPos.x, startImgPos.y + e.clientY - startPos.y, w, h);
         x = p.x; y = p.y;
         applyTransform();
-      });
-      document.addEventListener('mouseup', () => { dragging = false; viewport.style.cursor = 'grab'; });
+      };
+      const onMouseUp = () => { dragging = false; viewport.style.cursor = 'grab'; };
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+      const teardown = () => {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        URL.revokeObjectURL(url);
+        overlay.remove();
+      };
 
       viewport.addEventListener('touchstart', (e) => {
         e.preventDefault();
@@ -362,7 +425,7 @@ function showCropModal(file) {
       const cancelBtn = document.createElement('button');
       cancelBtn.textContent = 'Cancel';
       cancelBtn.style.cssText = 'padding:10px 28px;border-radius:8px;border:none;background:rgba(255,255,255,0.15);color:white;font-size:15px;cursor:pointer;font-family:inherit;';
-      cancelBtn.onclick = () => { document.body.removeChild(overlay); URL.revokeObjectURL(url); reject(new Error('cancelled')); };
+      cancelBtn.onclick = () => { teardown(); reject(new Error('cancelled')); };
 
       const confirmBtn = document.createElement('button');
       confirmBtn.textContent = 'Use Photo';
@@ -373,8 +436,7 @@ function showCropModal(file) {
         canvas.height = 100;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, -x / scale, -y / scale, cropSize / scale, cropSize / scale, 0, 0, 100, 100);
-        URL.revokeObjectURL(url);
-        document.body.removeChild(overlay);
+        teardown();
         resolve(canvas.toDataURL('image/jpeg', 0.82));
       };
 
@@ -395,30 +457,27 @@ function showCropModal(file) {
 
 // ---- Theme toggle ----
 
-function initTheme() {
-  const stored = localStorage.getItem('sipscore-theme');
-  if (stored) {
-    document.documentElement.setAttribute('data-theme', stored);
-  }
+function currentTheme() {
+  return window.SipTheme ? window.SipTheme.current()
+    : (document.documentElement.getAttribute('data-theme') || 'light');
+}
+
+function refreshThemeIcons() {
+  const theme = currentTheme();
+  document.querySelectorAll('.theme-toggle-btn, .sidebar-theme-btn').forEach(btn => {
+    updateThemeIcon(btn, theme);
+  });
 }
 
 function toggleTheme() {
-  const current = document.documentElement.getAttribute('data-theme');
-  const isDark = current === 'dark' ||
-    (!current && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  const next = isDark ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('sipscore-theme', next);
-  // Update all toggle button icons
-  document.querySelectorAll('.theme-toggle-btn, .sidebar-theme-btn').forEach(btn => {
-    updateThemeIcon(btn, next);
-  });
+  if (window.SipTheme) window.SipTheme.toggle();
+  refreshThemeIcons();
 }
 
 function updateThemeIcon(btn, theme) {
   if (!btn) return;
-  const isDark = theme === 'dark' ||
-    (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const isDark = theme === 'dark';
+  btn.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
   btn.querySelector('svg').innerHTML = isDark
     ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
     : '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
@@ -458,7 +517,7 @@ function initSidebar(activePage) {
     <div class="sidebar-spacer"></div>
     <button type="button" class="sidebar-trip-pill" id="sidebarTripPill" title="Switch trip">
       <svg viewBox="0 0 24 24"><path d="M3 7h18v13H3zM8 7V4h8v3M3 12h18"/></svg>
-      <span class="sidebar-trip-name" id="sidebarTripName">${trip ? trip.name : 'No trip'}</span>
+      <span class="sidebar-trip-name" id="sidebarTripName"></span>
     </button>
     <button type="button" class="sidebar-theme-btn" id="sidebarThemeBtn">
       <svg viewBox="0 0 24 24"></svg>
@@ -466,11 +525,13 @@ function initSidebar(activePage) {
     </button>
     <div class="sidebar-avatar-row" id="sidebarAvatarRow">
       <div class="user-avatar" id="sidebarAvatar" style="width:30px;height:30px;font-size:0.75rem;"></div>
-      <span class="sidebar-avatar-name">${user ? user.name : ''}</span>
+      <span class="sidebar-avatar-name" id="sidebarAvatarName"></span>
     </div>
   `;
 
-  // Apply avatar
+  // Server-provided names go in as text, never as markup.
+  sidebar.querySelector('#sidebarTripName').textContent = trip ? trip.name : 'No trip';
+  sidebar.querySelector('#sidebarAvatarName').textContent = user ? user.name : '';
   if (user) {
     applyAvatarToEl(sidebar.querySelector('#sidebarAvatar'), user);
   }
@@ -486,10 +547,8 @@ function initSidebar(activePage) {
 
   // Theme toggle
   const themeBtn = sidebar.querySelector('#sidebarThemeBtn');
-  const stored = localStorage.getItem('sipscore-theme');
-  const effectiveTheme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
   if (themeBtn) {
-    updateThemeIcon(themeBtn, effectiveTheme);
+    updateThemeIcon(themeBtn, currentTheme());
     themeBtn.addEventListener('click', toggleTheme);
   }
 
@@ -515,11 +574,12 @@ function initNav(activePage) {
   // Mobile theme toggle in header
   const mobileThemeBtn = document.getElementById('themeToggleBtn');
   if (mobileThemeBtn) {
-    const stored = localStorage.getItem('sipscore-theme');
-    const effectiveTheme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    updateThemeIcon(mobileThemeBtn, effectiveTheme);
+    updateThemeIcon(mobileThemeBtn, currentTheme());
     mobileThemeBtn.addEventListener('click', toggleTheme);
   }
+
+  // The OS theme can change while the page is open.
+  if (window.SipTheme) window.SipTheme.onChange(refreshThemeIcons);
 }
 
 // ---- Profile modal ----
@@ -646,6 +706,12 @@ function showToast(message, type = 'success') {
 
 // ---- Expose globals ----
 window.App = {
+  escapeHtml,
+  parsePhotos,
+  imageEl,
+  setPressed,
+  parseDateOnly,
+  isoDate,
   getUser,
   setUser,
   clearUser,
@@ -659,7 +725,6 @@ window.App = {
   tripBody,
   formatTripDates,
   initTripPill,
-  refreshTrip,
   apiFetch,
   renderStars,
   renderMyStars,
@@ -678,4 +743,5 @@ window.App = {
   showToast,
   toggleTheme,
   STAR_LABELS,
+  CATEGORY_META,
 };

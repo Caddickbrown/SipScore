@@ -1,6 +1,6 @@
 /* drinks.js — Browse & search drinks */
 
-/* global App, DOMPurify */
+/* global App */
 
 let user;
 let currentCategory = '';
@@ -8,12 +8,13 @@ let currentType = '';
 let currentScope = 'trip';   // 'trip' — added on this holiday | 'all' — whole catalogue
 let autoWidened = false;     // only ever bounce an empty trip to the full list once
 let searchTimer;
+let requestSeq = 0;          // only the newest search may render (responses can arrive out of order)
 
 const CATEGORY_TYPES = {
   wine:     ['White', 'Rosé', 'Red', 'Sparkling', 'Dessert and Fortified'],
   cocktail: ['Rum-based', 'Vodka-based', 'Gin-based', 'Tequila-based', 'Whiskey-based', 'Wine-based', 'Mixed'],
   beer:     ['Lager', 'Ale', 'Stout', 'IPA', 'Wheat Beer', 'Pilsner', 'Porter'],
-  cider:    ['Dry', 'Medium Dry', 'Medium', 'Sweet', 'Rosé', 'Sparkling'],
+  cider:    ['Apple', 'Pear (Perry)', 'Fruit', 'Rosé'],
   spirit:   ['Vodka', 'Gin', 'Rum', 'Tequila', 'Whiskey', 'Brandy', 'Ouzo', 'Grappa'],
   mocktail:  ['Fruit-based', 'Herbal', 'Sparkling', 'Tropical', 'Creamy'],
   hotdrink:  ['Espresso', 'Latte', 'Cappuccino', 'Flat White', 'Americano', 'Cold Brew', 'Iced Coffee', 'Black Tea', 'Green Tea', 'Herbal Tea', 'Chai', 'Hot Chocolate', 'Mocha'],
@@ -23,8 +24,10 @@ const CATEGORY_TYPES = {
   other:     [],
 };
 
+// Only ever called with markup built in this file from numbers (stars,
+// spinners) — never with text from the server.
 function safeHTML(el, html) {
-  el.innerHTML = DOMPurify.sanitize(html);
+  el.innerHTML = html;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -57,7 +60,7 @@ function setupScopeToggle() {
 
 function renderScopeToggle() {
   document.querySelectorAll('#scopeToggle .scope-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.scope === currentScope);
+    App.setPressed(btn, btn.dataset.scope === currentScope);
   });
 }
 
@@ -82,9 +85,9 @@ function clearSearch() {
 function setupCategoryChips() {
   const chips = document.querySelectorAll('#categoryChips .chip');
   chips.forEach(chip => {
+    App.setPressed(chip, chip.classList.contains('active'));
     chip.addEventListener('click', () => {
-      chips.forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
+      chips.forEach(c => App.setPressed(c, c === chip));
       currentCategory = chip.dataset.cat;
       currentType = '';
       renderTypeChips();
@@ -115,8 +118,7 @@ function renderTypeChips() {
 
   wrap.querySelectorAll('.chip').forEach(chip => {
     chip.addEventListener('click', () => {
-      wrap.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
+      wrap.querySelectorAll('.chip').forEach(c => App.setPressed(c, c === chip));
       currentType = chip.dataset.type;
       loadDrinks();
     });
@@ -125,13 +127,15 @@ function renderTypeChips() {
 
 function buildChip(type, label, active) {
   const btn = document.createElement('button');
-  btn.className = 'chip' + (active ? ' active' : '');
+  btn.className = 'chip';
+  App.setPressed(btn, active);
   btn.dataset.type = type;
   btn.textContent = label;
   return btn;
 }
 
 async function loadDrinks() {
+  const seq = ++requestSeq;
   const search = document.getElementById('searchInput').value.trim();
   const list = document.getElementById('drinksList');
   safeHTML(list, '<div class="loading-wrap"><div class="spinner"></div></div>');
@@ -145,6 +149,7 @@ async function loadDrinks() {
 
   try {
     const data = await App.apiFetch('/api/drinks?' + params.toString());
+    if (seq !== requestSeq) return undefined;   // a newer search has started
     const drinks = data.drinks || [];
 
     // A trip starts with nothing of its own, so rather than showing an empty
@@ -159,8 +164,9 @@ async function loadDrinks() {
 
     renderDrinks(drinks);
   } catch (err) {
-    renderError(list, err.message);
+    if (seq === requestSeq) renderError(list, err.message);
   }
+  return undefined;
 }
 
 function renderDrinks(drinks) {
@@ -255,7 +261,7 @@ function drinkCard(d) {
   if (myStars) {
     const myBadge = document.createElement('div');
     myBadge.className = 'my-rating-badge';
-    myBadge.innerHTML = DOMPurify.sanitize('<span class="star-icon">&#9733;</span> You: ' + myStars);
+    myBadge.innerHTML = '<span class="star-icon">&#9733;</span> You: ' + Number(myStars);
     ratingsRow.appendChild(myBadge);
   }
 
@@ -271,20 +277,13 @@ function drinkCard(d) {
   a.appendChild(body);
   a.appendChild(arrow);
 
-  // Optional thumbnail (first photo if multiple)
-  if (d.image) {
-    let thumbSrc;
-    try { thumbSrc = JSON.parse(d.image)[0]; } catch { thumbSrc = d.image; }
-    if (thumbSrc) {
-      const thumb = document.createElement('div');
-      thumb.className = 'drink-card-thumb';
-      const thumbImg = document.createElement('img');
-      thumbImg.src = thumbSrc;
-      thumbImg.alt = d.name;
-      thumbImg.loading = 'lazy';
-      thumb.appendChild(thumbImg);
-      a.appendChild(thumb);
-    }
+  // Optional thumbnail (the API sends just the first photo)
+  const [thumbSrc] = App.parsePhotos(d.image);
+  if (thumbSrc) {
+    const thumb = document.createElement('div');
+    thumb.className = 'drink-card-thumb';
+    thumb.appendChild(App.imageEl(thumbSrc, d.name));
+    a.appendChild(thumb);
   }
 
   return a;

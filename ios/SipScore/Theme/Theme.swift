@@ -72,6 +72,8 @@ extension DrinkCategory {
         case .hotdrink:  return Color(hex: 0x8A6247)
         case .softdrink: return Color(hex: 0x5D7FC4)
         case .milkshake: return Color(hex: 0xD98FA8)
+        case .mead:      return Color(hex: 0xC99A2E)
+        case .other:     return Color(hex: 0x8A94A6)
         }
     }
 }

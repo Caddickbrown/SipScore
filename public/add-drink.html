@@ -11,6 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SipScore">
   <title>SipScore — Add Drink</title>
+  <script src="/js/theme.js"></script>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -43,47 +44,47 @@
     <div class="form-section">
       <h3>What are you adding?</h3>
       <div class="category-grid">
-        <button type="button" class="category-btn active" id="catWine" onclick="setCategory('wine')">
+        <button type="button" class="category-btn" id="catWine" data-category="wine" aria-pressed="false">
           <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M8 22h8M12 11v11M7 3h10l-2 8H9L7 3z"/></svg>
           Wine
         </button>
-        <button type="button" class="category-btn" id="catCocktail" onclick="setCategory('cocktail')">
+        <button type="button" class="category-btn" id="catCocktail" data-category="cocktail" aria-pressed="false">
           <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M8 3h8l-4 9M4 3h16M12 12v9M8 21h8"/></svg>
           Cocktail
         </button>
-        <button type="button" class="category-btn" id="catBeer" onclick="setCategory('beer')">
+        <button type="button" class="category-btn" id="catBeer" data-category="beer" aria-pressed="false">
           <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M5 8h2l1 12h8l1-12h2M5 8V6h14v2M9 4h6"/></svg>
           Beer
         </button>
-        <button type="button" class="category-btn" id="catCider" onclick="setCategory('cider')">
+        <button type="button" class="category-btn" id="catCider" data-category="cider" aria-pressed="false">
           <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 1 5 5c0 4-5 8-5 8S7 11 7 7a5 5 0 0 1 5-5z"/><path d="M8 20h8M10 20v-4h4v4"/></svg>
           Cider
         </button>
-        <button type="button" class="category-btn" id="catSpirit" onclick="setCategory('spirit')">
+        <button type="button" class="category-btn" id="catSpirit" data-category="spirit" aria-pressed="false">
           <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M9 3h6l1 5H8L9 3zM8 8l-2 13h12L16 8"/></svg>
           Spirit
         </button>
-        <button type="button" class="category-btn" id="catMocktail" onclick="setCategory('mocktail')">
+        <button type="button" class="category-btn" id="catMocktail" data-category="mocktail" aria-pressed="false">
           <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg>
           Mocktail
         </button>
-        <button type="button" class="category-btn" id="catHotdrink" onclick="setCategory('hotdrink')">
+        <button type="button" class="category-btn" id="catHotdrink" data-category="hotdrink" aria-pressed="false">
           <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
           Hot Drink
         </button>
-        <button type="button" class="category-btn" id="catSoftdrink" onclick="setCategory('softdrink')">
+        <button type="button" class="category-btn" id="catSoftdrink" data-category="softdrink" aria-pressed="false">
           <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M8 2h8l1 6H7L8 2z"/><path d="M7 8l-1 13h12L17 8"/><path d="M10 12h4"/></svg>
           Soft Drink
         </button>
-        <button type="button" class="category-btn" id="catMilkshake" onclick="setCategory('milkshake')">
+        <button type="button" class="category-btn" id="catMilkshake" data-category="milkshake" aria-pressed="false">
           <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M8 3h8l1 4H7L8 3z"/><path d="M7 7l1 14h8l1-14"/><path d="M10 11c0 2 4 2 4 4s-4 2-4 4"/></svg>
           Milkshake
         </button>
-        <button type="button" class="category-btn" id="catMead" onclick="setCategory('mead')">
+        <button type="button" class="category-btn" id="catMead" data-category="mead" aria-pressed="false">
           <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M8 3h8l2 5H6L8 3z"/><path d="M6 8l1 13h10L18 8"/><path d="M9 13c1-1 2-1 3 0s2 1 3 0"/></svg>
           Mead
         </button>
-        <button type="button" class="category-btn" id="catOther" onclick="setCategory('other')">
+        <button type="button" class="category-btn" id="catOther" data-category="other" aria-pressed="false">
           <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>
           Other
         </button>
@@ -92,7 +93,7 @@
 
     <!-- Form -->
     <div class="form-section">
-      <form id="addDrinkForm" onsubmit="handleAdd(event)">
+      <form id="addDrinkForm">
 
         <div class="form-group">
           <label class="form-label" for="drinkName">Drink Name</label>
@@ -102,20 +103,20 @@
             id="drinkName"
             placeholder="e.g. Pontiglio or Mojito"
             autocapitalize="words"
-            maxlength="150"
+            maxlength="200"
             required
           >
         </div>
 
         <!-- Photo picker -->
         <div class="form-group photo-picker">
-          <label class="form-label">Photos <span class="form-optional">(optional, up to 6)</span></label>
+          <span class="form-label">Photos <span class="form-optional" id="photoCount">(optional, up to 6)</span></span>
           <div id="photoGallery" class="photo-gallery"></div>
           <label class="photo-picker-btn" id="photoPickerBtn" for="drinkPhotoInput">
             <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
             Add photos
           </label>
-          <input type="file" id="drinkPhotoInput" accept="image/*" multiple style="display:none;" onchange="handlePhotoSelected(this)">
+          <input type="file" id="drinkPhotoInput" accept="image/*" multiple hidden>
         </div>
 
         <!-- Wine fields -->
@@ -172,13 +173,13 @@
               id="wineSource"
               placeholder="e.g. Corfu, Greece"
               autocapitalize="words"
-              maxlength="100"
+              maxlength="200"
             >
           </div>
         </div>
 
         <!-- Beer fields -->
-        <div id="beerFields" style="display:none;">
+        <div id="beerFields" hidden>
           <div class="form-group">
             <label class="form-label" for="beerType">Style</label>
             <select class="form-select" id="beerType">
@@ -195,32 +196,40 @@
           </div>
           <div class="form-group">
             <label class="form-label" for="beerSource">Brewery / Origin</label>
-            <input class="form-input" type="text" id="beerSource" placeholder="e.g. Mythos, Greece" autocapitalize="words" maxlength="100">
+            <input class="form-input" type="text" id="beerSource" placeholder="e.g. Mythos, Greece" autocapitalize="words" maxlength="200">
           </div>
         </div>
 
         <!-- Cider fields -->
-        <div id="ciderFields" style="display:none;">
+        <div id="ciderFields" hidden>
           <div class="form-group">
-            <label class="form-label" for="ciderType">Sweetness</label>
+            <label class="form-label" for="ciderType">Type</label>
             <select class="form-select" id="ciderType">
+              <option value="">Select type…</option>
+              <option value="Apple">Apple</option>
+              <option value="Pear (Perry)">Pear (Perry)</option>
+              <option value="Fruit">Fruit</option>
+              <option value="Rosé">Rosé</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ciderStyle">Sweetness</label>
+            <select class="form-select" id="ciderStyle">
               <option value="">Select sweetness…</option>
               <option value="Dry">Dry</option>
               <option value="Medium Dry">Medium Dry</option>
               <option value="Medium">Medium</option>
               <option value="Sweet">Sweet</option>
-              <option value="Rosé">Rosé</option>
-              <option value="Sparkling">Sparkling</option>
             </select>
           </div>
           <div class="form-group">
             <label class="form-label" for="ciderSource">Producer / Origin</label>
-            <input class="form-input" type="text" id="ciderSource" placeholder="e.g. Rekorderlig, Sweden" autocapitalize="words" maxlength="100">
+            <input class="form-input" type="text" id="ciderSource" placeholder="e.g. Rekorderlig, Sweden" autocapitalize="words" maxlength="200">
           </div>
         </div>
 
         <!-- Spirit fields -->
-        <div id="spiritFields" style="display:none;">
+        <div id="spiritFields" hidden>
           <div class="form-group">
             <label class="form-label" for="spiritType">Spirit Type</label>
             <select class="form-select" id="spiritType">
@@ -247,12 +256,12 @@
           </div>
           <div class="form-group">
             <label class="form-label" for="spiritSource">Distillery / Origin</label>
-            <input class="form-input" type="text" id="spiritSource" placeholder="e.g. Metaxa, Greece" autocapitalize="words" maxlength="100">
+            <input class="form-input" type="text" id="spiritSource" placeholder="e.g. Metaxa, Greece" autocapitalize="words" maxlength="200">
           </div>
         </div>
 
         <!-- Mocktail fields -->
-        <div id="mocktailFields" style="display:none;">
+        <div id="mocktailFields" hidden>
           <div class="form-group">
             <label class="form-label" for="mocktailType">Type</label>
             <select class="form-select" id="mocktailType">
@@ -278,7 +287,7 @@
         </div>
 
         <!-- Cocktail fields -->
-        <div id="cocktailFields" style="display:none;">
+        <div id="cocktailFields" hidden>
           <div class="form-group">
             <label class="form-label" for="cocktailType">Base Spirit</label>
             <select class="form-select" id="cocktailType">
@@ -320,13 +329,13 @@
               id="cocktailSource"
               placeholder="e.g. Cuba or Italy"
               autocapitalize="words"
-              maxlength="100"
+              maxlength="200"
             >
           </div>
         </div>
 
         <!-- Hot Drink fields -->
-        <div id="hotdrinkFields" style="display:none;">
+        <div id="hotdrinkFields" hidden>
           <div class="form-group">
             <label class="form-label" for="hotdrinkType">Type</label>
             <select class="form-select" id="hotdrinkType">
@@ -364,12 +373,12 @@
           </div>
           <div class="form-group">
             <label class="form-label" for="hotdrinkSource">Café / Origin</label>
-            <input class="form-input" type="text" id="hotdrinkSource" placeholder="e.g. Costa, Colombia" autocapitalize="words" maxlength="100">
+            <input class="form-input" type="text" id="hotdrinkSource" placeholder="e.g. Costa, Colombia" autocapitalize="words" maxlength="200">
           </div>
         </div>
 
         <!-- Soft Drink fields -->
-        <div id="softdrinkFields" style="display:none;">
+        <div id="softdrinkFields" hidden>
           <div class="form-group">
             <label class="form-label" for="softdrinkType">Type</label>
             <select class="form-select" id="softdrinkType">
@@ -385,12 +394,12 @@
           </div>
           <div class="form-group">
             <label class="form-label" for="softdrinkSource">Brand / Origin</label>
-            <input class="form-input" type="text" id="softdrinkSource" placeholder="e.g. Coca-Cola, San Pellegrino" autocapitalize="words" maxlength="100">
+            <input class="form-input" type="text" id="softdrinkSource" placeholder="e.g. Coca-Cola, San Pellegrino" autocapitalize="words" maxlength="200">
           </div>
         </div>
 
         <!-- Milkshake fields -->
-        <div id="milkshakeFields" style="display:none;">
+        <div id="milkshakeFields" hidden>
           <div class="form-group">
             <label class="form-label" for="milkshakeType">Type</label>
             <select class="form-select" id="milkshakeType">
@@ -415,7 +424,7 @@
         </div>
 
         <!-- Mead fields -->
-        <div id="meadFields" style="display:none;">
+        <div id="meadFields" hidden>
           <div class="form-group">
             <label class="form-label" for="meadType">Style</label>
             <select class="form-select" id="meadType">
@@ -431,19 +440,19 @@
           </div>
           <div class="form-group">
             <label class="form-label" for="meadSource">Meadery / Origin</label>
-            <input class="form-input" type="text" id="meadSource" placeholder="e.g. Lyme Bay Winery, Devon" autocapitalize="words" maxlength="100">
+            <input class="form-input" type="text" id="meadSource" placeholder="e.g. Lyme Bay Winery, Devon" autocapitalize="words" maxlength="200">
           </div>
         </div>
 
         <!-- Other fields -->
-        <div id="otherFields" style="display:none;">
+        <div id="otherFields" hidden>
           <div class="form-group">
             <label class="form-label" for="otherSource">Producer / Origin</label>
-            <input class="form-input" type="text" id="otherSource" placeholder="e.g. Local brewery, Italy" autocapitalize="words" maxlength="100">
+            <input class="form-input" type="text" id="otherSource" placeholder="e.g. Local brewery, Italy" autocapitalize="words" maxlength="200">
           </div>
         </div>
 
-        <div class="form-error" id="addError"></div>
+        <div class="form-error" id="addError" role="alert"></div>
 
         <button type="submit" class="btn btn-gold btn-full" id="addBtn">
           Add Drink
@@ -520,6 +529,9 @@
   <div id="toast"></div>
 
   <script src="/js/app.js"></script>
+  <script src="/js/photos.js"></script>
+  <script src="/js/style-tags.js"></script>
+  <script src="/js/drink-form.js"></script>
   <script src="/js/add-drink.js"></script>
 </body>
 </html>

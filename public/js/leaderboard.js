@@ -1,13 +1,16 @@
 /* leaderboard.js — Personal & social leaderboards */
 
-/* global App, DOMPurify */
+/* global App */
 
 let user;
 let currentTab = 'personal';
 let currentCategory = '';
+let requestSeq = 0;
 
+// Only ever called with markup built in this file from numbers (stars,
+// spinners) — never with text from the server.
 function safeHTML(el, html) {
-  el.innerHTML = DOMPurify.sanitize(html);
+  el.innerHTML = html;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -29,18 +32,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function switchTab(tab) {
   currentTab = tab;
-  document.getElementById('tabPersonal').classList.toggle('active', tab === 'personal');
-  document.getElementById('tabSocial').classList.toggle('active', tab === 'social');
-  document.getElementById('tabConsensus').classList.toggle('active', tab === 'consensus');
+  App.setPressed(document.getElementById('tabPersonal'), tab === 'personal');
+  App.setPressed(document.getElementById('tabSocial'), tab === 'social');
+  App.setPressed(document.getElementById('tabConsensus'), tab === 'consensus');
   loadLeaderboard();
 }
 
 function setupCategoryChips() {
   const chips = document.querySelectorAll('#lbCategoryChips .chip');
   chips.forEach(chip => {
+    App.setPressed(chip, chip.classList.contains('active'));
     chip.addEventListener('click', () => {
-      chips.forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
+      chips.forEach(c => App.setPressed(c, c === chip));
       currentCategory = chip.dataset.cat;
       loadLeaderboard();
     });
@@ -54,10 +57,13 @@ async function loadLeaderboard() {
   const params = App.tripParams({ type: currentTab });
   if (currentCategory) params.set('category', currentCategory);
 
+  const seq = ++requestSeq;
   try {
     const data = await App.apiFetch('/api/leaderboard?' + params.toString());
+    if (seq !== requestSeq) return;
     renderLeaderboard(data.leaderboard || []);
   } catch (err) {
+    if (seq !== requestSeq) return;
     list.innerHTML = '';
     const div = document.createElement('div');
     div.className = 'empty-state';
@@ -103,7 +109,7 @@ function renderLeaderboard(items) {
 function leaderboardItem(item, rank) {
   const a = document.createElement('a');
   a.className = 'leaderboard-item';
-  a.href = '/rate.html?id=' + item.id + '&from=leaderboard-' + currentTab;
+  a.href = '/rate.html?id=' + encodeURIComponent(item.id) + '&from=leaderboard-' + currentTab;
 
   // Rank badge
   const rankBadge = document.createElement('div');

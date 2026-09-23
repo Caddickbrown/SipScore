@@ -301,11 +301,13 @@ struct APIClient {
         ], as: LeaderboardResponse.self).leaderboard ?? []
     }
 
-    /// Someone else's ratings on this trip.
-    func reviews(forUserId profileUserId: Int, tripId: Int) async throws -> [Drink] {
+    /// Someone else's ratings on this trip. `viewerId` is who is looking; the
+    /// server checks *their* membership of the trip.
+    func reviews(forUserId profileUserId: Int, tripId: Int, viewerId: Int?) async throws -> [Drink] {
         try await get("api/leaderboard", query: [
             "type": "personal",
             "user_id": String(profileUserId),
+            "viewer_id": viewerId.map(String.init),
             "trip_id": String(tripId),
         ], as: LeaderboardResponse.self).leaderboard ?? []
     }
