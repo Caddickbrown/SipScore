@@ -43,7 +43,12 @@ curl -X POST https://your-app.vercel.app/api/seed
 ```
 
 This creates the tables and loads all 37 wines + 20 cocktails into the shared
-catalogue.
+catalogue. Seeding only ever happens once. To stop anyone else calling it, set
+`SEED_TOKEN` in the Vercel environment and send it as a header:
+
+```bash
+curl -X POST -H "x-seed-token: $SEED_TOKEN" https://your-app.vercel.app/api/seed
+```
 
 Upgrading an existing deployment needs no manual step: the first request after
 deploy creates the trip tables and folds all existing drinks, ratings and posts
@@ -74,7 +79,36 @@ may create throwaway databases on:
 
 ```bash
 TEST_DATABASE_URL=postgres://postgres@localhost:5432/postgres npm test
+# unix sockets work too:
+TEST_DATABASE_URL='postgres://postgres@/postgres?host=/var/run/postgresql&port=5432' npm test
 ```
+
+`tests/pages.test.js` loads each page's scripts together, the way the browser
+does, so two files declaring the same global name is caught before it breaks a
+page.
+
+### Browser tests
+
+```bash
+TEST_DATABASE_URL=postgres://postgres@localhost:5432/postgres npm run test:ui
+```
+
+`tests/ui/run.js` serves `public/` with the real API handlers behind it (see
+`tests/ui/server.js`) and drives headless Chromium through registering,
+creating a trip, adding and editing drinks with photos, rating and the feed. It
+also screenshots every page in light, OS-dark and toggle-dark on phone and
+desktop, and fails if the two dark variants differ or key controls miss WCAG AA
+contrast. Screenshots are written to `tests/ui/screenshots/`. It uses
+`CHROMIUM_PATH` if set; otherwise run `npx playwright install chromium` once.
+
+### Theme
+
+`public/js/theme.js` runs in every page's `<head>` and always sets
+`data-theme` on `<html>` (the stored choice, else the OS setting). The
+stylesheet has a single `[data-theme="dark"]` block — don't add
+`prefers-color-scheme` media queries, or the in-app toggle and the OS setting
+will drift apart again. Use `--on-navy` for text on navy or coloured
+surfaces; `--white` is the card *surface* and goes dark.
 
 ## Pages
 
@@ -97,21 +131,32 @@ TEST_DATABASE_URL=postgres://postgres@localhost:5432/postgres npm test
 | `POST` | `/api/trips` | Create a trip, or join one (`action: "create"/"join"`) |
 | `PATCH` | `/api/trips` | Edit trip details (owner only) |
 | `DELETE` | `/api/trips` | Leave a trip, or delete it (`action: "leave"/"delete"`) |
-| `GET` | `/api/drinks` | List/search drinks (`?search=&category=&type=&user_id=&trip_id=&scope=trip\|all`) |
+| `GET` | `/api/drinks` | List/search drinks (`?search=&category=&type=&user_id=&trip_id=&scope=trip\|all`); lists carry the first photo and a `photo_count` |
 | `POST` | `/api/drinks` | Add a new drink, tagged with `trip_id` |
-| `GET` | `/api/drink?id=` | Drink details + this trip's ratings, plus all-time stats |
-| `PATCH` | `/api/drink?id=` | Edit a drink's details |
+| `GET` | `/api/drink?id=&user_id=` | Drink details + this trip's ratings, plus all-time stats |
+| `PATCH` | `/api/drink?id=` | Edit a drink's details and/or photos (`user_id` required; people on the drink's trip, or whoever added it) |
 | `POST` | `/api/ratings` | Rate a drink on a trip (upsert on user + drink + trip) |
 | `DELETE` | `/api/ratings` | Remove a rating from a trip |
-| `GET` | `/api/leaderboard` | Rankings (`?type=personal\|social\|consensus&user_id=&trip_id=`) |
-| `GET` `POST` `DELETE` | `/api/feed` | The trip's feed |
+| `GET` | `/api/leaderboard` | Rankings (`?type=personal\|social\|consensus&user_id=&trip_id=`); add `viewer_id` to view someone else's personal board |
+| `GET` `POST` `PATCH` `DELETE` | `/api/feed` | The trip's feed, 50 posts a page (`?before_id=` for older) |
 | `POST` | `/api/feed-like` | Toggle a like on a post |
 | `GET` `POST` `DELETE` | `/api/feed-replies` | Replies to a post |
 | `POST` | `/api/feed-reply-like` | Toggle a like on a reply |
 | `GET` `PATCH` | `/api/profile` | Read a profile (optionally per trip) or update an avatar |
-| `POST` | `/api/seed` | Create schema + seed data (run once) |
+| `POST` | `/api/seed` | Create schema + seed data (run once; `x-seed-token` if `SEED_TOKEN` is set) |
 
-Omitting `trip_id` from a read gives the all-time view across every trip.
+Omitting `trip_id` from a read gives the all-time view across **the trips you
+are on**. Reads need `user_id` (or `viewer_id`) so membership can be checked;
+nobody sees ratings, reviews or posts from a trip they aren't part of. The
+anonymous catalogue totals on a drink (`overall_*`) stay global.
+
+Photos are stored as data URLs and validated server-side: PNG, JPEG, WebP, GIF
+or HEIC base64 only, up to 6 per drink or post. Every route goes through
+`withHandler` in `lib/db.js`, which never returns raw database errors.
+
+Drink categories: wine, cocktail, beer, cider, spirit, mocktail, hotdrink,
+softdrink, milkshake, mead, other. Cider stores its type (Apple, Pear…) in
+`type` and its sweetness in `style`.
 
 > The Vercel Hobby plan allows 12 Serverless Functions and the `api/` directory
 > is at exactly that. Shared code lives in `lib/`, outside `api/`, so it isn't

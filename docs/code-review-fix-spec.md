@@ -202,3 +202,24 @@ You ship small, verified, well-tested commits. You do not redesign the product.
 | Front end | `public/js/app.js` (shared), `feed.js`, `rate.js`, `drinks.js`, `trips.js`, `leaderboard.js`, `add-drink.js`, `edit-drink.js`, `my-reviews.js`, `user-reviews.js`; pages in `public/*.html` |
 | Tests | `tests/rate.test.js` (unit, vm sandbox), `tests/trips.integration.test.js` (real Postgres), `tests/helpers/neon-shim.js` |
 | iOS | `ios/SipScore/Models/Models.swift` (`DrinkCategory`) |
+
+---
+
+## Status — implemented
+
+Everything above was implemented on this branch, with these decisions:
+
+| Open question | Decision |
+|---|---|
+| F10 owner leaving | Message-only: "The organiser can’t leave a trip others are on. Delete the trip instead." No ownership transfer. |
+| F4 all-time views | Scoped to the caller's trips. Anonymous `overall_*` catalogue totals on a drink stay global. |
+| F13 photo payloads | Step 1 only: lists ship one thumbnail + `photo_count`; the feed pages by 50 and updates the DOM locally. No new thumbnail columns. |
+| P3 rate limiting | Not done: no PIN lockout. PIN comparison is now constant-time and names are unique case-insensitively in the database. |
+
+Deviations from the spec:
+- **Advisory lock (P3):** the Neon HTTP driver can't hold a session lock across statements, so concurrent migrations instead retry once on a duplicate-object error.
+- **Feed PATCH/DELETE:** ownership only, no membership check, so people can still tidy up their own posts after leaving a trip.
+- **`--white` kept as the surface token**, with a new `--on-navy` for text on navy (rather than renaming every `--white` to `--surface`).
+- **Extra fixes found while verifying:** a later schema change could fold seeded catalogue drinks into a phantom "Corfu" trip; the backfill now only runs for genuinely legacy data. Edit Details on a trip opened a blank New Trip form. On desktop the sticky compose box and filter bars covered content because they still reserved the hidden header's height. Cider's Sweetness list contained Rosé and Sparkling. PIN digits were invisible in dark mode. Mead/Other had no badge colours. Pages depended on DOMPurify from a CDN.
+
+Verification: `npm test` (unit, page-script and integration tests on Postgres 16) and `npm run test:ui` (browser flows, injection checks, dark-mode parity and contrast).

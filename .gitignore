@@ -10,3 +10,6 @@ ios/**/*.xcuserdatad
 ios/DerivedData/
 ios/build/
 .DS_Store
+
+# UI test screenshots
+tests/ui/screenshots/

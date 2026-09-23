@@ -134,3 +134,9 @@ Measured pixel difference between os-dark and toggle-dark, same page and data:
 ### E. Screenshot harness (keep it)
 
 The review used a ~90-line `playwright-core` script: static-serve `public/`, seed `localStorage` (`sipscore_user`, `sipscore_trip`, optional `sipscore-theme`), stub `**/api/**` with fixtures, block Google Fonts, and screenshot every page for `{light, os-dark, toggle-dark} × {390×844@2x, 1280×860}`. Add it as `tests/ui/screenshots.js` with an `npm run shots` script, and a `pixelmatch` step that fails when os-dark ≠ toggle-dark. Chromium is at `/opt/pw-browsers/chromium` in this environment; elsewhere `npx playwright install chromium`.
+
+---
+
+## Status — implemented
+
+All findings in sections A–D were fixed on this branch; see the status section of `code-review-fix-spec.md` for decisions and verification.
