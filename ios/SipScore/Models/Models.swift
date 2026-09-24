@@ -247,7 +247,7 @@ enum DrinkCategory: String, CaseIterable, Identifiable, Sendable {
         case .cider:     "Cider"
         case .spirit:    "Spirit"
         case .mocktail:  "Mocktail"
-        case .hotdrink:  "Hot Drink"
+        case .hotdrink:  "Coffee & Tea"
         case .softdrink: "Soft Drink"
         case .milkshake: "Milkshake"
         case .mead:      "Mead"
@@ -261,30 +261,54 @@ enum DrinkCategory: String, CaseIterable, Identifiable, Sendable {
         return type ?? label
     }
 
+    // Keep in step with the Type options on the web forms and the Drinks
+    // filters (public/js/drinks.js); tests/lists.test.js checks all three.
     var types: [String] {
         switch self {
         case .wine:      ["White", "Rosé", "Red", "Sparkling", "Dessert and Fortified"]
         case .cocktail:  ["Rum-based", "Vodka-based", "Gin-based", "Tequila-based",
-                          "Whiskey-based", "Wine-based", "Mixed"]
-        case .beer:      ["Lager", "Ale", "Stout", "IPA", "Wheat Beer", "Pilsner", "Porter"]
+                          "Whiskey-based", "Wine-based", "Liqueur-based", "Mixed", "Other"]
+        case .beer:      ["Lager", "Ale", "IPA", "Stout", "Wheat Beer", "Pilsner", "Porter", "Other"]
         case .cider:     ["Apple", "Pear (Perry)", "Fruit", "Rosé"]
-        case .spirit:    ["Vodka", "Gin", "Rum", "Tequila", "Whiskey", "Brandy", "Ouzo", "Grappa"]
-        case .mocktail:  ["Fruit-based", "Herbal", "Sparkling", "Tropical", "Creamy"]
-        case .hotdrink:  ["Espresso", "Latte", "Cappuccino", "Flat White", "Americano",
-                          "Cold Brew", "Iced Coffee", "Black Tea", "Green Tea", "Herbal Tea",
-                          "Chai", "Hot Chocolate", "Mocha"]
-        case .softdrink: ["Cola", "Lemonade", "Juice", "Energy Drink", "Sparkling Water", "Iced Tea"]
-        case .milkshake: ["Classic", "Smoothie", "Thick Shake", "Frappe"]
-        case .mead:      ["Dry", "Semi-Sweet", "Sweet", "Sparkling", "Fruit Mead", "Spiced Mead"]
+        case .spirit:    ["Vodka", "Gin", "Rum", "Tequila", "Whiskey", "Brandy", "Ouzo",
+                          "Tsipouro", "Grappa", "Liqueur", "Other"]
+        case .mocktail:  ["Virgin Classic", "Fruit-based", "Herbal", "Sparkling", "Creamy", "Other"]
+        case .hotdrink:  ["Espresso", "Americano", "Cappuccino", "Latte", "Flat White", "Mocha",
+                          "Greek Coffee", "Freddo Espresso", "Freddo Cappuccino", "Frappé",
+                          "Iced Coffee", "Cold Brew", "Black Tea", "Green Tea", "Herbal Tea",
+                          "Chai", "Hot Chocolate", "Other"]
+        case .softdrink: ["Cola", "Lemonade", "Fruit Soda", "Juice", "Energy Drink",
+                          "Sparkling Water", "Iced Tea", "Other"]
+        case .milkshake: ["Classic", "Thick Shake", "Smoothie", "Other"]
+        case .mead:      ["Traditional", "Fruit", "Spiced", "Sparkling", "Other"]
         case .other:     []
         }
     }
 
+    /// What the style field means for this category. Stored in drinks.style.
+    var styleLabel: String {
+        switch self {
+        case .cider, .mead: "Sweetness"
+        case .spirit:       "Serve"
+        case .milkshake:    "Flavour"
+        default:            "Style"
+        }
+    }
+
+    /// Options for the style field (the web lets you pick several; iOS picks one).
     var styles: [String] {
         switch self {
-        case .wine: ["Light and Crisp", "Juicy and Aromatic", "Full and Opulent",
-                     "Fruity and Lively", "Ripe and Smooth", "Rich and Dense"]
-        default:    []
+        case .wine:      ["Dry", "Off-Dry", "Sweet", "Crisp", "Fruity", "Aromatic", "Oaked",
+                          "Tannic", "Smooth", "Full-Bodied", "Light", "Earthy", "Mineral"]
+        case .cocktail:  ["Refreshing", "Sweet", "Sour", "Bitter", "Fruity", "Tropical",
+                          "Bubbly", "Rich", "Strong", "Classic"]
+        case .cider:     ["Dry", "Medium Dry", "Medium", "Sweet"]
+        case .spirit:    ["Neat", "On the Rocks", "Mixed", "Shot"]
+        case .mocktail:  ["Refreshing", "Sweet", "Sour", "Fruity", "Tropical"]
+        case .hotdrink:  ["Black", "Milky", "Sweet", "Iced"]
+        case .milkshake: ["Chocolatey", "Vanilla", "Strawberry", "Caramel", "Fruity", "Nutty"]
+        case .mead:      ["Dry", "Semi-Sweet", "Sweet"]
+        case .beer, .softdrink, .other: []
         }
     }
 }

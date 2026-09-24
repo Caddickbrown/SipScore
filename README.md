@@ -154,9 +154,13 @@ Photos are stored as data URLs and validated server-side: PNG, JPEG, WebP, GIF
 or HEIC base64 only, up to 6 per drink or post. Every route goes through
 `withHandler` in `lib/db.js`, which never returns raw database errors.
 
-Drink categories: wine, cocktail, beer, cider, spirit, mocktail, hotdrink,
-softdrink, milkshake, mead, other. Cider stores its type (Apple, Pear…) in
-`type` and its sweetness in `style`.
+Drink categories: wine, cocktail, beer, cider, spirit, mocktail, hotdrink
+(shown as "Coffee & Tea"), softdrink, milkshake, mead, other. Cider and mead
+store their kind (Apple, Traditional…) in `type` and their sweetness in
+`style`. The option lists live on the Add/Edit Drink forms, in
+`public/js/drinks.js` (filters) and in the iOS `DrinkCategory` enum;
+`tests/lists.test.js` fails if they drift apart. Editing a drink whose stored
+value is no longer offered keeps that value rather than blanking it.
 
 > The Vercel Hobby plan allows 12 Serverless Functions and the `api/` directory
 > is at exactly that. Shared code lives in `lib/`, outside `api/`, so it isn't

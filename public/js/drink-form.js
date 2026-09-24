@@ -23,7 +23,7 @@ const DrinkForm = (() => {
     hotdrink:  { fields: 'hotdrinkFields',  type: 'hotdrinkType',  varietal: null,           style: 'hotdrinkStyle',  source: 'hotdrinkSource' },
     softdrink: { fields: 'softdrinkFields', type: 'softdrinkType', varietal: null,           style: null,             source: 'softdrinkSource' },
     milkshake: { fields: 'milkshakeFields', type: 'milkshakeType', varietal: null,           style: 'milkshakeStyle', source: null },
-    mead:      { fields: 'meadFields',      type: 'meadType',      varietal: null,           style: null,             source: 'meadSource' },
+    mead:      { fields: 'meadFields',      type: 'meadType',      varietal: null,           style: 'meadStyle',      source: 'meadSource' },
     other:     { fields: 'otherFields',     type: null,            varietal: null,           style: null,             source: 'otherSource' },
   };
 
@@ -79,11 +79,20 @@ const DrinkForm = (() => {
     };
   }
 
-  // Selects an option only if it exists, so unknown legacy values leave "Select…".
+  // Selects the stored value. A value that's no longer in the list (retired
+  // option, or set from another client) is added as an extra option rather
+  // than shown blank — otherwise saving the form would silently erase it.
   function setSelect(id, value) {
     const el = byId(id);
     if (!el || !value) return;
-    if ([...el.options].some(opt => opt.value === value)) el.value = value;
+    if (![...el.options].some(opt => opt.value === value)) {
+      const extra = document.createElement('option');
+      extra.value = value;
+      extra.textContent = value;
+      extra.dataset.legacy = '1';
+      el.appendChild(extra);
+    }
+    el.value = value;
   }
 
   function fill(drink) {

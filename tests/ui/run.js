@@ -206,7 +206,8 @@ async function main() {
     assert.equal(await page.isVisible('#wineFields'), false);
 
     await page.fill('#drinkName', 'Honey Mead');
-    await page.selectOption('#meadType', 'Dry');
+    await page.selectOption('#meadType', 'Traditional');
+    await page.selectOption('#meadStyle', 'Dry');
     await page.fill('#meadSource', 'Lyme Bay Winery, Devon');
     await page.setInputFiles('#drinkPhotoInput', [
       { name: 'a.png', mimeType: 'image/png', buffer: makePng(1600, 1200, [160, 82, 45]) },
@@ -227,9 +228,10 @@ async function main() {
     await page.click('#addBtn');
     await page.waitForURL('**/rate.html?id=*');
     drinkId = Number(new URL(page.url()).searchParams.get('id'));
-    const { rows: [row] } = await db.query('SELECT name, category, type, image, trip_id FROM drinks WHERE id = $1', [drinkId]);
+    const { rows: [row] } = await db.query('SELECT name, category, type, style, image, trip_id FROM drinks WHERE id = $1', [drinkId]);
     assert.equal(row.category, 'mead');
-    assert.equal(row.type, 'Dry');
+    assert.equal(row.type, 'Traditional');
+    assert.equal(row.style, 'Dry', 'mead sweetness is its own field');
     assert.equal(row.trip_id, trip.id);
     assert.equal(JSON.parse(row.image).length, 2);
 
@@ -259,6 +261,24 @@ async function main() {
     const id = Number(new URL(page.url()).searchParams.get('id'));
     const { rows: [row] } = await db.query('SELECT type, style FROM drinks WHERE id = $1', [id]);
     assert.deepEqual(row, { type: 'Apple', style: 'Medium' });
+    await ctx.close();
+  });
+
+  await check('editing a drink keeps a type that is no longer in the list', async () => {
+    const { rows: [legacy] } = await db.query(
+      "INSERT INTO drinks (name, category, type, trip_id) VALUES ('Virgin Mojito', 'cocktail', 'Non-alcoholic', $1) RETURNING id",
+      [trip.id]
+    );
+    const ctx = await newContext({}, { user: daniel, trip });
+    const page = await ctx.newPage();
+    await page.goto(`${base}/edit-drink.html?id=${legacy.id}`);
+    await page.waitForSelector('#editForm', { state: 'visible' });
+    assert.equal(await page.inputValue('#cocktailType'), 'Non-alcoholic', 'shown, not blanked');
+    await page.fill('#drinkName', 'Virgin Mojito (tall)');
+    await page.click('#saveBtn');
+    await page.waitForURL(`**/rate.html?id=${legacy.id}`);
+    const { rows: [row] } = await db.query('SELECT name, type FROM drinks WHERE id = $1', [legacy.id]);
+    assert.deepEqual(row, { name: 'Virgin Mojito (tall)', type: 'Non-alcoholic' });
     await ctx.close();
   });
 

@@ -58,7 +58,7 @@
         </button>
         <button type="button" class="category-btn" id="catHotdrink" data-category="hotdrink" aria-pressed="false">
           <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
-          Hot Drink
+          Coffee &amp; Tea
         </button>
         <button type="button" class="category-btn" id="catSoftdrink" data-category="softdrink" aria-pressed="false">
           <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5" viewBox="0 0 24 24"><path d="M8 2h8l1 6H7L8 2z"/><path d="M7 8l-1 13h12L17 8"/><path d="M10 12h4"/></svg>
@@ -137,7 +137,6 @@
               <button type="button" class="style-tag" data-tag="Smooth">Smooth</button>
               <button type="button" class="style-tag" data-tag="Full-Bodied">Full-Bodied</button>
               <button type="button" class="style-tag" data-tag="Light">Light</button>
-              <button type="button" class="style-tag" data-tag="Sparkling">Sparkling</button>
               <button type="button" class="style-tag" data-tag="Earthy">Earthy</button>
               <button type="button" class="style-tag" data-tag="Mineral">Mineral</button>
             </div>
@@ -203,7 +202,7 @@
           <div class="form-group">
             <label class="form-label" for="spiritType">Spirit Type</label>
             <select class="form-select" id="spiritType">
-              <option value="">Select type…</option>
+              <option value="">Select spirit…</option>
               <option value="Vodka">Vodka</option>
               <option value="Gin">Gin</option>
               <option value="Rum">Rum</option>
@@ -211,7 +210,9 @@
               <option value="Whiskey">Whiskey</option>
               <option value="Brandy">Brandy</option>
               <option value="Ouzo">Ouzo</option>
+              <option value="Tsipouro">Tsipouro</option>
               <option value="Grappa">Grappa</option>
+              <option value="Liqueur">Liqueur</option>
               <option value="Other">Other</option>
             </select>
           </div>
@@ -236,10 +237,10 @@
             <label class="form-label" for="mocktailType">Type</label>
             <select class="form-select" id="mocktailType">
               <option value="">Select type…</option>
+              <option value="Virgin Classic">Virgin Classic</option>
               <option value="Fruit-based">Fruit-based</option>
               <option value="Herbal">Herbal</option>
               <option value="Sparkling">Sparkling</option>
-              <option value="Tropical">Tropical</option>
               <option value="Creamy">Creamy</option>
               <option value="Other">Other</option>
             </select>
@@ -251,7 +252,7 @@
               <button type="button" class="style-tag" data-tag="Sweet">Sweet</button>
               <button type="button" class="style-tag" data-tag="Sour">Sour</button>
               <button type="button" class="style-tag" data-tag="Fruity">Fruity</button>
-              <button type="button" class="style-tag" data-tag="Creamy">Creamy</button>
+              <button type="button" class="style-tag" data-tag="Tropical">Tropical</button>
             </div>
           </div>
         </div>
@@ -268,8 +269,8 @@
               <option value="Tequila-based">Tequila-based</option>
               <option value="Whiskey-based">Whiskey-based</option>
               <option value="Wine-based">Wine-based</option>
+              <option value="Liqueur-based">Liqueur-based</option>
               <option value="Mixed">Mixed</option>
-              <option value="Non-alcoholic">Non-alcoholic</option>
               <option value="Other">Other</option>
             </select>
           </div>
@@ -279,14 +280,13 @@
               <button type="button" class="style-tag" data-tag="Refreshing">Refreshing</button>
               <button type="button" class="style-tag" data-tag="Sweet">Sweet</button>
               <button type="button" class="style-tag" data-tag="Sour">Sour</button>
-              <button type="button" class="style-tag" data-tag="Sweet &amp; Tart">Sweet &amp; Tart</button>
               <button type="button" class="style-tag" data-tag="Bitter">Bitter</button>
+              <button type="button" class="style-tag" data-tag="Fruity">Fruity</button>
               <button type="button" class="style-tag" data-tag="Tropical">Tropical</button>
               <button type="button" class="style-tag" data-tag="Bubbly">Bubbly</button>
               <button type="button" class="style-tag" data-tag="Rich">Rich</button>
-              <button type="button" class="style-tag" data-tag="Fruity">Fruity</button>
-              <button type="button" class="style-tag" data-tag="Classic">Classic</button>
               <button type="button" class="style-tag" data-tag="Strong">Strong</button>
+              <button type="button" class="style-tag" data-tag="Classic">Classic</button>
             </div>
           </div>
           <div class="form-group">
@@ -295,7 +295,7 @@
           </div>
         </div>
 
-        <!-- Hot Drink fields -->
+        <!-- Coffee & Tea fields -->
         <div id="hotdrinkFields" hidden>
           <div class="form-group">
             <label class="form-label" for="hotdrinkType">Type</label>
@@ -303,13 +303,19 @@
               <option value="">Select type…</option>
               <optgroup label="Coffee">
                 <option value="Espresso">Espresso</option>
-                <option value="Latte">Latte</option>
-                <option value="Cappuccino">Cappuccino</option>
-                <option value="Flat White">Flat White</option>
                 <option value="Americano">Americano</option>
-                <option value="Cold Brew">Cold Brew</option>
-                <option value="Iced Coffee">Iced Coffee</option>
+                <option value="Cappuccino">Cappuccino</option>
+                <option value="Latte">Latte</option>
+                <option value="Flat White">Flat White</option>
                 <option value="Mocha">Mocha</option>
+                <option value="Greek Coffee">Greek Coffee</option>
+              </optgroup>
+              <optgroup label="Iced coffee">
+                <option value="Freddo Espresso">Freddo Espresso</option>
+                <option value="Freddo Cappuccino">Freddo Cappuccino</option>
+                <option value="Frappé">Frappé</option>
+                <option value="Iced Coffee">Iced Coffee</option>
+                <option value="Cold Brew">Cold Brew</option>
               </optgroup>
               <optgroup label="Tea">
                 <option value="Black Tea">Black Tea</option>
@@ -346,6 +352,7 @@
               <option value="">Select type…</option>
               <option value="Cola">Cola</option>
               <option value="Lemonade">Lemonade</option>
+              <option value="Fruit Soda">Fruit Soda</option>
               <option value="Juice">Juice</option>
               <option value="Energy Drink">Energy Drink</option>
               <option value="Sparkling Water">Sparkling Water</option>
@@ -366,20 +373,20 @@
             <select class="form-select" id="milkshakeType">
               <option value="">Select type…</option>
               <option value="Classic">Classic</option>
-              <option value="Smoothie">Smoothie</option>
               <option value="Thick Shake">Thick Shake</option>
-              <option value="Frappe">Frappe</option>
+              <option value="Smoothie">Smoothie</option>
               <option value="Other">Other</option>
             </select>
           </div>
           <div class="form-group">
             <label class="form-label">Flavour <span class="form-optional">(pick any)</span></label>
             <div class="style-tags" id="milkshakeStyle">
-              <button type="button" class="style-tag" data-tag="Fruity">Fruity</button>
               <button type="button" class="style-tag" data-tag="Chocolatey">Chocolatey</button>
               <button type="button" class="style-tag" data-tag="Vanilla">Vanilla</button>
+              <button type="button" class="style-tag" data-tag="Strawberry">Strawberry</button>
+              <button type="button" class="style-tag" data-tag="Caramel">Caramel</button>
+              <button type="button" class="style-tag" data-tag="Fruity">Fruity</button>
               <button type="button" class="style-tag" data-tag="Nutty">Nutty</button>
-              <button type="button" class="style-tag" data-tag="Creamy">Creamy</button>
             </div>
           </div>
         </div>
@@ -387,16 +394,23 @@
         <!-- Mead fields -->
         <div id="meadFields" hidden>
           <div class="form-group">
-            <label class="form-label" for="meadType">Style</label>
+            <label class="form-label" for="meadType">Type</label>
             <select class="form-select" id="meadType">
-              <option value="">Select style…</option>
+              <option value="">Select type…</option>
+              <option value="Traditional">Traditional</option>
+              <option value="Fruit">Fruit</option>
+              <option value="Spiced">Spiced</option>
+              <option value="Sparkling">Sparkling</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="meadStyle">Sweetness</label>
+            <select class="form-select" id="meadStyle">
+              <option value="">Select sweetness…</option>
               <option value="Dry">Dry</option>
               <option value="Semi-Sweet">Semi-Sweet</option>
               <option value="Sweet">Sweet</option>
-              <option value="Sparkling">Sparkling</option>
-              <option value="Fruit Mead">Fruit Mead (Melomel)</option>
-              <option value="Spiced Mead">Spiced Mead (Metheglin)</option>
-              <option value="Other">Other</option>
             </select>
           </div>
           <div class="form-group">

@@ -38,7 +38,7 @@ struct AddDrinkView: View {
                     }
 
                     if !category.styles.isEmpty {
-                        Picker("Style", selection: $style) {
+                        Picker(category.styleLabel, selection: $style) {
                             Text("Not sure").tag(String?.none)
                             ForEach(category.styles, id: \.self) { item in
                                 Text(item).tag(String?.some(item))

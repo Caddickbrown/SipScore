@@ -928,13 +928,14 @@ test('seeding can be locked with SEED_TOKEN', async (t) => {
   assert.ok(res);
 });
 
-test('cider sweetness moves out of the type column', async (t) => {
+test('cider and mead sweetness move out of the type column', async (t) => {
   const app = await freshApp();
   t.after(() => app.close());
   const f = await twoTripFixture(app);
 
   // How the old form stored it: sweetness in `type`.
   await app.client.query(`INSERT INTO drinks (name, category, type) VALUES ('Old Rosie', 'cider', 'Medium Dry'), ('Pinky', 'cider', 'Rosé')`);
+  await app.client.query(`INSERT INTO drinks (name, category, type) VALUES ('Honeybee', 'mead', 'Semi-Sweet'), ('Cherry Mead', 'mead', 'Fruit Mead'), ('Bubbles', 'mead', 'Sparkling')`);
   delete require.cache[require.resolve('../lib/db')];
   await require('../lib/db').ensureSchema();
 
@@ -942,6 +943,13 @@ test('cider sweetness moves out of the type column', async (t) => {
   assert.deepEqual(rows, [
     { name: 'Old Rosie', type: null, style: 'Medium Dry' },
     { name: 'Pinky', type: 'Rosé', style: null },
+  ]);
+
+  const { rows: meads } = await app.client.query(`SELECT name, type, style FROM drinks WHERE category = 'mead' ORDER BY name`);
+  assert.deepEqual(meads, [
+    { name: 'Bubbles', type: 'Sparkling', style: null },
+    { name: 'Cherry Mead', type: 'Fruit', style: null },
+    { name: 'Honeybee', type: null, style: 'Semi-Sweet' },
   ]);
 
   const added = await call(app.drinks, 'POST', {

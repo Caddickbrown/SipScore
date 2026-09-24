@@ -10,17 +10,19 @@ let autoWidened = false;     // only ever bounce an empty trip to the full list 
 let searchTimer;
 let requestSeq = 0;          // only the newest search may render (responses can arrive out of order)
 
+// Must match the Type options on the Add/Edit Drink forms (and the iOS app);
+// tests/lists.test.js fails if they drift apart.
 const CATEGORY_TYPES = {
-  wine:     ['White', 'Rosé', 'Red', 'Sparkling', 'Dessert and Fortified'],
-  cocktail: ['Rum-based', 'Vodka-based', 'Gin-based', 'Tequila-based', 'Whiskey-based', 'Wine-based', 'Mixed'],
-  beer:     ['Lager', 'Ale', 'Stout', 'IPA', 'Wheat Beer', 'Pilsner', 'Porter'],
-  cider:    ['Apple', 'Pear (Perry)', 'Fruit', 'Rosé'],
-  spirit:   ['Vodka', 'Gin', 'Rum', 'Tequila', 'Whiskey', 'Brandy', 'Ouzo', 'Grappa'],
-  mocktail:  ['Fruit-based', 'Herbal', 'Sparkling', 'Tropical', 'Creamy'],
-  hotdrink:  ['Espresso', 'Latte', 'Cappuccino', 'Flat White', 'Americano', 'Cold Brew', 'Iced Coffee', 'Black Tea', 'Green Tea', 'Herbal Tea', 'Chai', 'Hot Chocolate', 'Mocha'],
-  softdrink: ['Cola', 'Lemonade', 'Juice', 'Energy Drink', 'Sparkling Water', 'Iced Tea'],
-  milkshake: ['Classic', 'Smoothie', 'Thick Shake', 'Frappe'],
-  mead:      ['Dry', 'Semi-Sweet', 'Sweet', 'Sparkling', 'Fruit Mead', 'Spiced Mead'],
+  wine:      ['White', 'Rosé', 'Red', 'Sparkling', 'Dessert and Fortified'],
+  cocktail:  ['Rum-based', 'Vodka-based', 'Gin-based', 'Tequila-based', 'Whiskey-based', 'Wine-based', 'Liqueur-based', 'Mixed', 'Other'],
+  beer:      ['Lager', 'Ale', 'IPA', 'Stout', 'Wheat Beer', 'Pilsner', 'Porter', 'Other'],
+  cider:     ['Apple', 'Pear (Perry)', 'Fruit', 'Rosé'],
+  spirit:    ['Vodka', 'Gin', 'Rum', 'Tequila', 'Whiskey', 'Brandy', 'Ouzo', 'Tsipouro', 'Grappa', 'Liqueur', 'Other'],
+  mocktail:  ['Virgin Classic', 'Fruit-based', 'Herbal', 'Sparkling', 'Creamy', 'Other'],
+  hotdrink:  ['Espresso', 'Americano', 'Cappuccino', 'Latte', 'Flat White', 'Mocha', 'Greek Coffee', 'Freddo Espresso', 'Freddo Cappuccino', 'Frappé', 'Iced Coffee', 'Cold Brew', 'Black Tea', 'Green Tea', 'Herbal Tea', 'Chai', 'Hot Chocolate', 'Other'],
+  softdrink: ['Cola', 'Lemonade', 'Fruit Soda', 'Juice', 'Energy Drink', 'Sparkling Water', 'Iced Tea', 'Other'],
+  milkshake: ['Classic', 'Thick Shake', 'Smoothie', 'Other'],
+  mead:      ['Traditional', 'Fruit', 'Spiced', 'Sparkling', 'Other'],
   other:     [],
 };
 
@@ -104,7 +106,7 @@ function renderTypeChips() {
   }
 
   const types = CATEGORY_TYPES[currentCategory] || [];
-  const labels = { wine: 'All Wines', cocktail: 'All Cocktails', beer: 'All Beers', cider: 'All Ciders', spirit: 'All Spirits', mocktail: 'All Mocktails', hotdrink: 'All Hot Drinks', softdrink: 'All Soft Drinks', milkshake: 'All Milkshakes', mead: 'All Meads', other: 'All Others' };
+  const labels = { wine: 'All Wines', cocktail: 'All Cocktails', beer: 'All Beers', cider: 'All Ciders', spirit: 'All Spirits', mocktail: 'All Mocktails', hotdrink: 'All Coffee & Tea', softdrink: 'All Soft Drinks', milkshake: 'All Milkshakes', mead: 'All Meads', other: 'All Others' };
   const allLabel = labels[currentCategory] || 'All';
 
   const chips = [
