@@ -172,17 +172,17 @@ function renderMyStars(stars) {
 // ---- Category / badge helpers ----
 
 const CATEGORY_META = {
-  wine:     { badge: null,              accent: null,            label: 'Wine' },
-  cocktail: { badge: 'badge-cocktail',  accent: 'accent-cocktail', label: 'Cocktail' },
-  beer:     { badge: 'badge-beer',      accent: 'accent-beer',   label: 'Beer' },
-  cider:    { badge: 'badge-cider',     accent: 'accent-cider',  label: 'Cider' },
-  spirit:   { badge: 'badge-spirit',    accent: 'accent-spirit', label: 'Spirit' },
-  mocktail:  { badge: 'badge-mocktail',  accent: 'accent-mocktail',  label: 'Mocktail' },
-  hotdrink:  { badge: 'badge-hotdrink',  accent: 'accent-hotdrink',  label: 'Hot Drink' },
-  softdrink: { badge: 'badge-softdrink', accent: 'accent-softdrink', label: 'Soft Drink' },
-  milkshake: { badge: 'badge-milkshake', accent: 'accent-milkshake', label: 'Milkshake' },
-  mead:      { badge: 'badge-mead',      accent: 'accent-mead',      label: 'Mead' },
-  other:     { badge: 'badge-other',     accent: 'accent-other',     label: 'Other' },
+  wine:     { badge: null,            label: 'Wine' },
+  cocktail: { badge: 'badge-cocktail', label: 'Cocktail' },
+  beer:     { badge: 'badge-beer',   label: 'Beer' },
+  cider:    { badge: 'badge-cider',  label: 'Cider' },
+  spirit:   { badge: 'badge-spirit', label: 'Spirit' },
+  mocktail:  { badge: 'badge-mocktail',  label: 'Mocktail' },
+  hotdrink:  { badge: 'badge-hotdrink',  label: 'Hot Drink' },
+  softdrink: { badge: 'badge-softdrink', label: 'Soft Drink' },
+  milkshake: { badge: 'badge-milkshake', label: 'Milkshake' },
+  mead:      { badge: 'badge-mead',      label: 'Mead' },
+  other:     { badge: 'badge-other',     label: 'Other' },
 };
 
 function badgeClass(category, type) {
@@ -195,14 +195,19 @@ function badgeClass(category, type) {
   return `badge-${key}`;
 }
 
-function accentClass(category, type) {
-  const meta = CATEGORY_META[category];
-  if (!meta) return 'accent-white';
-  if (meta.accent) return meta.accent;
-  // Wine: derive from type
-  if (!type) return 'accent-white';
-  const key = type.toLowerCase().split(' ')[0];
-  return `accent-${key}`;
+// Category tile: the drink's initials on its category tint (same tint as its badge).
+function drinkInitials(name) {
+  const words = (name || '').trim().split(/\s+/).filter(Boolean);
+  if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+  return (words[0] || '?').slice(0, 2).replace(/^./, c => c.toUpperCase());
+}
+
+function drinkTile(drink) {
+  const el = document.createElement('div');
+  el.className = 'drink-tile ' + badgeClass(drink.category, drink.type);
+  el.setAttribute('aria-hidden', 'true');
+  el.textContent = drinkInitials(drink.name);
+  return el;
 }
 
 function badgeLabel(category, type) {
@@ -228,8 +233,22 @@ function avatarInitials(name) {
   return name.slice(0, 2).toUpperCase();
 }
 
+// White or navy initials, whichever reads better on this avatar colour.
+function avatarInk(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+  if (!m) return '#ffffff';
+  const n = parseInt(m[1], 16);
+  const [r, g, b] = [n >> 16 & 255, n >> 8 & 255, n & 255].map(v => {
+    v /= 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  });
+  const L = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return (L + 0.05) / 0.07 > 1.05 / (L + 0.05) ? '#1a2744' : '#ffffff';
+}
+
 function applyAvatarToEl(el, user) {
   if (user.avatar_image) {
+    el.style.color = '';
     el.style.background = '';
     el.style.backgroundImage = `url(${user.avatar_image})`;
     el.style.backgroundSize = 'cover';
@@ -238,6 +257,7 @@ function applyAvatarToEl(el, user) {
   } else {
     el.style.backgroundImage = '';
     el.style.background = user.avatar_colour || '#c9a96e';
+    el.style.color = avatarInk(user.avatar_colour || '#c9a96e');
     el.textContent = avatarInitials(user.name);
   }
 }
@@ -664,7 +684,7 @@ window.App = {
   renderStars,
   renderMyStars,
   badgeClass,
-  accentClass,
+  drinkTile,
   badgeLabel,
   drinkMeta,
   avatarInitials,

@@ -97,13 +97,78 @@ function renderLeaderboard(items) {
     return;
   }
 
-  items.forEach((item, i) => list.appendChild(leaderboardItem(item, i + 1)));
+  // Top three get the podium (visual order 2-1-3); everything else is a list.
+  let rest = items;
+  if (items.length >= 3) {
+    const podium = document.createElement('div');
+    podium.className = 'podium';
+    [1, 0, 2].forEach(i => podium.appendChild(podiumItem(items[i], i + 1)));
+    list.appendChild(podium);
+    rest = items.slice(3);
+  }
+  rest.forEach((item, i) => list.appendChild(leaderboardItem(item, items.length - rest.length + i + 1)));
+}
+
+function rateHref(item) {
+  return '/rate.html?id=' + item.id + '&from=leaderboard-' + currentTab;
+}
+
+// Score as shown for the current tab, shared by the podium and the list.
+function scoreFor(item) {
+  const isPersonal = currentTab === 'personal';
+  const isConsensus = currentTab === 'consensus';
+  const rawScore = isPersonal ? parseInt(item.my_stars) : isConsensus ? parseFloat(item.consensus_score) : parseFloat(item.avg_stars);
+  const score = isPersonal ? rawScore : parseFloat(rawScore.toFixed(isConsensus ? 2 : 1));
+  const displayScore = isPersonal ? rawScore.toString() : score.toFixed(isConsensus ? 2 : 1);
+  const count = parseInt(item.rating_count);
+  return { isPersonal, isConsensus, score, displayScore, count };
+}
+
+function podiumItem(item, place) {
+  const a = document.createElement('a');
+  a.className = 'podium-item place-' + place;
+  a.href = rateHref(item);
+
+  const head = document.createElement('div');
+  head.className = 'podium-head';
+  const nameEl = document.createElement('div');
+  nameEl.className = 'podium-name';
+  nameEl.textContent = item.name;
+  const metaEl = document.createElement('div');
+  metaEl.className = 'podium-meta';
+  metaEl.textContent = App.badgeLabel(item.category, item.type);
+  head.appendChild(nameEl);
+  head.appendChild(metaEl);
+
+  const { displayScore, count } = scoreFor(item);
+  const block = document.createElement('div');
+  block.className = 'podium-block';
+  const placeEl = document.createElement('div');
+  placeEl.className = 'podium-place';
+  placeEl.textContent = place;
+  const scoreEl = document.createElement('div');
+  scoreEl.className = 'podium-score';
+  scoreEl.textContent = displayScore + ' ';
+  const star = document.createElement('span');
+  star.className = 'star-icon';
+  star.innerHTML = '&#9733;';
+  scoreEl.appendChild(star);
+  const countEl = document.createElement('div');
+  countEl.className = 'podium-count';
+  countEl.textContent = count + ' rating' + (count !== 1 ? 's' : '');
+  block.appendChild(placeEl);
+  block.appendChild(scoreEl);
+  block.appendChild(countEl);
+
+  a.appendChild(head);
+  a.appendChild(block);
+  return a;
 }
 
 function leaderboardItem(item, rank) {
   const a = document.createElement('a');
   a.className = 'leaderboard-item';
-  a.href = '/rate.html?id=' + item.id + '&from=leaderboard-' + currentTab;
+  a.href = rateHref(item);
 
   // Rank badge
   const rankBadge = document.createElement('div');
@@ -134,12 +199,7 @@ function leaderboardItem(item, rank) {
   const ratingWrap = document.createElement('div');
   ratingWrap.className = 'leaderboard-rating';
 
-  const isPersonal = currentTab === 'personal';
-  const isConsensus = currentTab === 'consensus';
-  const rawScore = isPersonal ? parseInt(item.my_stars) : isConsensus ? parseFloat(item.consensus_score) : parseFloat(item.avg_stars);
-  const score = isPersonal ? rawScore : parseFloat(rawScore.toFixed(isConsensus ? 2 : 1));
-  const displayScore = isPersonal ? rawScore.toString() : score.toFixed(isConsensus ? 2 : 1);
-  const count = parseInt(item.rating_count);
+  const { isConsensus, score, displayScore, count } = scoreFor(item);
 
   const scoreEl = document.createElement('div');
   scoreEl.className = 'lb-score';

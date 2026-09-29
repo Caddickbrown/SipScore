@@ -190,8 +190,7 @@ function drinkCard(d) {
   a.className = 'drink-card';
   a.href = '/rate.html?id=' + d.id;
 
-  const accent = document.createElement('div');
-  accent.className = 'drink-card-accent ' + App.accentClass(d.category, d.type);
+  const accent = App.drinkTile(d);
 
   const body = document.createElement('div');
   body.className = 'drink-card-body';

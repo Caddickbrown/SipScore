@@ -118,9 +118,8 @@ function reviewCard(item) {
   a.className = 'review-card';
   a.href = '/rate.html?id=' + item.id;
 
-  // Accent bar
-  const accent = document.createElement('div');
-  accent.className = 'drink-card-accent ' + App.accentClass(item.category, item.type);
+  // Category tile
+  const accent = App.drinkTile(item);
 
   // Body
   const body = document.createElement('div');
