@@ -198,86 +198,51 @@ function drinkCard(d) {
   a.className = 'drink-card';
   a.href = '/rate.html?id=' + d.id;
 
-  const accent = document.createElement('div');
-  accent.className = 'drink-card-accent ' + App.accentClass(d.category, d.type);
-
   const body = document.createElement('div');
   body.className = 'drink-card-body';
-
-  // Top row: name + badge
-  const top = document.createElement('div');
-  top.className = 'drink-card-top';
 
   const nameEl = document.createElement('div');
   nameEl.className = 'drink-name';
   nameEl.textContent = d.name;
 
-  const badge = document.createElement('span');
-  badge.className = 'drink-badge ' + App.badgeClass(d.category, d.type);
-  badge.textContent = App.badgeLabel(d.category, d.type);
-
-  top.appendChild(nameEl);
-  top.appendChild(badge);
-
-  // Meta
+  // Meta: a colour dot, the category (or wine type), then the details
   const meta = document.createElement('div');
   meta.className = 'drink-meta';
-  meta.textContent = App.drinkMeta(d);
+  const dot = document.createElement('span');
+  dot.className = 'drink-dot ' + App.accentClass(d.category, d.type);
+  dot.setAttribute('aria-hidden', 'true');
+  const details = App.drinkMeta(d);
+  const label = document.createElement('span');
+  label.textContent = App.badgeLabel(d.category, d.type) + (details ? ' \u2022 ' + details : '');
+  meta.append(dot, label);
 
-  // Ratings row
-  const ratingsRow = document.createElement('div');
-  ratingsRow.className = 'drink-ratings-row';
+  body.append(nameEl, meta);
 
+  // Score column: the group average, then your own rating (or the count)
   const avg = parseFloat(d.avg_stars) || 0;
   const count = parseInt(d.rating_count) || 0;
 
-  const communityWrap = document.createElement('div');
-  communityWrap.className = 'community-stars';
+  const scoreCol = document.createElement('div');
+  scoreCol.className = 'drink-score-col';
 
-  if (count > 0) {
-    const starsSpan = document.createElement('span');
-    starsSpan.className = 'stars-display';
-    safeHTML(starsSpan, App.renderStars(avg));
-
-    const avgSpan = document.createElement('span');
-    avgSpan.className = 'rating-avg';
-    avgSpan.textContent = avg.toFixed(1);
-
-    const countSpan = document.createElement('span');
-    countSpan.className = 'rating-count';
-    countSpan.textContent = '(' + count + ')';
-
-    communityWrap.appendChild(starsSpan);
-    communityWrap.appendChild(avgSpan);
-    communityWrap.appendChild(countSpan);
-  } else {
-    const noRating = document.createElement('span');
-    noRating.className = 'rating-count';
-    noRating.textContent = 'No ratings yet';
-    communityWrap.appendChild(noRating);
-  }
-
-  ratingsRow.appendChild(communityWrap);
+  const scoreEl = document.createElement('div');
+  scoreEl.className = 'drink-score';
+  scoreEl.textContent = count > 0 ? avg.toFixed(1) : '\u2013';
+  scoreCol.appendChild(scoreEl);
 
   const myStars = parseInt(d.my_stars);
+  const sub = document.createElement('div');
+  sub.className = 'drink-score-sub';
   if (myStars) {
-    const myBadge = document.createElement('div');
-    myBadge.className = 'my-rating-badge';
-    myBadge.innerHTML = '<span class="star-icon">&#9733;</span> You: ' + Number(myStars);
-    ratingsRow.appendChild(myBadge);
+    sub.className += ' my-rating-badge';
+    sub.textContent = 'You \u2605 ' + Number(myStars);
+  } else {
+    sub.className += ' rating-count';
+    sub.textContent = count > 0 ? count + ' rating' + (count !== 1 ? 's' : '') : 'No ratings yet';
   }
+  scoreCol.appendChild(sub);
 
-  body.appendChild(top);
-  body.appendChild(meta);
-  body.appendChild(ratingsRow);
-
-  const arrow = document.createElement('div');
-  arrow.className = 'drink-card-arrow';
-  arrow.textContent = '›';
-
-  a.appendChild(accent);
-  a.appendChild(body);
-  a.appendChild(arrow);
+  a.append(body, scoreCol);
 
   // Optional thumbnail (the API sends just the first photo)
   const [thumbSrc] = App.parsePhotos(d.image);

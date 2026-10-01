@@ -3,23 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-  <meta name="theme-color" content="#1a2744">
+  <meta name="theme-color" content="#faf8f3">
   <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg">
   <link rel="apple-touch-icon" href="/icons/favicon.svg">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="SipScore">
   <title>SipScore</title>
   <script src="/js/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body class="no-nav">
 
   <div class="login-page">
     <div class="login-hero">
-      <div class="login-logo">SipScore</div>
-      <div class="login-tagline">Your holiday drinks companion</div>
+      <div class="login-logo">Sip<span>Score</span></div>
+      <h1 class="login-headline">Rate the holiday, <em>one glass</em> at a time.</h1>
+      <p class="login-tagline">Score every wine and cocktail, build your top list, and see what the whole trip loves most.</p>
     </div>
 
     <div class="login-card">
@@ -64,8 +68,8 @@
   <div class="modal-overlay" id="newProfileModal">
     <div class="modal-sheet">
       <div class="modal-handle"></div>
-      <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--navy);margin-bottom:10px;">New profile?</h3>
-      <p style="font-size:0.9rem;color:var(--slate);margin-bottom:22px;font-weight:300;" id="newProfileMsg"></p>
+      <h3 style="font-family:'Fraunces',Georgia,serif;font-size:1.3rem;color:var(--text);margin-bottom:10px;">New profile?</h3>
+      <p style="font-size:0.9rem;color:var(--slate);margin-bottom:22px;font-weight:400;" id="newProfileMsg"></p>
       <div class="modal-actions">
         <button class="btn btn-gold btn-full" id="confirmYesBtn">Yes, create my profile</button>
         <button class="btn btn-outline btn-full" onclick="closeNewProfileModal()">No, try a different name</button>

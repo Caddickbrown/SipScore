@@ -4,8 +4,8 @@
   "description": "Your holiday drinks companion",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1a2744",
-  "theme_color": "#1a2744",
+  "background_color": "#faf8f3",
+  "theme_color": "#faf8f3",
   "icons": [
     {
       "src": "/icons/favicon.svg",

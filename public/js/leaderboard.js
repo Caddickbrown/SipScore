@@ -108,7 +108,7 @@ function renderLeaderboard(items) {
 
 function leaderboardItem(item, rank) {
   const a = document.createElement('a');
-  a.className = 'leaderboard-item';
+  a.className = 'leaderboard-item' + (rank <= 3 ? ' lb-top-' + rank : '');
   a.href = '/rate.html?id=' + encodeURIComponent(item.id) + '&from=leaderboard-' + currentTab;
 
   // Rank badge

@@ -16,9 +16,6 @@ function reviewCard(item) {
   a.className = 'review-card';
   a.href = '/rate.html?id=' + encodeURIComponent(item.id);
 
-  const accent = document.createElement('div');
-  accent.className = 'drink-card-accent ' + App.accentClass(item.category, item.type);
-
   const body = document.createElement('div');
   body.className = 'review-card-body';
 
@@ -55,7 +52,7 @@ function reviewCard(item) {
   date.textContent = formatReviewDate(item.updated_at);
   body.appendChild(date);
 
-  a.append(accent, body);
+  a.append(body);
   return a;
 }
 

@@ -282,9 +282,23 @@ function avatarInitials(name) {
   return clean.slice(0, 2).toUpperCase();
 }
 
+// White or navy initials, whichever reads better on this avatar colour.
+function avatarInk(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+  if (!m) return '#ffffff';
+  const n = parseInt(m[1], 16);
+  const [r, g, b] = [n >> 16 & 255, n >> 8 & 255, n & 255].map(v => {
+    v /= 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  });
+  const L = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return (L + 0.05) / 0.07 > 1.05 / (L + 0.05) ? '#1a2744' : '#ffffff';
+}
+
 function applyAvatarToEl(el, user) {
   const [avatar] = parsePhotos(user.avatar_image);
   if (avatar) {
+    el.style.color = '';
     el.style.background = '';
     el.style.backgroundImage = `url("${avatar}")`;
     el.style.backgroundSize = 'cover';
@@ -293,6 +307,7 @@ function applyAvatarToEl(el, user) {
   } else {
     el.style.backgroundImage = '';
     el.style.background = user.avatar_colour || '#c9a96e';
+    el.style.color = avatarInk(user.avatar_colour || '#c9a96e');
     el.textContent = avatarInitials(user.name);
   }
 }

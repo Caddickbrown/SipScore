@@ -8,7 +8,7 @@
    ============================================= */
 (function () {
   var KEY = 'sipscore-theme';
-  var COLOURS = { light: '#1a2744', dark: '#0f1929' };
+  var COLOURS = { light: '#faf8f3', dark: '#0f1929' };
   var media = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
   function stored() {
