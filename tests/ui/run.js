@@ -296,6 +296,47 @@ async function main() {
   });
 
   /* ---------- Edit Drink (the Save button used to throw) ---------- */
+  await check('rate page shows the rating distribution and counts match', async () => {
+    const ctx = await newContext({}, { user: daniel, trip });
+    const page = await ctx.newPage();
+    await page.goto(`${base}/rate.html?id=${drinkId}`);
+    await page.waitForSelector('#ratingDist');
+    const rows = await page.$$eval('#ratingDist .rating-dist-row', els => els.map(e => ({
+      label: e.querySelector('.rating-dist-label').textContent,
+      count: Number(e.querySelector('.rating-dist-count').textContent),
+      aria: e.getAttribute('aria-label'),
+    })));
+    assert.deepEqual(rows.map(r => r.label), ['5', '4', '3', '2', '1']);
+    const { rows: [{ n }] } = await db.query('SELECT COUNT(*)::int AS n FROM ratings WHERE drink_id = $1', [drinkId]);
+    assert.equal(rows.reduce((sum, r) => sum + r.count, 0), n, 'bars account for every rating');
+    const fours = (await db.query('SELECT COUNT(*)::int AS n FROM ratings WHERE drink_id = $1 AND stars = 4', [drinkId])).rows[0].n;
+    assert.equal(rows.find(r => r.label === '4').count, fours);
+    assert.match(rows[0].aria, /^5 stars: \d+ rating/);
+    await ctx.close();
+  });
+
+  await check('desktop Drinks has a side panel (top 3, progress, invite code); phones do not', async () => {
+    const ctx = await newContext({ ...DESKTOP }, { user: daniel, trip });
+    const page = await ctx.newPage();
+    await page.goto(`${base}/drinks.html`);
+    await page.waitForSelector('#sideProgress .side-progress-num');
+    assert.ok(await page.isVisible('#sidePanel'));
+    assert.ok((await page.$$('#sideTop .side-top-row')).length >= 1, 'top list has rows');
+    const rated = Number(await page.textContent('#sideProgress .side-progress-num'));
+    const { rows: [{ n }] } = await db.query(
+      'SELECT COUNT(DISTINCT r.drink_id)::int AS n FROM ratings r WHERE r.user_id = $1 AND r.trip_id = $2', [daniel.id, trip.id]);
+    assert.equal(rated, n, 'progress matches the database');
+    assert.equal((await page.textContent('#sideCode')).trim(), trip.invite_code);
+    await ctx.close();
+
+    const phone = await newContext({ ...PHONE }, { user: daniel, trip });
+    const p2 = await phone.newPage();
+    await p2.goto(`${base}/drinks.html`);
+    await p2.waitForSelector('.drink-card');
+    assert.equal(await p2.isVisible('#sidePanel'), false);
+    await phone.close();
+  });
+
   await check('edit a drink: rename, tag, drop a photo, and Save actually saves', async () => {
     const ctx = await newContext({}, { user: daniel, trip });
     const page = await ctx.newPage();

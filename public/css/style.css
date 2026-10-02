@@ -920,9 +920,49 @@ button {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding-bottom: 14px;
-  margin-bottom: 12px;
+  padding-bottom: 16px;
+}
+
+/* Rating distribution: thin bars, one per star count */
+.rating-dist {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding-bottom: 16px;
+  margin-bottom: 4px;
   border-bottom: 1px solid var(--border);
+}
+
+.rating-dist-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.78rem;
+  color: var(--slate);
+}
+
+.rating-dist-label {
+  width: 12px;
+  text-align: right;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.rating-dist-track {
+  flex: 1;
+  height: 4px;
+  background: var(--border);
+}
+
+.rating-dist-fill {
+  display: block;
+  height: 4px;
+  background: var(--gold);
+}
+
+.rating-dist-count {
+  width: 18px;
+  text-align: right;
 }
 
 .avg-big-number {
@@ -3534,3 +3574,115 @@ input, select, textarea {
 .feed-reply-status { color: var(--slate); font-size: 0.82rem; }
 .feed-reply-error  { color: var(--error-red); }
 .feed-load-more    { margin: 12px 16px 24px; width: calc(100% - 32px); }
+
+/* =============================================
+   DESKTOP SIDE PANEL  (Drinks, ≥ 1200px)
+   ---------------------------------------------
+   Group top 3, your progress, invite code. Plain text between hairlines.
+   ============================================= */
+.side-panel { display: none; }
+
+@media (min-width: 1200px) {
+  body.has-side-panel { padding-right: 340px; }
+
+  .side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 34px;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 340px;
+    padding: 40px 40px 28px 36px;
+    border-left: 1px solid var(--border);
+    background: var(--ivory);
+    overflow-y: auto;
+    z-index: 50;
+  }
+
+  .side-section { display: flex; flex-direction: column; gap: 12px; }
+  .side-rule { width: 36px; height: 3px; background: var(--gold); }
+  .side-head { display: flex; align-items: baseline; justify-content: space-between; }
+
+  .side-title {
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--slate);
+  }
+
+  .side-link { font-size: 0.82rem; font-weight: 700; color: var(--gold-text); text-decoration: none; }
+  .side-link:hover { text-decoration: underline; }
+
+  .side-top { display: flex; flex-direction: column; }
+  .side-top-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+    color: var(--text);
+    text-decoration: none;
+  }
+  .side-top-row:hover .side-top-name { color: var(--gold-text); }
+  .side-top-rank {
+    width: 30px;
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    line-height: 0.9;
+    color: var(--gold-dark);
+  }
+  .side-top-1 .side-top-rank { font-size: 2.4rem; }
+  .side-top-2 .side-top-rank { font-size: 1.9rem; }
+  .side-top-3 .side-top-rank { font-size: 1.6rem; }
+  .side-top-name { flex: 1; min-width: 0; font-weight: 700; line-height: 1.2; transition: color 0.15s; }
+  .side-top-1 .side-top-name { font-size: 1.05rem; }
+  .side-top-score { font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-size: 1.4rem; }
+
+  #sideProgress { display: flex; flex-direction: column; gap: 12px; }
+  .side-progress-line { display: flex; align-items: baseline; gap: 8px; }
+  .side-progress-num {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 3.2rem;
+    font-weight: 600;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    color: var(--text);
+  }
+  .side-progress-of { font-size: 0.92rem; color: var(--slate); }
+  .side-progress-track { height: 3px; background: var(--border); }
+  .side-progress-fill { height: 3px; background: var(--gold); }
+  .side-note, .side-empty { font-size: 0.88rem; color: var(--slate); line-height: 1.45; }
+
+  .side-code {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid var(--text);
+  }
+  .side-code[hidden] { display: none; }
+  .side-code-value {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 1.9rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    color: var(--code-text);
+    user-select: all;
+  }
+  .side-copy {
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--gold-text);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .side-copy:hover { text-decoration: underline; }
+}

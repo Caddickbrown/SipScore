@@ -176,6 +176,46 @@ function renderCommunity(drink, ratings) {
   avgRow.appendChild(bigNum);
   avgRow.appendChild(details);
 
+  // Distribution: how many people gave each star count
+  const oldDist = document.getElementById('ratingDist');
+  if (oldDist) oldDist.remove();
+  const counts = [0, 0, 0, 0, 0, 0];
+  ratings.forEach(r => {
+    const s = parseInt(r.stars, 10);
+    if (s >= 1 && s <= 5) counts[s] += 1;
+  });
+  const total = counts.reduce((a, b) => a + b, 0);
+  if (total > 0) {
+    const dist = document.createElement('div');
+    dist.id = 'ratingDist';
+    dist.className = 'rating-dist';
+    for (let s = 5; s >= 1; s--) {
+      const row = document.createElement('div');
+      row.className = 'rating-dist-row';
+      row.setAttribute('role', 'img');
+      row.setAttribute('aria-label', `${s} star${s !== 1 ? 's' : ''}: ${counts[s]} rating${counts[s] !== 1 ? 's' : ''}`);
+
+      const label = document.createElement('span');
+      label.className = 'rating-dist-label';
+      label.textContent = s;
+
+      const track = document.createElement('span');
+      track.className = 'rating-dist-track';
+      const fill = document.createElement('span');
+      fill.className = 'rating-dist-fill';
+      fill.style.width = (counts[s] / total * 100) + '%';
+      track.appendChild(fill);
+
+      const num = document.createElement('span');
+      num.className = 'rating-dist-count';
+      num.textContent = counts[s];
+
+      row.append(label, track, num);
+      dist.appendChild(row);
+    }
+    avgRow.insertAdjacentElement('afterend', dist);
+  }
+
   // Individual ratings
   ratingsEl.innerHTML = '';
   ratings.forEach(r => {
