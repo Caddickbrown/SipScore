@@ -7,6 +7,7 @@ struct DrinkDetailView: View {
     let drinkName: String
 
     @Environment(SessionStore.self) private var session
+    @Environment(\.horizontalSizeClass) private var hSize
 
     @State private var drink: Drink?
     @State private var ratings: [Rating] = []
@@ -17,10 +18,13 @@ struct DrinkDetailView: View {
     @State private var isSaving = false
     @State private var errorMessage: String?
     @State private var confirmDelete = false
+    /// Decoded once per load, not on every redraw.
+    @State private var photo: UIImage?
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
+                if let photo { photoView(photo) }
                 hero
                 ratingCard
 
@@ -47,6 +51,34 @@ struct DrinkDetailView: View {
     }
 
     // MARK: Sections
+
+    /// A narrow column crops the photo into a short banner. A wide pane has
+    /// the room to fit the whole thing, so a tall bottle isn't cut to its label.
+    @ViewBuilder
+    private func photoView(_ image: UIImage) -> some View {
+        let shape = RoundedRectangle(cornerRadius: 14, style: .continuous)
+        if hSize == .regular {
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+                .clipShape(shape)
+                .frame(maxWidth: .infinity, maxHeight: 380)
+                .padding(.top, 12)
+                .accessibilityHidden(true)
+        } else {
+            Color.clear
+                .frame(height: 220)
+                .frame(maxWidth: .infinity)
+                .overlay {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                }
+                .clipShape(shape)
+                .padding(.top, 12)
+                .accessibilityHidden(true)
+        }
+    }
 
     private var hero: some View {
         VStack(alignment: .leading, spacing: 7) {
@@ -182,6 +214,7 @@ struct DrinkDetailView: View {
         do {
             let response = try await APIClient.shared.drink(id: drinkId, userId: user.id, tripId: trip.id)
             drink = response.drink
+            photo = response.drink?.firstPhotoDataURL.flatMap(AvatarImageCache.image(for:))
             ratings = response.ratings ?? []
             myRating = response.myRating
             if let mine = response.myRating {

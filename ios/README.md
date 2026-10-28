@@ -44,7 +44,10 @@ On iPad (regular width) the tab bar becomes a white sidebar with a gold
 selection, **+ Add drink**, and the active trip with its members at the foot.
 It folds to a 52pt strip (toggle and +) with the `sidebar.left` button or ⌃⌘S,
 and the choice is remembered. With 700pt or more beside it, Rankings shows the
-chosen drink's detail beside the board instead of pushing it.
+chosen drink's detail beside the board instead of pushing it. A drink's first
+photo heads its detail: cropped to a banner at compact width, fitted whole at
+regular width. See [`../docs/iphone-duo.md`](../docs/iphone-duo.md) for the
+foldable.
 
 ## How it's laid out
 
