@@ -156,6 +156,18 @@ struct Drink: Codable, Identifiable, Hashable, Sendable {
     @Lenient var consensusScore: Double?
     var notes: String?
     var tripName: String?
+    /// Photos, as one data URL or a JSON array of them. Only the drink detail
+    /// endpoint sends it; lists leave it out to stay small.
+    var image: String?
+
+    /// The first photo's data URL, whichever shape `image` came in.
+    var firstPhotoDataURL: String? {
+        guard let image, !image.isEmpty else { return nil }
+        if image.hasPrefix("[") {
+            return (try? JSONDecoder().decode([String].self, from: Data(image.utf8)))?.first
+        }
+        return image
+    }
 
     var meta: String {
         [varietal, style, source]
