@@ -81,6 +81,10 @@ struct DrinksView: View {
             await load()
         }
         .onChange(of: search) { _, _ in debouncedLoad() }
+        // A drink added from the iPad sidebar's "+" rather than this screen's.
+        .onReceive(NotificationCenter.default.publisher(for: .sipScoreDrinkAdded)) { _ in
+            Task { await load() }
+        }
         .onChange(of: scope) { _, _ in
             hasAutoWidened = true    // an explicit choice sticks
             Task { await load() }

@@ -6,6 +6,11 @@ import SwiftUI
 struct LeaderboardView: View {
     @Environment(SessionStore.self) private var session
 
+    /// Beside a drink's detail (iPad, with room): rows select rather than push.
+    var onSelect: ((Drink) -> Void)? = nil
+    /// The drink open beside the board, outlined in its row.
+    var selectedId: Int? = nil
+
     @State private var kind: LeaderboardKind = .personal
     @State private var category: DrinkCategory?
     @State private var rows: [Drink] = []
@@ -48,10 +53,22 @@ struct LeaderboardView: View {
                     ScrollView {
                         LazyVStack(spacing: 10) {
                             ForEach(Array(rows.enumerated()), id: \.element.id) { index, drink in
-                                NavigationLink(value: drink) {
-                                    LeaderboardRow(rank: index + 1, drink: drink, kind: kind)
+                                if let onSelect {
+                                    Button { onSelect(drink) } label: {
+                                        LeaderboardRow(rank: index + 1, drink: drink, kind: kind)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                                    .stroke(Palette.gold, lineWidth: selectedId == drink.id ? 1.5 : 0)
+                                            )
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityAddTraits(selectedId == drink.id ? .isSelected : [])
+                                } else {
+                                    NavigationLink(value: drink) {
+                                        LeaderboardRow(rank: index + 1, drink: drink, kind: kind)
+                                    }
+                                    .buttonStyle(.plain)
                                 }
-                                .buttonStyle(.plain)
                             }
                         }
                         .padding(.horizontal, 16)

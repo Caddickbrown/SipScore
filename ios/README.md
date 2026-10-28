@@ -40,6 +40,12 @@ web app, so ratings, trips and the feed are shared between them.
 | Feed | Posts, likes, threaded replies — per trip. |
 | Profile | Avatar upload via PhotosPicker, per-trip stats, server address, sign out. |
 
+On iPad (regular width) the tab bar becomes a white sidebar with a gold
+selection, **+ Add drink**, and the active trip with its members at the foot.
+It folds to a 52pt strip (toggle and +) with the `sidebar.left` button or ⌃⌘S,
+and the choice is remembered. With 700pt or more beside it, Rankings shows the
+chosen drink's detail beside the board instead of pushing it.
+
 ## How it's laid out
 
 ```
